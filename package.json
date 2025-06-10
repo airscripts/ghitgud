@@ -1,0 +1,29 @@
+{
+	"name": "ghitgud",
+	"version": "0.1.0",
+	"description": "A simple CLI to give superpowers to GitHub.",
+	"main": "dist/ghitgud.js",
+	"dependencies": {
+		"commander": "^14.0.0",
+		"figlet": "^1.8.1"
+	},
+	"scripts": {
+		"test": "echo \"Error: no test specified\" && exit 1",
+		"build": "tsc"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/airscripts/ghitgud.git"
+	},
+	"author": "airscripts",
+	"license": "MIT",
+	"bugs": {
+		"url": "https://github.com/airscripts/ghitgud/issues"
+	},
+	"homepage": "https://github.com/airscripts/ghitgud#readme",
+	"devDependencies": {
+		"@types/figlet": "^1.7.0",
+		"@types/node": "^24.0.0",
+		"typescript": "^5.8.3"
+	}
+}
