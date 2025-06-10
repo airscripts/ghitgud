@@ -1,0 +1,13 @@
+cff-version: 1.2.0
+message: If you use this software in your work, please cite it using the following metadata
+title: Ghitgud
+authors:
+- family-names: Sardone
+  given-names: Francesco
+keywords:
+- credit
+- citation
+version: 0.1.0
+date-released: 2025-06-10
+license: GPL-3.0
+repository-code: https://github.com/airscripts/ghitgud
