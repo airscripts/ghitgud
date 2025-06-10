@@ -11,6 +11,9 @@ importers:
       commander:
         specifier: ^14.0.0
         version: 14.0.0
+      dotenv:
+        specifier: ^16.5.0
+        version: 16.5.0
       figlet:
         specifier: ^1.8.1
         version: 1.8.1
@@ -37,6 +40,10 @@ packages:
     resolution: {integrity: sha512-2uM9rYjPvyq39NwLRqaiLtWHyDC1FvryJDa2ATTVims5YAS4PupsEQsDvP14FqhFr0P49CYDugi59xaxJlTXRA==}
     engines: {node: '>=20'}
 
+  dotenv@16.5.0:
+    resolution: {integrity: sha512-m/C+AwOAr9/W1UOIZUo232ejMNnJAJtYQjUbHoNTBNTJSvqzzDh7vnrei3o3r3m9blf6ZoDkvcw0VmozNRFJxg==}
+    engines: {node: '>=12'}
+
   figlet@1.8.1:
     resolution: {integrity: sha512-kEC3Sme+YvA8Hkibv0NR1oClGcWia0VB2fC1SlMy027cwe795Xx40Xiv/nw/iFAwQLupymWh+uhAAErn/7hwPg==}
     engines: {node: '>= 0.4.0'}
@@ -59,6 +66,8 @@ snapshots:
       undici-types: 7.8.0
 
   commander@14.0.0: {}
+
+  dotenv@16.5.0: {}
 
   figlet@1.8.1: {}
 

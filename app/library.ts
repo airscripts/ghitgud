@@ -1,7 +1,7 @@
-function foo() {
-  console.info("foo");
+function ping() {
+  console.info("pong");
 }
 
 export default {
-  foo,
+  ping,
 };

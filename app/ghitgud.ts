@@ -3,6 +3,7 @@ import { program } from "commander";
 
 import ascii from "./ascii";
 import library from "./library";
+import "dotenv/config";
 
 program
   .name("ghitgud")
@@ -10,9 +11,9 @@ program
   .version("0.1.0");
 
 program
-  .command("foo")
-  .description("foo")
-  .action(() => library.foo());
+  .command("ping")
+  .description("Check if the CLI is working.")
+  .action(() => library.ping());
 
 program.addHelpText("before", ascii);
 program.parse(process.argv);
