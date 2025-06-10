@@ -1,6 +1,6 @@
 import figlet from "figlet";
 
-const asciiArt = figlet.textSync("Ghitgud", {
+const ascii = figlet.textSync("Ghitgud", {
     width: 80,
     font: "Standard",
     whitespaceBreak: true,
@@ -8,4 +8,4 @@ const asciiArt = figlet.textSync("Ghitgud", {
     horizontalLayout: "default",
 });
 
-export default asciiArt;
+export default ascii;
