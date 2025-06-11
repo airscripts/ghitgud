@@ -2,9 +2,9 @@
 	"name": "ghitgud",
 	"version": "1.0.0",
 	"description": "A simple CLI to give superpowers to GitHub.",
-	"main": "dist/ghitgud.js",
+	"main": "dist/app/ghitgud.js",
 	"bin": {
-		"ghitgud": "dist/ghitgud.js"
+		"ghitgud": "dist/app/ghitgud.js"
 	},
 	"dependencies": {
 		"commander": "^14.0.0",
@@ -12,9 +12,9 @@
 		"figlet": "^1.8.1"
 	},
 	"scripts": {
-		"test": "echo \"Error: no test specified\" && exit 1",
+		"test": "vitest",
 		"build": "rm -rf dist && tsc",
-		"start": "node dist/ghitgud.js"
+		"start": "node dist/app/ghitgud.js"
 	},
 	"repository": {
 		"type": "git",

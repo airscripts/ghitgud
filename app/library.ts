@@ -11,11 +11,11 @@ const ERROR_NO_METADATA = "No metadata file found.";
 
 const ping = () => {
   console.info(PING_RESPONSE);
+  return { success: true };
 };
 
 const labels = {
   list: async () => {
-    console.info("Listing labels...");
     const response = await api.labels.fetch();
     const data = await response.json();
 
@@ -25,12 +25,12 @@ const labels = {
       description: label.description,
     }));
 
-    console.info("Labels:");
-    console.info(labels);
+    const result = { success: true, metadata: labels };
+    console.info(result);
+    return result;
   },
 
   pull: async () => {
-    console.info("Pulling labels...");
     const response = await api.labels.fetch();
     const data = await response.json();
 
@@ -39,13 +39,11 @@ const labels = {
       color: label.color,
       description: label.description,
     }));
-
-    console.info("Saving labels...");
 
     try {
       fs.mkdirSync(METADATA_FOLDER, { recursive: true });
     } catch (error) {
-      console.error(error);
+      throw new Error(error instanceof Error ? error.message : String(error));
     }
 
     try {
@@ -54,15 +52,16 @@ const labels = {
         JSON.stringify(labels, null, 2)
       );
 
-      console.info("Labels saved.");
     } catch (error) {
-      console.error(error);
+      throw new Error(error instanceof Error ? error.message : String(error));
     }
+
+    const result = { success: true };
+    console.info(result);
+    return result;
   },
 
   push: async () => {
-    console.info("Pushing labels...");
-
     if (!fs.existsSync(`${METADATA_FOLDER}/${METADATA_FILE}`))
       throw new Error(ERROR_NO_METADATA);
 
@@ -79,12 +78,12 @@ const labels = {
       if (functions.http.isNotFound(foo.status)) await api.labels.create(label);
     });
 
-    console.info("Labels pushed.");
+    const result = { success: true };
+    console.info(result);
+    return result;
   },
 
   prune: async () => {
-    console.info("Pruning labels...");
-
     if (!fs.existsSync(`${METADATA_FOLDER}/${METADATA_FILE}`))
       throw new Error(ERROR_NO_METADATA);
 
@@ -95,7 +94,10 @@ const labels = {
 
     const labels = JSON.parse(data);
     labels.map(async (label: Label) => await api.labels.delete(label.name));
-    console.info("Labels pruned.");
+
+    const result = { success: true };
+    console.info(result);
+    return result;
   },
 };
 

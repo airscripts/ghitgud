@@ -4,7 +4,7 @@ import library from "./library";
 const COMMANDS = {
   ping: {
     name: "ping",
-    action: () => library.ping(),
+    action: () => void library.ping(),
     description: "Check if the CLI is working.",
   },
 
@@ -16,25 +16,25 @@ const COMMANDS = {
       list: {
         name: "list",
         description: "List all labels for a repository.",
-        action: () => library.labels.list(),
+        action: () => void library.labels.list(),
       },
 
       pull: {
         name: "pull",
         description: "Pull all related labels for a repository.",
-        action: () => library.labels.pull(),
+        action: () => void library.labels.pull(),
       },
 
       push: {
         name: "push",
         description: "Push all related labels for a repository.",
-        action: () => library.labels.push(),
+        action: () => void library.labels.push(),
       },
 
       prune: {
         name: "prune",
         description: "Prune all related labels for a repository.",
-        action: () => library.labels.prune(),
+        action: () => void library.labels.prune(),
       },
     },
   },
