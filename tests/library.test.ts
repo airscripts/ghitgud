@@ -65,15 +65,13 @@ describe("labels", () => {
   });
 
   it("should push labels", async () => {
-    const mockResponse = { json: () => Promise.resolve(API_LABELS) };
-    (api.labels.fetch as Mock).mockResolvedValue(mockResponse);
+    const mockResponse = { status: 200 };
+    (api.labels.get as Mock).mockResolvedValue(mockResponse);
     const result = await library.labels.push();
     expect(result).toEqual({ success: true });
   });
 
   it("should prune labels", async () => {
-    const mockResponse = { json: () => Promise.resolve(API_LABELS) };
-    (api.labels.fetch as Mock).mockResolvedValue(mockResponse);
     const result = await library.labels.prune();
     expect(result).toEqual({ success: true });
   });
