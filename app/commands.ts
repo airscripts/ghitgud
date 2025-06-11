@@ -38,14 +38,31 @@ const COMMANDS = {
       },
     },
   },
+
+  config: {
+    name: "config",
+    description: "Set CLI configurations.",
+
+    commands: {
+      set: {
+        name: "set",
+        description: "Set configuration.",
+
+        action: (key: string, value: string) =>
+          void library.config.set(key, value),
+      },
+    },
+  },
 };
 
-const init = () => {
+const ping = () => {
   program
     .command(COMMANDS.ping.name)
     .description(COMMANDS.ping.description)
     .action(COMMANDS.ping.action);
+};
 
+const labels = () => {
   const labels = program
     .command(COMMANDS.labels.name)
     .description(COMMANDS.labels.description);
@@ -73,6 +90,28 @@ const init = () => {
       .description(COMMANDS.labels.commands.prune.description)
       .action(COMMANDS.labels.commands.prune.action)
   );
+};
+
+const config = () => {
+  const config = program
+    .command(COMMANDS.config.name)
+    .description(COMMANDS.config.description);
+
+  config.addCommand(
+    new Command(COMMANDS.config.commands.set.name)
+      .description(COMMANDS.config.commands.set.description)
+      .arguments("<key> <value>")
+
+      .action((key: string, value: string) =>
+        COMMANDS.config.commands.set.action(key, value)
+      )
+  );
+};
+
+const init = () => {
+  ping();
+  labels();
+  config();
 };
 
 export default init;

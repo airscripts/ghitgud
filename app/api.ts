@@ -1,17 +1,21 @@
+import config from "./config";
 import { Label } from "./types";
 import functions from "./functions";
 import "dotenv/config";
 
 const VERSION = "2022-11-28";
-const REPO = "airscripts/ghitgud";
 const BASE_URL = "https://api.github.com";
 const ACCEPT = "application/vnd.github+json";
-const AUTHORIZATION = `Bearer ${process.env.GITHUB_TOKEN}`;
+const REPO = `${config.repo}`;
+const AUTHORIZATION = `Bearer ${config.token}`;
+
 const ERROR_UNAUTHORIZED = "Unauthorized.";
-const ERROR_NO_TOKEN = "You must set the GITHUB_TOKEN environment variable.";
+const ERROR_NO_REPO = "You must set the GHITGUD_GITHUB_REPO environment variable.";
+const ERROR_NO_TOKEN = "You must set the GHITGUD_GITHUB_TOKEN environment variable.";
 
 const labels = {
   fetch: async () => {
+    if (!functions.environment.hasRepo()) throw new Error(ERROR_NO_REPO);
     if (!functions.environment.hasToken()) throw new Error(ERROR_NO_TOKEN);
 
     const response = await fetch(`${BASE_URL}/repos/${REPO}/labels`, {
@@ -24,10 +28,12 @@ const labels = {
 
     if (functions.http.isNotAuthorized(response.status))
       throw new Error(ERROR_UNAUTHORIZED);
+
     return response;
   },
 
   get: async (name: string) => {
+    if (!functions.environment.hasRepo()) throw new Error(ERROR_NO_REPO);
     if (!functions.environment.hasToken()) throw new Error(ERROR_NO_TOKEN);
 
     const response = await fetch(`${BASE_URL}/repos/${REPO}/labels/${name}`, {
@@ -41,10 +47,12 @@ const labels = {
 
     if (functions.http.isNotAuthorized(response.status))
       throw new Error(ERROR_UNAUTHORIZED);
+
     return response;
   },
 
   create: async (label: Label) => {
+    if (!functions.environment.hasRepo()) throw new Error(ERROR_NO_REPO);
     if (!functions.environment.hasToken()) throw new Error(ERROR_NO_TOKEN);
 
     const response = await fetch(`${BASE_URL}/repos/${REPO}/labels`, {
@@ -65,10 +73,12 @@ const labels = {
 
     if (functions.http.isNotAuthorized(response.status))
       throw new Error(ERROR_UNAUTHORIZED);
+
     return response;
   },
 
   patch: async (label: Label) => {
+    if (!functions.environment.hasRepo()) throw new Error(ERROR_NO_REPO);
     if (!functions.environment.hasToken()) throw new Error(ERROR_NO_TOKEN);
 
     const response = await fetch(
@@ -92,10 +102,12 @@ const labels = {
 
     if (functions.http.isNotAuthorized(response.status))
       throw new Error(ERROR_UNAUTHORIZED);
+
     return response;
   },
 
   delete: async (name: string) => {
+    if (!functions.environment.hasRepo()) throw new Error(ERROR_NO_REPO);
     if (!functions.environment.hasToken()) throw new Error(ERROR_NO_TOKEN);
 
     const response = await fetch(`${BASE_URL}/repos/${REPO}/labels/${name}`, {
@@ -110,6 +122,7 @@ const labels = {
 
     if (functions.http.isNotAuthorized(response.status))
       throw new Error(ERROR_UNAUTHORIZED);
+
     return response;
   },
 };

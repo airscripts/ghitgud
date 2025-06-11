@@ -1,4 +1,7 @@
 import fs from "fs";
+import os from "os";
+import path from "path";
+
 import api from "./api";
 import { Label } from "./types";
 import functions from "./functions";
@@ -8,6 +11,10 @@ const PING_RESPONSE = "pong";
 const METADATA_FOLDER = "metadata";
 const METADATA_FILE = "labels.json";
 const ERROR_NO_METADATA = "No metadata file found.";
+
+const CREDENTIALS_FILE = "credentials.json";
+const ERROR_UNSUPPORTED_KEY = "Trying to set unsupported key.";
+const GHITGUD_FOLDER = path.join(os.homedir(), ".config", "ghitgud");
 
 const ping = () => {
   console.info(PING_RESPONSE);
@@ -51,7 +58,6 @@ const labels = {
         `${METADATA_FOLDER}/${METADATA_FILE}`,
         JSON.stringify(labels, null, 2)
       );
-
     } catch (error) {
       throw new Error(error instanceof Error ? error.message : String(error));
     }
@@ -72,11 +78,15 @@ const labels = {
 
     const labels = JSON.parse(data);
 
-    labels.map(async (label: Label) => {
-      const foo = await api.labels.get(label.name);
-      if (functions.http.isOk(foo.status)) await api.labels.patch(label);
-      if (functions.http.isNotFound(foo.status)) await api.labels.create(label);
-    });
+    await Promise.all(
+      labels.map(async (label: Label) => {
+        const response = await api.labels.get(label.name);
+        if (functions.http.isOk(response.status)) await api.labels.patch(label);
+
+        if (functions.http.isNotFound(response.status))
+          await api.labels.create(label);
+      })
+    );
 
     const result = { success: true };
     console.info(result);
@@ -101,7 +111,48 @@ const labels = {
   },
 };
 
+const config = {
+  set: (key: string, value: string) => {
+    const knowns = ["token", "repo"];
+
+    if (!knowns.includes(key)) throw new Error(ERROR_UNSUPPORTED_KEY);
+
+    if (!fs.existsSync(`${GHITGUD_FOLDER}/${CREDENTIALS_FILE}`)) {
+      const credentials = { [key]: value };
+
+      try {
+        fs.mkdirSync(GHITGUD_FOLDER, { recursive: true });
+      } catch (error) {
+        throw new Error(error instanceof Error ? error.message : String(error));
+      }
+
+      fs.writeFileSync(
+        `${GHITGUD_FOLDER}/${CREDENTIALS_FILE}`,
+        JSON.stringify(credentials, null, 2)
+      );
+
+      return { success: true };
+    }
+
+    const data = fs.readFileSync(
+      `${GHITGUD_FOLDER}/${CREDENTIALS_FILE}`,
+      ENCODING
+    );
+
+    const credentials = JSON.parse(data);
+    credentials[key] = value;
+
+    fs.writeFileSync(
+      `${GHITGUD_FOLDER}/${CREDENTIALS_FILE}`,
+      JSON.stringify(credentials, null, 2)
+    );
+
+    return { success: true };
+  },
+};
+
 export default {
   ping,
   labels,
+  config,
 };
