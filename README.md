@@ -3,6 +3,7 @@ A simple CLI to give superpowers to GitHub.
 
 ## Table of Contents
 - [Installation](#installation)
+- [Usage](#usage)
 - [Contributing](#contributing)
 - [Support](#support)
 - [License](#license)
@@ -13,6 +14,12 @@ Follow the steps below to make use of Ghitgud.
 Clone this repository:
 ```bash
 git clone https://github.com/airscripts/ghitgud.git
+```
+
+## Usage
+All the usage instructions can be found in the CLI's help:
+```bash
+ghitgud help
 ```
 
 ## Contributing
