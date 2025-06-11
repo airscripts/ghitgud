@@ -2,18 +2,17 @@ import process from "process";
 import { program } from "commander";
 
 import ascii from "./ascii";
-import library from "./library";
-import "dotenv/config";
+import commands from "./commands";
+
+const NAME = "ghitgud";
+const VERSION = "1.0.0";
+const DESCRIPTION = "A simple CLI to give superpowers to GitHub.";
 
 program
-  .name("ghitgud")
-  .description("A simple CLI to give superpowers to GitHub.")
-  .version("0.1.0");
+  .name(NAME)
+  .description(DESCRIPTION)
+  .version(VERSION);
 
-program
-  .command("ping")
-  .description("Check if the CLI is working.")
-  .action(() => library.ping());
-
+commands();
 program.addHelpText("before", ascii);
 program.parse(process.argv);

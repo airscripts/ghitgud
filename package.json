@@ -1,8 +1,11 @@
 {
 	"name": "ghitgud",
-	"version": "0.1.0",
+	"version": "1.0.0",
 	"description": "A simple CLI to give superpowers to GitHub.",
 	"main": "dist/ghitgud.js",
+	"bin": {
+		"ghitgud": "dist/ghitgud.js"
+	},
 	"dependencies": {
 		"commander": "^14.0.0",
 		"dotenv": "^16.5.0",
