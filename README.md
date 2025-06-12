@@ -17,9 +17,22 @@ git clone https://github.com/airscripts/ghitgud.git
 ```
 
 ## Usage
-All the usage instructions can be found in the CLI's help:
+After cloning the project just hit these few commands:
+```bash
+pnpm install
+pnpm run build
+pnpm link
+```
+
+Then you'll be able to access the CLI and its relative help command:
 ```bash
 ghitgud help
+```
+
+Remember that to use the CLI you have to set a token and a repo with the format `username/repository` (e.g. airscripts/ghitgud):
+```bash
+ghitgud config set token `your-token-here`
+ghitgud config set repo `username/repository`
 ```
 
 ## Contributing
