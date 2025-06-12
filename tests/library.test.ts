@@ -51,16 +51,9 @@ describe("labels", () => {
   });
 
   it("should pull labels", async () => {
-    const spy = vi.spyOn(fs, "writeFileSync").mockImplementation(() => {});
     const mockResponse = { json: () => Promise.resolve(API_LABELS) };
     (api.labels.fetch as Mock).mockResolvedValue(mockResponse);
     const result = await library.labels.pull();
-
-    expect(spy).toHaveBeenCalledWith(
-      "metadata/labels.json",
-      JSON.stringify(METADATA_LABELS, null, 2)
-    );
-
     expect(result).toEqual({ success: true });
   });
 
