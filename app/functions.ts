@@ -8,6 +8,7 @@ import "dotenv/config";
 const STATUS_OK = 200;
 const STATUS_UNAUTHORIZED = 401;
 const STATUS_NOT_FOUND = 404;
+const STATUS_UNPROCESSABLE = 422;
 
 const ENCODING = "utf8";
 const CREDENTIALS_FILE = "credentials.json";
@@ -17,6 +18,7 @@ const http = {
   isOk: (status: number) => status === STATUS_OK,
   isNotFound: (status: number) => status === STATUS_NOT_FOUND,
   isNotAuthorized: (status: number) => status === STATUS_UNAUTHORIZED,
+  isUnprocessable: (status: number) => status === STATUS_UNPROCESSABLE,
 };
 
 const environment = {

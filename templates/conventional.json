@@ -1,52 +1,52 @@
 [
     {
       "name": "build",
-      "color": "#0052cc",
+      "color": "0052cc",
       "description": "Changes that affect the build system or external dependencies."
     },
     {
       "name": "chore",
-      "color": "#8c8c8c",
+      "color": "8c8c8c",
       "description": "General maintenance such as dependency updates."
     },
     {
       "name": "ci",
-      "color": "#6a3d1c",
+      "color": "6a3d1c",
       "description": "Continuous integration changes."
     },
     {
       "name": "documentation",
-      "color": "#0e8a16",
+      "color": "0e8a16",
       "description": "Improvements or additions to documentation."
     },
     {
       "name": "feature",
-      "color": "#1d7a1d",
+      "color": "1d7a1d",
       "description": "New feature or request."
     },
     {
       "name": "fix",
-      "color": "#d73a49",
+      "color": "d73a49",
       "description": "Something isn't working."
     },
     {
       "name": "performance",
-      "color": "#b60205",
+      "color": "b60205",
       "description": "Code changes that improve performance."
     },
     {
       "name": "refactor",
-      "color": "#fbca04",
+      "color": "fbca04",
       "description": "Changes that neither fix a bug nor add a feature but improve the code."
     },
     {
       "name": "style",
-      "color": "#fef2c0",
+      "color": "fef2c0",
       "description": "Changes related to code style, like formatting."
     },
     {
       "name": "test",
-      "color": "#d4c5f9",
+      "color": "d4c5f9",
       "description": "Adding or updating tests."
     }
   ]

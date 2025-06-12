@@ -10,6 +10,7 @@ const REPO = `${config.repo}`;
 const AUTHORIZATION = `Bearer ${config.token}`;
 
 const ERROR_UNAUTHORIZED = "Unauthorized.";
+const ERROR_UNPROCESSABLE = "Content is unprocessable.";
 const ERROR_NO_REPO = "You must set the GHITGUD_GITHUB_REPO environment variable.";
 const ERROR_NO_TOKEN = "You must set the GHITGUD_GITHUB_TOKEN environment variable.";
 
@@ -70,6 +71,9 @@ const labels = {
         "X-GitHub-Api-Version": VERSION,
       },
     });
+
+    if (functions.http.isUnprocessable(response.status))
+      throw new Error(ERROR_UNPROCESSABLE);
 
     if (functions.http.isNotAuthorized(response.status))
       throw new Error(ERROR_UNAUTHORIZED);
