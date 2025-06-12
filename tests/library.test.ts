@@ -76,3 +76,10 @@ describe("labels", () => {
     expect(result).toEqual({ success: true });
   });
 });
+
+describe("config", () => {
+  it("should set a config", () => {
+    const result = library.config.set("token", "test");
+    expect(result).toEqual({ success: true });
+  });
+});
