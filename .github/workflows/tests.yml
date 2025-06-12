@@ -22,7 +22,6 @@ jobs:
 
         with:
           node-version: 22
-          cache: 'pnpm'
 
       - name: Install pnpm
         uses: pnpm/action-setup@v4
