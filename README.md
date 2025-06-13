@@ -4,6 +4,7 @@ A simple CLI to give superpowers to GitHub.
 ## Table of Contents
 - [Installation](#installation)
 - [Usage](#usage)
+- [Wiki](#wiki)
 - [Contributing](#contributing)
 - [Support](#support)
 - [License](#license)
@@ -28,6 +29,9 @@ ghitgud config set token `your-token-here`
 ghitgud config set repo `username/repository`
 ```
 > You can create your token with: https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens
+
+## Wiki
+For more in-depth help with the usage of this CLI, just check the wiki: https://github.com/airscripts/ghitgud/wiki
 
 ## Contributing
 Contributions and suggestions about how to improve this project are welcome!
