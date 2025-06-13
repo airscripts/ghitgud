@@ -6,7 +6,7 @@ import ascii from "./ascii";
 import commands from "./commands";
 
 const NAME = "ghitgud";
-const VERSION = "1.0.2";
+const VERSION = "1.0.3";
 const DESCRIPTION = "A simple CLI to give superpowers to GitHub.";
 
 program
