@@ -8,7 +8,6 @@ import functions from "./functions";
 
 const ENCODING = "utf8";
 const PING_RESPONSE = "pong";
-const METADATA_FOLDER = "metadata";
 const METADATA_FILE = "labels.json";
 const ERROR_NO_METADATA = "No metadata file found.";
 
@@ -48,14 +47,14 @@ const labels = {
     }));
 
     try {
-      fs.mkdirSync(METADATA_FOLDER, { recursive: true });
+      fs.mkdirSync(GHITGUD_FOLDER, { recursive: true });
     } catch (error) {
       throw new Error(error instanceof Error ? error.message : String(error));
     }
 
     try {
       fs.writeFileSync(
-        `${METADATA_FOLDER}/${METADATA_FILE}`,
+        `${GHITGUD_FOLDER}/${METADATA_FILE}`,
         JSON.stringify(labels, null, 2)
       );
     } catch (error) {
@@ -68,11 +67,11 @@ const labels = {
   },
 
   push: async () => {
-    if (!fs.existsSync(`${METADATA_FOLDER}/${METADATA_FILE}`))
+    if (!fs.existsSync(`${GHITGUD_FOLDER}/${METADATA_FILE}`))
       throw new Error(ERROR_NO_METADATA);
 
     const data = fs.readFileSync(
-      `${METADATA_FOLDER}/${METADATA_FILE}`,
+      `${GHITGUD_FOLDER}/${METADATA_FILE}`,
       ENCODING
     );
 
@@ -94,11 +93,11 @@ const labels = {
   },
 
   prune: async () => {
-    if (!fs.existsSync(`${METADATA_FOLDER}/${METADATA_FILE}`))
+    if (!fs.existsSync(`${GHITGUD_FOLDER}/${METADATA_FILE}`))
       throw new Error(ERROR_NO_METADATA);
 
     const data = fs.readFileSync(
-      `${METADATA_FOLDER}/${METADATA_FILE}`,
+      `${GHITGUD_FOLDER}/${METADATA_FILE}`,
       ENCODING
     );
 

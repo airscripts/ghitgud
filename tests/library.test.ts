@@ -1,4 +1,3 @@
-import fs from "fs";
 import { describe, it, expect, vi, Mock } from "vitest";
 
 import api from "../app/api";
