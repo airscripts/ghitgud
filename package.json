@@ -1,5 +1,5 @@
 {
-	"name": "ghitgud",
+	"name": "@airscript/ghitgud",
 	"version": "1.0.0",
 	"description": "A simple CLI to give superpowers to GitHub.",
 	"main": "dist/app/ghitgud.js",
@@ -31,5 +31,8 @@
 		"@types/node": "^24.0.0",
 		"typescript": "^5.8.3",
 		"vitest": "^3.2.3"
+	},
+	"directories": {
+		"test": "tests"
 	}
 }
