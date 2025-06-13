@@ -1,6 +1,6 @@
 {
 	"name": "@airscript/ghitgud",
-	"version": "1.0.0",
+	"version": "1.0.1",
 	"description": "A simple CLI to give superpowers to GitHub.",
 	"main": "dist/app/ghitgud.js",
 	"bin": {
