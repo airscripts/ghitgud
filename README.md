@@ -13,18 +13,11 @@ Follow the steps below to make use of Ghitgud.
 
 Clone this repository:
 ```bash
-git clone https://github.com/airscripts/ghitgud.git
+npm install -g @airscript/ghitgud
 ```
 
 ## Usage
-After cloning the project just hit these few commands:
-```bash
-pnpm install
-pnpm run build
-pnpm link
-```
-
-Then you'll be able to access the CLI and its relative help command:
+After installing you'll be able to access the CLI and its relative help command:
 ```bash
 ghitgud help
 ```
@@ -34,6 +27,7 @@ Remember that to use the CLI you have to set a token and a repo with the format 
 ghitgud config set token `your-token-here`
 ghitgud config set repo `username/repository`
 ```
+> You can create your token with: https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens
 
 ## Contributing
 Contributions and suggestions about how to improve this project are welcome!
