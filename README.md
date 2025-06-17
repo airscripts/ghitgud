@@ -1,5 +1,14 @@
-# Ghitgud
-A simple CLI to give superpowers to GitHub.
+<h1 align="center">
+  Ghitgud
+</h1>
+
+<p align="center">
+  A simple CLI to give superpowers to GitHub.
+</p>
+
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/57aac0c0-1bd2-4cb4-8445-36a161a7e2ee" alt="Usage GIF" />
+</p>
 
 ## Table of Contents
 - [Installation](#installation)
