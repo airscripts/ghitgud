@@ -2,7 +2,7 @@
 
 ## 1. Overview
 
-ghitgud is a TypeScript CLI that manages GitHub repository labels — list, pull, push, and prune — via the GitHub REST API. Built on Node.js with Commander for the CLI framework and `dotenv` for configuration. The codebase follows a layered architecture: CLI entry point → command modules → service modules → API client → config/constants. All output is JSON to stdout; all errors throw custom exception classes caught at the entry boundary.
+ghitgud is a TypeScript CLI that manages GitHub repository labels — list, pull, push, and prune — via the GitHub REST API. Built on Node.js with Commander for the CLI framework, Consola for rich output, and `dotenv` for configuration. The codebase follows a layered architecture: CLI entry point → command modules → service modules → API client → config/constants. All output uses Consola for rich CLI output; all errors throw custom exception classes caught at the entry boundary.
 
 ---
 
@@ -28,7 +28,7 @@ src/
     errors.ts        # custom error class hierarchy (GhitgudError → AuthError, ConfigError, NotFoundError, UnprocessableError)
     config.ts        # config resolver — env vars first, then credentials file
     io.ts            # generic file helpers (readJsonFile, writeJsonFile, fileExists, ensureDir)
-    format.ts        # output formatting (formatOutput to stdout, formatError to stderr)
+    logger.ts        # consola instance for rich CLI output
   types/
     index.ts         # shared type definitions (Label, normalizeLabel)
   env.d.ts          # global type declarations (__VERSION__)
@@ -51,7 +51,7 @@ tests/
     core/
       config.test.ts
       errors.test.ts
-      format.test.ts
+      logger.test.ts
       io.test.ts
     services/
       config.test.ts
@@ -322,7 +322,7 @@ type SupportedKey = (typeof SUPPORTED_CONFIG_KEYS)[number];
 Three groups, separated by blank lines:
 
 1. **Stdlib** — `fs`, `path`, `process`, `os`
-2. **Third-party** — `commander`, `figlet`, `dotenv`
+2. **Third-party** — `commander`, `consola`, `figlet`, `dotenv`
 3. **Local** — `@/` import aliases (`@/core/constants`, `@/services/labels`, etc.)
 
 Within each group, imports are loosely sorted — stdlib by usage order, third-party by package name, local by module path.
@@ -338,6 +338,7 @@ import path from "path";
 import { Command } from "commander";
 
 import labelsService from "@/services/labels";
+import logger from "@/core/logger";
 import {
   GHITGUD_FOLDER,
   CREDENTIALS_FILE,
@@ -374,7 +375,7 @@ class UnprocessableError extends GhitgudError { ... }
 
 - All domain errors throw a custom `GhitgudError` subclass — never bare `new Error()` for business logic failures.
 - `throw new Error(...)` is acceptable for truly unexpected or infrastructure failures (e.g., template not found).
-- The global error boundary in `src/cli/index.ts` catches `GhitgudError` and prints structured JSON to stderr with exit code 1. Unknown errors re-throw.
+- The global error boundary in `src/cli/index.ts` catches `GhitgudError` and logs via `logger.error` with exit code 1. Unknown errors re-throw. `CommanderError` with `exitCode: 0` is treated as a successful exit.
 - API errors map HTTP status codes to exception types via `handleError` in `client.ts`. Unmapped status codes throw `GhitgudError`.
 - Config errors (`missing token`, `missing repo`) throw `ConfigError`.
 - Services do not catch errors — they throw and let the CLI boundary handle output.
@@ -431,7 +432,7 @@ vi.mock("@/api/labels", () => ({
 
 describe("labels", () => {
   beforeEach(() => {
-    vi.spyOn(format, "formatOutput").mockImplementation(() => {});
+    vi.spyOn(logger, "success").mockImplementation(() => {});
   });
 
   afterEach(() => {
@@ -514,12 +515,14 @@ describe("labels", () => {
 - Never use `baseUrl` in tsconfig — `paths` resolves relative to the tsconfig file location when `baseUrl` is absent. This is TS 7.0-ready.
 - Never use `tsc-alias` — Vite handles `@/` import alias resolution at build time.
 - Never use `__dirname` with `import.meta.url` / `fileURLToPath` patterns in source — use `__dirname` directly (available in CJS context after Vite bundling).
+- Never use `consola/core` in `src/core/logger.ts` — it has no reporters and produces no output. Use `import { createConsola } from "consola"` instead. `consola` must be in `vite.config.ts` `rollupOptions.external`.
 
 **Style violations:**
 
 - Never use `SCREAMING_SNAKE_CASE` for anything except module-level constants — functions and variables are `camelCase`.
 - Never add JSDoc comments — the codebase has zero doc comments. Use descriptive names and typed parameters instead.
-- Never use `console.info` for output — use `console.log` for stdout and `console.error` for stderr.
+- Never use `console.info` for output — use `console.log` for stdout, `console.error` for stderr, and `console.table` for tabular label display.
+- Never use `consola/core` in `src/core/logger.ts` — it has no reporters and produces no output. Use `import { createConsola } from "consola"` instead.
 
 **Testing violations:**
 
@@ -527,6 +530,7 @@ describe("labels", () => {
 - Never write tests alongside source files — place them in `tests/unit/<domain>/`.
 - Never use `describe` without a `it` — tests use `describe`/`it` blocks, not `test()`.
 - Never forget to mock `io` module methods (e.g., `fileExists`, `readJsonFile`) when testing service functions that read files — tests must not hit the real filesystem.
+- Never forget to mock `@/core/logger` when testing services that use `logger.success`, `logger.info`, etc.
 
 **Git violations:**
 

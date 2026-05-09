@@ -1,9 +1,9 @@
-import format from "@/core/format";
+import logger from "@/core/logger";
 import { GhitgudError } from "@/core/errors";
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 
-vi.mock("@/core/format", () => ({
-  default: { formatOutput: vi.fn(), formatError: vi.fn() },
+vi.mock("@/core/logger", () => ({
+  default: { success: vi.fn(), error: vi.fn(), info: vi.fn(), warn: vi.fn(), debug: vi.fn() },
 }));
 
 vi.mock("@/services/labels", () => ({
@@ -22,26 +22,24 @@ vi.mock("@/services/config", () => ({
 
 describe("cli index", () => {
   beforeEach(() => {
-    vi.spyOn(format, "formatError").mockImplementation(() => {});
+    vi.spyOn(logger, "error").mockImplementation(() => {});
   });
 
   afterEach(() => {
     vi.restoreAllMocks();
   });
 
-  it("should catch GhitgudError and format to stderr", () => {
+  it("should catch GhitgudError and log to stderr", () => {
     const error = new GhitgudError("test error");
-    format.formatError(error.message);
-    expect(format.formatError).toHaveBeenCalledWith("test error");
+    logger.error(error.message);
+    expect(logger.error).toHaveBeenCalledWith("test error");
   });
 
   it("should format GhitgudError message consistently", () => {
     const messages = ["Unauthorized.", "Config error.", "Not found."];
-
     messages.forEach((msg) => {
-      format.formatError(msg);
+      logger.error(msg);
     });
-
-    expect(format.formatError).toHaveBeenCalledTimes(messages.length);
+    expect(logger.error).toHaveBeenCalledTimes(messages.length);
   });
 });

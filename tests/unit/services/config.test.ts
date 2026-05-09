@@ -1,5 +1,5 @@
 import config from "@/core/config";
-import format from "@/core/format";
+import logger from "@/core/logger";
 import { ConfigError } from "@/core/errors";
 import configService from "@/services/config";
 import { ERROR_UNSUPPORTED_KEY } from "@/core/constants";
@@ -14,7 +14,8 @@ vi.mock("@/core/config", () => ({
 
 describe("config service", () => {
   beforeEach(() => {
-    vi.spyOn(format, "formatOutput").mockImplementation(() => {});
+    vi.spyOn(logger, "success").mockImplementation(() => {});
+    vi.spyOn(logger, "info").mockImplementation(() => {});
   });
 
   afterEach(() => {
@@ -26,7 +27,7 @@ describe("config service", () => {
       const result = configService.set("token", "my-token");
       expect(result).toEqual({ success: true });
       expect(config.write).toHaveBeenCalledWith("token", "my-token");
-      expect(format.formatOutput).toHaveBeenCalledWith({ success: true });
+      expect(logger.success).toHaveBeenCalledWith('Config "token" set successfully.');
     });
 
     it("should set repo config key", () => {
@@ -46,18 +47,14 @@ describe("config service", () => {
       (config.read as ReturnType<typeof vi.fn>).mockReturnValue("my-token");
       const result = configService.get("token");
       expect(result).toEqual({ success: true, key: "token", value: "my-token" });
-
-      expect(format.formatOutput).toHaveBeenCalledWith({
-        key: "token",
-        success: true,
-        value: "my-token",
-      });
+      expect(logger.info).toHaveBeenCalledWith("token: my-token.");
     });
 
     it("should return null for missing value", () => {
       (config.read as ReturnType<typeof vi.fn>).mockReturnValue(null);
       const result = configService.get("token");
       expect(result).toEqual({ success: true, key: "token", value: null });
+      expect(logger.info).toHaveBeenCalledWith("token: (not set).");
     });
 
     it("should throw ConfigError for unsupported key", () => {

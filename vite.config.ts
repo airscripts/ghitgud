@@ -17,6 +17,7 @@ export default defineConfig({
     rollupOptions: {
       external: [
         "commander",
+        "consola",
         "dotenv",
         "figlet",
         ...builtinModules,

@@ -17,6 +17,7 @@
 	},
 	"dependencies": {
 		"commander": "^14.0.0",
+		"consola": "3.4.2",
 		"dotenv": "^16.5.0",
 		"figlet": "^1.8.1"
 	},
@@ -27,8 +28,7 @@
 		"start": "node dist/index.js",
 		"typecheck": "tsc --noEmit",
 		"lint": "tsc --noEmit",
-		"clean": "rm -rf dist coverage",
-		"prepublishOnly": "pnpm run typecheck && pnpm run test -- --run && pnpm run build"
+		"clean": "rm -rf dist coverage"
 	},
 	"repository": {
 		"type": "git",

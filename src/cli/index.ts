@@ -2,10 +2,10 @@ import process from "process";
 import { program } from "commander";
 
 import ascii from "./ascii";
+import logger from "@/core/logger";
 import pingCommand from "@/commands/ping";
 import labelsCommand from "@/commands/labels";
 import configCommand from "@/commands/config";
-import format from "@/core/format";
 import { GhitgudError } from "@/core/errors";
 
 const NAME = "ghitgud";
@@ -21,13 +21,29 @@ labelsCommand.register(program);
 configCommand.register(program);
 
 program.addHelpText("before", ascii);
+program.exitOverride();
 
 try {
   program.parse(process.argv);
 } catch (error) {
   if (error instanceof GhitgudError) {
-    format.formatError(error.message);
+    logger.error(error.message);
     process.exit(1);
   }
+
+  const commanderError = error as { code?: string; exitCode?: number };
+  if (commanderError.exitCode === 0) {
+    process.exit(0);
+  }
+
   throw error;
 }
+
+process.on("unhandledRejection", (error: unknown) => {
+  if (error instanceof GhitgudError) {
+    logger.error((error as GhitgudError).message);
+    process.exit(1);
+  }
+
+  throw error;
+});

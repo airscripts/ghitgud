@@ -1,20 +1,15 @@
+import client from "@/api/client";
+import { GhitgudError } from "@/core/errors";
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 
-import {
-  GhitgudError,
-  AuthError,
-  NotFoundError,
-  UnprocessableError,
-} from "@/core/errors";
-import client from "@/api/client";
 
 vi.mock("@/core/config", () => ({
   default: {
-    getToken: vi.fn(() => "test-token"),
-    getRepo: vi.fn(() => "owner/repo"),
+    has: vi.fn(),
     read: vi.fn(),
     write: vi.fn(),
-    has: vi.fn(),
+    getRepo: vi.fn(() => "owner/repo"),
+    getToken: vi.fn(() => "test-token"),
   },
 }));
 
@@ -41,6 +36,7 @@ describe("client", () => {
       (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValue({ status: 201 });
       const result = await client.post("/repos/owner/repo/labels", { name: "bug" });
       expect(result.status).toBe(201);
+
       expect(global.fetch).toHaveBeenCalledWith(
         "https://api.github.com/repos/owner/repo/labels",
         expect.objectContaining({ method: "POST" })
@@ -51,6 +47,7 @@ describe("client", () => {
       (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValue({ status: 204 });
       const result = await client.delete("/repos/owner/repo/labels/bug");
       expect(result.status).toBe(204);
+
       expect(global.fetch).toHaveBeenCalledWith(
         "https://api.github.com/repos/owner/repo/labels/bug",
         expect.objectContaining({ method: "DELETE" })
@@ -60,6 +57,7 @@ describe("client", () => {
     it("should make a PATCH request", async () => {
       (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValue({ status: 200 });
       await client.patch("/repos/owner/repo/labels/bug", { color: "fff" });
+
       expect(global.fetch).toHaveBeenCalledWith(
         "https://api.github.com/repos/owner/repo/labels/bug",
         expect.objectContaining({ method: "PATCH" })
@@ -83,13 +81,14 @@ describe("client", () => {
 
     it("should throw GhitgudError on unexpected status", async () => {
       (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValue({ status: 500 });
-      await expect(client.get("/test")).rejects.toThrow("Unexpected status code: 500");
+      await expect(client.get("/test")).rejects.toThrow("Unexpected status code.: 500");
       await expect(client.get("/test")).rejects.toThrow(GhitgudError);
     });
 
     it("should include auth and api headers", async () => {
       (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValue({ status: 200 });
       await client.get("/test");
+
       expect(global.fetch).toHaveBeenCalledWith(
         "https://api.github.com/test",
         expect.objectContaining({
