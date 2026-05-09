@@ -7,8 +7,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [2.0.0] - 2025-05-09
 
-Complete architecture overhaul. The CLI is now organized into layered modules (cli → commands → services → api → core) with structured JSON output, error hierarchies, and a Vite-based build pipeline.
-
 ### Added
 
 - `config get <key>` command to retrieve stored configuration values
