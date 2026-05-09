@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.1.0] - 2026-05-09
+
+### Added
+
+- `ghitgud gh` passthrough command — proxy any args to the gh CLI
+- `notifications list` with `--all`, `--participating`, `--repo`, `--limit`
+- `notifications read <id>`
+- `notifications done <id>`
+- `activity` — composite view of assigned issues, review requests, mentions
+- `mentions` — search for recent @mentions
+- `client.put` method in API layer
+
 ## [2.0.0] - 2025-05-09
 
 ### Added

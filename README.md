@@ -54,6 +54,15 @@ ghitgud config get repo
 ## Commands
 
 ```
+ghitgud gh <args>              Pass through to the gh CLI
+ghitgud notifications list       List notifications
+ghitgud notifications list -a    Include read notifications
+ghitgud notifications list -p    Only participating
+ghitgud notifications list -r owner/repo  Filter by repository
+ghitgud notifications read <id>   Mark a notification as read
+ghitgud notifications done <id>   Mark a notification as done
+ghitgud activity                 Assigned issues, review requests, mentions
+ghitgud mentions                 Recent @mentions of you
 ghitgud ping                     Check if the CLI is working
 ghitgud labels list              List all labels for a repository
 ghitgud labels pull              Pull labels from a repository to local config

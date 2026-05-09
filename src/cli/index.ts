@@ -7,6 +7,9 @@ import ghCommand from "@/commands/gh";
 import pingCommand from "@/commands/ping";
 import labelsCommand from "@/commands/labels";
 import configCommand from "@/commands/config";
+import mentionsCommand from "@/commands/mentions";
+import activityCommand from "@/commands/activity";
+import notificationsCommand from "@/commands/notifications";
 import { GhitgudError } from "@/core/errors";
 
 const NAME = "ghitgud";
@@ -15,6 +18,9 @@ const DESCRIPTION = "A simple CLI to give superpowers to GitHub.";
 program.name(NAME).description(DESCRIPTION).version(__VERSION__);
 
 ghCommand.register(program);
+notificationsCommand.register(program);
+activityCommand.register(program);
+mentionsCommand.register(program);
 pingCommand.register(program);
 labelsCommand.register(program);
 configCommand.register(program);
