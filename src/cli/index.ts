@@ -3,6 +3,7 @@ import { program } from "commander";
 
 import ascii from "./ascii";
 import logger from "@/core/logger";
+import ghCommand from "@/commands/gh";
 import pingCommand from "@/commands/ping";
 import labelsCommand from "@/commands/labels";
 import configCommand from "@/commands/config";
@@ -13,6 +14,7 @@ const DESCRIPTION = "A simple CLI to give superpowers to GitHub.";
 
 program.name(NAME).description(DESCRIPTION).version(__VERSION__);
 
+ghCommand.register(program);
 pingCommand.register(program);
 labelsCommand.register(program);
 configCommand.register(program);
