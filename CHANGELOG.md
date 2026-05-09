@@ -68,14 +68,6 @@ Complete architecture overhaul. The CLI is now organized into layered modules (c
 - `io` module mocked in `labels.test.ts` for push/prune tests — no real filesystem hits
 - Duplicates removed from `labels.test.ts` test suite
 
-## [1.0.3] - 2025-05-09
-
-Deployment trigger release.
-
-## [1.0.2] - 2025-05-09
-
-Deployment trigger release.
-
 ## [1.0.1] - 2025-05-09
 
 ### Changed
