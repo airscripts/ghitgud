@@ -1,7 +1,7 @@
 ---
 name: Style
 about: Let's make it look prettier!
-title: ''
+title: ""
 labels: style
 ---
 

@@ -1,7 +1,7 @@
 ---
 name: Performance
 about: Speed it up!
-title: ''
+title: ""
 labels: performance
 ---
 

@@ -1,7 +1,7 @@
 ---
 name: Fix
 about: Found something broken? Let's fix it!
-title: ''
+title: ""
 labels: fix
 ---
 

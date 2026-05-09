@@ -1,0 +1,38 @@
+name: Verify
+
+on:
+  workflow_call:
+
+jobs:
+  cli:
+    name: CLI
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v6
+        name: Checkout Code
+
+      - uses: pnpm/action-setup@v6
+        name: Install pnpm
+
+        with:
+          version: 10
+
+      - uses: actions/setup-node@v6
+        name: Setup Node.js
+
+        with:
+          node-version: 24
+          cache: pnpm
+
+      - run: pnpm install
+        name: Install Dependencies
+
+      - run: pnpm typecheck
+        name: Check Type Hints
+
+      - run: pnpm lint
+        name: Lint Code
+
+      - run: pnpm format:check
+        name: Check Formatting

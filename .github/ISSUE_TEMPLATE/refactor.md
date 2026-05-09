@@ -1,7 +1,7 @@
 ---
 name: Refactor
 about: Time to clean up the code!
-title: ''
+title: ""
 labels: refactor
 ---
 

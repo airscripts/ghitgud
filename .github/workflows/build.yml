@@ -1,0 +1,38 @@
+name: Build
+
+on:
+  workflow_call:
+
+jobs:
+  cli:
+    name: CLI
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v6
+        name: Checkout Code
+
+      - uses: pnpm/action-setup@v6
+        name: Install pnpm
+
+        with:
+          version: 10
+
+      - uses: actions/setup-node@v6
+        name: Setup Node.js
+
+        with:
+          node-version: 24
+          cache: pnpm
+
+      - run: pnpm install
+        name: Install Dependencies
+
+      - run: pnpm build
+        name: Build Package
+
+      - run: node dist/index.js --help
+        name: Test CLI Help
+
+      - run: node dist/index.js --version
+        name: Test CLI Version
