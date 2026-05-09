@@ -1,5 +1,4 @@
 import path from "path";
-
 import io from "@/core/io";
 import api from "@/api/labels";
 import logger from "@/core/logger";

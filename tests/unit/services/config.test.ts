@@ -50,11 +50,13 @@ describe("config service", () => {
     it("should get a config key with value", () => {
       (config.read as ReturnType<typeof vi.fn>).mockReturnValue("my-token");
       const result = configService.get("token");
+
       expect(result).toEqual({
         success: true,
         key: "token",
         value: "my-token",
       });
+
       expect(logger.info).toHaveBeenCalledWith("token: my-token.");
     });
 

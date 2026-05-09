@@ -1,24 +1,25 @@
 import config from "@/core/config";
+
 import {
-  GhitgudError,
   AuthError,
+  GhitgudError,
   NotFoundError,
   UnprocessableError,
 } from "@/core/errors";
 
 import {
-  GITHUB_API_BASE_URL,
-  GITHUB_API_VERSION,
-  GITHUB_API_ACCEPT,
   STATUS_OK_MIN,
   STATUS_OK_MAX,
-  STATUS_UNAUTHORIZED,
-  STATUS_NOT_FOUND,
-  STATUS_UNPROCESSABLE,
-  ERROR_UNAUTHORIZED,
   ERROR_NOT_FOUND,
-  ERROR_UNPROCESSABLE,
   ERROR_UNEXPECTED,
+  STATUS_NOT_FOUND,
+  GITHUB_API_ACCEPT,
+  GITHUB_API_VERSION,
+  ERROR_UNAUTHORIZED,
+  GITHUB_API_BASE_URL,
+  ERROR_UNPROCESSABLE,
+  STATUS_UNAUTHORIZED,
+  STATUS_UNPROCESSABLE,
 } from "@/core/constants";
 
 interface RequestOptions {
@@ -80,15 +81,17 @@ async function request(
 
 const client = {
   get: (endpoint: string) => request(endpoint),
+
   post: (endpoint: string, body: unknown) =>
     request(endpoint, { method: "POST", body }),
+
   patch: (endpoint: string, body: unknown) =>
     request(endpoint, { method: "PATCH", body }),
-  delete: (endpoint: string) => request(endpoint, { method: "DELETE" }),
 
   getRepo: () => config.getRepo(),
   isOk: (status: number) => isSuccessful(status),
   isNotFound: (status: number) => status === STATUS_NOT_FOUND,
+  delete: (endpoint: string) => request(endpoint, { method: "DELETE" }),
 };
 
 export default client;

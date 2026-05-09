@@ -1,5 +1,6 @@
 import fs from "fs";
 import "dotenv/config";
+import process from "process";
 import { ConfigError } from "@/core/errors";
 
 import {
@@ -33,10 +34,15 @@ function read(key: string): string | null {
 }
 
 function has(key: string): boolean {
-  if (
-    process.env[key === "repo" ? "GHITGUD_GITHUB_REPO" : "GHITGUD_GITHUB_TOKEN"]
-  )
+  const isEnvVarSet =
+    !!process.env[
+      key === "repo" ? "GHITGUD_GITHUB_REPO" : "GHITGUD_GITHUB_TOKEN"
+    ];
+
+  if (isEnvVarSet) {
     return true;
+  }
+
   const credentials = readCredentialsFile();
   return !!credentials?.[key];
 }

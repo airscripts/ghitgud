@@ -65,6 +65,7 @@ describe("labels", () => {
     const mockResponse = { json: () => Promise.resolve(API_LABELS) };
     (api.fetch as Mock).mockResolvedValue(mockResponse);
     const result = await labelsService.list();
+
     expect(result).toEqual({
       success: true,
       metadata: [
@@ -101,9 +102,11 @@ describe("labels", () => {
   it("should push labels creating new ones when not found", async () => {
     vi.spyOn(io, "fileExists").mockReturnValue(true);
     vi.spyOn(io, "readJsonFile").mockReturnValue(METADATA_LABELS);
+
     (api.get as Mock).mockRejectedValue(
       new NotFoundError("Resource not found."),
     );
+
     (api.create as Mock).mockResolvedValue({ status: 201 });
     const result = await labelsService.push();
     expect(result).toEqual({ success: true });
@@ -157,9 +160,11 @@ describe("labels", () => {
   it("should push from template", async () => {
     vi.spyOn(io, "fileExists").mockReturnValue(true);
     vi.spyOn(io, "readJsonFile").mockReturnValue(METADATA_LABELS);
+
     (api.get as Mock).mockRejectedValue(
       new NotFoundError("Resource not found."),
     );
+
     (api.create as Mock).mockResolvedValue({ status: 201 });
     const result = await labelsService.pushTemplate("base", "/mock/templates");
     expect(result).toEqual({ success: true });

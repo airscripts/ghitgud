@@ -9,6 +9,7 @@ const validateKey = (key: string): SupportedKey => {
   if (!SUPPORTED_CONFIG_KEYS.includes(key as SupportedKey)) {
     throw new ConfigError(ERROR_UNSUPPORTED_KEY);
   }
+
   return key as SupportedKey;
 };
 

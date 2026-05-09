@@ -46,6 +46,7 @@ describe("cli index", () => {
     messages.forEach((msg) => {
       logger.error(msg);
     });
+
     expect(logger.error).toHaveBeenCalledTimes(messages.length);
   });
 });

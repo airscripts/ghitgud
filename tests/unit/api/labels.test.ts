@@ -1,7 +1,6 @@
-import { describe, it, expect, vi, Mock } from "vitest";
-
 import client from "@/api/client";
 import labels from "@/api/labels";
+import { describe, it, expect, vi, Mock } from "vitest";
 
 vi.mock("@/api/client", () => ({
   default: {
@@ -33,8 +32,8 @@ describe("labels api", () => {
       color: "d73a4a",
       description: "Something isn't working",
     };
-    await labels.create(label);
 
+    await labels.create(label);
     expect(client.post).toHaveBeenCalledWith("/repos/owner/repo/labels", {
       name: "bug",
       color: "d73a4a",
@@ -50,8 +49,8 @@ describe("labels api", () => {
       description: "Bug fix",
       newName: "defect",
     };
-    await labels.patch(label);
 
+    await labels.patch(label);
     expect(client.patch).toHaveBeenCalledWith("/repos/owner/repo/labels/bug", {
       color: "d73a4a",
       new_name: "defect",
