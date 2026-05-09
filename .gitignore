@@ -1,4 +1,5 @@
 .env
+coverage/
 dist/
 metadata/
 node_modules/

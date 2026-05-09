@@ -1,0 +1,42 @@
+name: Deploy
+
+on:
+  workflow_call:
+    secrets:
+      NPM_TOKEN:
+        required: true
+
+jobs:
+  npm:
+    name: npm
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v6
+        name: Checkout Code
+
+      - uses: pnpm/action-setup@v6
+        name: Install pnpm
+
+        with:
+          version: 10
+
+      - uses: actions/setup-node@v6
+        name: Setup Node.js
+
+        with:
+          node-version: 24
+          cache: pnpm
+          registry-url: https://registry.npmjs.org
+
+      - run: pnpm install
+        name: Install Dependencies
+
+      - run: pnpm build
+        name: Build Package
+
+      - run: npm publish --access public
+        name: Publish to npm
+
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
