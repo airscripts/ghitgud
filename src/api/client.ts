@@ -1,5 +1,10 @@
 import config from "@/core/config";
-import { GhitgudError, AuthError, NotFoundError, UnprocessableError } from "@/core/errors";
+import {
+  GhitgudError,
+  AuthError,
+  NotFoundError,
+  UnprocessableError,
+} from "@/core/errors";
 
 import {
   GITHUB_API_BASE_URL,
@@ -51,7 +56,10 @@ function isSuccessful(status: number): boolean {
   return status >= STATUS_OK_MIN && status <= STATUS_OK_MAX;
 }
 
-async function request(endpoint: string, options: RequestOptions = {}): Promise<Response> {
+async function request(
+  endpoint: string,
+  options: RequestOptions = {},
+): Promise<Response> {
   const url = `${GITHUB_API_BASE_URL}${endpoint}`;
   const headers = buildHeaders();
 
@@ -72,8 +80,10 @@ async function request(endpoint: string, options: RequestOptions = {}): Promise<
 
 const client = {
   get: (endpoint: string) => request(endpoint),
-  post: (endpoint: string, body: unknown) => request(endpoint, { method: "POST", body }),
-  patch: (endpoint: string, body: unknown) => request(endpoint, { method: "PATCH", body }),
+  post: (endpoint: string, body: unknown) =>
+    request(endpoint, { method: "POST", body }),
+  patch: (endpoint: string, body: unknown) =>
+    request(endpoint, { method: "PATCH", body }),
   delete: (endpoint: string) => request(endpoint, { method: "DELETE" }),
 
   getRepo: () => config.getRepo(),

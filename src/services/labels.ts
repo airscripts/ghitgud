@@ -84,7 +84,7 @@ const upsertLabels = async (labels: Label[]) => {
           throw error;
         }
       }
-    })
+    }),
   );
 };
 
@@ -121,7 +121,7 @@ const prune = async () => {
   await Promise.all(
     labels.map(async (label) => {
       await api.delete(label.name);
-    })
+    }),
   );
 
   logger.success("Labels pruned successfully.");

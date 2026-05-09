@@ -11,10 +11,7 @@ import { GhitgudError } from "@/core/errors";
 const NAME = "ghitgud";
 const DESCRIPTION = "A simple CLI to give superpowers to GitHub.";
 
-program
-  .name(NAME)
-  .description(DESCRIPTION)
-  .version(__VERSION__);
+program.name(NAME).description(DESCRIPTION).version(__VERSION__);
 
 pingCommand.register(program);
 labelsCommand.register(program);

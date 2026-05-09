@@ -1,7 +1,7 @@
 ---
 name: CI
 about: Continuous Integration to the rescue!
-title: ''
+title: ""
 labels: ci
 ---
 

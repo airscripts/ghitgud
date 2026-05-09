@@ -1,7 +1,7 @@
 ---
 name: Tests
 about: Let’s add or fix some tests!
-title: ''
+title: ""
 labels: tests
 ---
 

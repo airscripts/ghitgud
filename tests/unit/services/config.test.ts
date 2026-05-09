@@ -27,7 +27,9 @@ describe("config service", () => {
       const result = configService.set("token", "my-token");
       expect(result).toEqual({ success: true });
       expect(config.write).toHaveBeenCalledWith("token", "my-token");
-      expect(logger.success).toHaveBeenCalledWith('Config "token" set successfully.');
+      expect(logger.success).toHaveBeenCalledWith(
+        'Config "token" set successfully.',
+      );
     });
 
     it("should set repo config key", () => {
@@ -38,7 +40,9 @@ describe("config service", () => {
 
     it("should throw ConfigError for unsupported key", () => {
       expect(() => configService.set("invalid", "value")).toThrow(ConfigError);
-      expect(() => configService.set("invalid", "value")).toThrow(ERROR_UNSUPPORTED_KEY);
+      expect(() => configService.set("invalid", "value")).toThrow(
+        ERROR_UNSUPPORTED_KEY,
+      );
     });
   });
 
@@ -46,7 +50,11 @@ describe("config service", () => {
     it("should get a config key with value", () => {
       (config.read as ReturnType<typeof vi.fn>).mockReturnValue("my-token");
       const result = configService.get("token");
-      expect(result).toEqual({ success: true, key: "token", value: "my-token" });
+      expect(result).toEqual({
+        success: true,
+        key: "token",
+        value: "my-token",
+      });
       expect(logger.info).toHaveBeenCalledWith("token: my-token.");
     });
 

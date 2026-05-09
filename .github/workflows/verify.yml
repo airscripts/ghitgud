@@ -30,3 +30,9 @@ jobs:
 
       - run: pnpm typecheck
         name: Check Type Hints
+
+      - run: pnpm lint
+        name: Lint Code
+
+      - run: pnpm format:check
+        name: Check Formatting

@@ -69,11 +69,11 @@ ghitgud config get <key>         Get a configuration value
 
 Built-in label presets are available with the `--template` / `-t` flag:
 
-| Template       | Description                        |
-| -------------- | ---------------------------------- |
-| `base`         | Minimal set: bug and feature       |
-| `conventional` | Conventional Commits labels         |
-| `github`       | GitHub default labels               |
+| Template       | Description                  |
+| -------------- | ---------------------------- |
+| `base`         | Minimal set: bug and feature |
+| `conventional` | Conventional Commits labels  |
+| `github`       | GitHub default labels        |
 
 ```bash
 ghitgud labels pull -t conventional

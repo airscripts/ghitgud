@@ -1,7 +1,7 @@
 ---
 name: Documentation
 about: Help us improve our docs!
-title: ''
+title: ""
 labels: documentation
 ---
 

@@ -24,8 +24,10 @@ export const ERROR_UNAUTHORIZED = "Unauthorized.";
 export const ERROR_NOT_FOUND = "Resource not found.";
 export const ERROR_UNPROCESSABLE = "Content is unprocessable.";
 export const ERROR_UNEXPECTED = "Unexpected status code.";
-export const ERROR_NO_REPO = "Repository not configured. Set it with: ghitgud config set repo owner/repo.";
-export const ERROR_NO_TOKEN = "Token not configured. Set it with: ghitgud config set token <your-token>.";
+export const ERROR_NO_REPO =
+  "Repository not configured. Set it with: ghitgud config set repo owner/repo.";
+export const ERROR_NO_TOKEN =
+  "Token not configured. Set it with: ghitgud config set token <your-token>.";
 export const ERROR_UNSUPPORTED_KEY = "Trying to set unsupported key.";
 export const ERROR_NO_METADATA = "No metadata file found.";
 

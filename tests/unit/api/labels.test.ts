@@ -28,7 +28,11 @@ describe("labels api", () => {
 
   it("should call client.post for create", async () => {
     (client.post as Mock).mockResolvedValue({ status: 201 });
-    const label = { name: "bug", color: "d73a4a", description: "Something isn't working" };
+    const label = {
+      name: "bug",
+      color: "d73a4a",
+      description: "Something isn't working",
+    };
     await labels.create(label);
 
     expect(client.post).toHaveBeenCalledWith("/repos/owner/repo/labels", {
@@ -40,7 +44,12 @@ describe("labels api", () => {
 
   it("should call client.patch for patch", async () => {
     (client.patch as Mock).mockResolvedValue({ status: 200 });
-    const label = { name: "bug", color: "d73a4a", description: "Bug fix", newName: "defect" };
+    const label = {
+      name: "bug",
+      color: "d73a4a",
+      description: "Bug fix",
+      newName: "defect",
+    };
     await labels.patch(label);
 
     expect(client.patch).toHaveBeenCalledWith("/repos/owner/repo/labels/bug", {

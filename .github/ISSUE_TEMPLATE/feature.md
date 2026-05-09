@@ -1,7 +1,7 @@
 ---
 name: Feature
 about: Suggest something awesome for this project!
-title: ''
+title: ""
 labels: feature
 ---
 

@@ -15,7 +15,10 @@ const register = (program: Command) => {
   labels
     .command("pull")
     .description("Pull all related labels for a repository.")
-    .option("-t, --template <name>", "Pull from a built-in template instead of the remote repository")
+    .option(
+      "-t, --template <name>",
+      "Pull from a built-in template instead of the remote repository",
+    )
     .action(async (options) => {
       if (options.template) {
         await labelsService.pullTemplate(options.template, TEMPLATES_DIR);
@@ -27,7 +30,10 @@ const register = (program: Command) => {
   labels
     .command("push")
     .description("Push all related labels for a repository.")
-    .option("-t, --template <name>", "Push from a built-in template instead of the local metadata file")
+    .option(
+      "-t, --template <name>",
+      "Push from a built-in template instead of the local metadata file",
+    )
     .action(async (options) => {
       if (options.template) {
         await labelsService.pushTemplate(options.template, TEMPLATES_DIR);

@@ -3,7 +3,13 @@ import { GhitgudError } from "@/core/errors";
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 
 vi.mock("@/core/logger", () => ({
-  default: { success: vi.fn(), error: vi.fn(), info: vi.fn(), warn: vi.fn(), debug: vi.fn() },
+  default: {
+    success: vi.fn(),
+    error: vi.fn(),
+    info: vi.fn(),
+    warn: vi.fn(),
+    debug: vi.fn(),
+  },
 }));
 
 vi.mock("@/services/labels", () => ({

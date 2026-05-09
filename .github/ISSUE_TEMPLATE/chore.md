@@ -1,7 +1,7 @@
 ---
 name: Chore
 about: General upkeep time!
-title: ''
+title: ""
 labels: chore
 ---
 

@@ -40,7 +40,7 @@ export default defineConfig({
   },
 
   define: {
-    "__VERSION__": JSON.stringify(VERSION),
+    __VERSION__: JSON.stringify(VERSION),
   },
 
   test: {

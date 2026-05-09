@@ -57,10 +57,12 @@ tests/
       config.test.ts
       labels.test.ts
 tests/tsconfig.json
-vite.config.ts            # Vite build + Vitest test config (combined)
-tsconfig.json             # TypeScript config for src/
+eslint.config.mjs          # ESLint flat config
+.prettierrc.json           # Prettier config
+vite.config.ts             # Vite build + Vitest test config (combined)
+tsconfig.json              # TypeScript config for src/
 package.json
-VERSION                   # single source of truth for version
+VERSION                    # single source of truth for version
 ```
 
 - New commands go in `src/commands/`. Each exports `{ register }` — a function that takes the Commander `program` and wires up subcommands.
@@ -90,6 +92,13 @@ pnpm start        # node dist/index.js
 pnpm test         # vitest (watch mode)
 pnpm test -- --run # single run (no watch)
 
+# Lint
+pnpm lint          # eslint src/ tests/
+
+# Format
+pnpm format        # prettier --write .
+pnpm format:check  # prettier --check .
+
 # Type check
 pnpm typecheck    # tsc --noEmit (uses tsconfig.json)
 
@@ -106,7 +115,7 @@ pnpm clean
 bash scripts/clean.sh
 ```
 
-No formatter or linter is configured. CI uses reusable GitHub Actions workflows (verify, build, test, deploy).
+CI uses reusable GitHub Actions workflows (verify, build, test, deploy). The verify workflow runs typecheck, lint, and format checks.
 
 ---
 
@@ -114,7 +123,7 @@ No formatter or linter is configured. CI uses reusable GitHub Actions workflows 
 
 ### TypeScript
 
-**Indentation:** 2 spaces. No tabs anywhere.
+**Indentation:** 2 spaces. No tabs anywhere. Enforced by Prettier.
 
 ```typescript
 const register = (program: Command) => {
@@ -125,14 +134,14 @@ const register = (program: Command) => {
 };
 ```
 
-**Line length:** 95th percentile is 71 characters. No hard limit configured. Keep lines under 80 in practice.
+**Line length:** `printWidth: 80` in Prettier config. Keep lines under 80 in practice.
 
 **Blank lines — top-level:** 1 blank line between top-level definitions (functions, constants, exports).
 
 ```typescript
 const ping = () => {
   const result = { success: true, message: PING_RESPONSE };
-  format.formatOutput(result);
+  logger.success(PING_RESPONSE);
   return result;
 };
 
@@ -166,11 +175,11 @@ import {
 } from "@/core/constants";
 ```
 
-**Trailing newline:** No trailing newlines in source files (0 of 18 files have one).
+**Trailing newline:** Files end with a single newline. Enforced by Prettier.
 
-**Trailing whitespace:** Never present.
+**Trailing whitespace:** Never present. Enforced by Prettier.
 
-**Quote style:** Double quotes for all string literals — imports, arguments, object keys, template literals.
+**Quote style:** Double quotes for all string literals — imports, arguments, object keys, template literals. Enforced by Prettier (`singleQuote: false`).
 
 ```typescript
 import fs from "fs";
@@ -259,7 +268,8 @@ class UnprocessableError extends GhitgudError { ... }
 ```typescript
 const STATUS_OK_MIN = 200;
 const GHITGUD_FOLDER = path.join(os.homedir(), ".config", "ghitgud");
-const ERROR_NO_REPO = "You must set the GHITGUD_GITHUB_REPO environment variable.";
+const ERROR_NO_REPO =
+  "You must set the GHITGUD_GITHUB_REPO environment variable.";
 ```
 
 **File names:** `camelCase.ts`. Match the primary concern of the module.
@@ -427,7 +437,13 @@ import api from "@/api/labels";
 import labelsService from "@/services/labels";
 
 vi.mock("@/api/labels", () => ({
-  default: { fetch: vi.fn(), get: vi.fn(), create: vi.fn(), patch: vi.fn(), delete: vi.fn() },
+  default: {
+    fetch: vi.fn(),
+    get: vi.fn(),
+    create: vi.fn(),
+    patch: vi.fn(),
+    delete: vi.fn(),
+  },
 }));
 
 describe("labels", () => {
@@ -485,8 +501,8 @@ describe("labels", () => {
 - **Add a dependency:** `pnpm add <package>`
 - **Build tool:** Vite 8.x. `vite.config.ts` handles build (single CJS bundle to `dist/index.js` with shebang) and test config (Vitest). Node.js builtins and production deps are externalized.
 - **Type checker:** `tsc --noEmit`. Config in `tsconfig.json` (for `src/`) and `tests/tsconfig.json` (for tests). Both use `"moduleResolution": "bundler"` and `"paths"` with `"@/*"` aliases — no `baseUrl` (deprecated in TS 7.0).
-- **No formatter** is configured — no Prettier, no `.editorconfig`. The observed style in Section 6 is the enforced style.
-- **No linter** is configured — no ESLint. `pnpm lint` runs `tsc --noEmit` as a type-checking lint pass.
+- **Formatter:** Prettier 3.x with `.prettierrc.json`. Config: double quotes, semicolons, trailing commas, 80-char print width, 2-space indent. Run `pnpm format` to auto-fix, `pnpm format:check` to verify.
+- **Linter:** ESLint 10.x with flat config (`eslint.config.mjs`). Uses `@eslint/js` recommended, `typescript-eslint` recommended, and `eslint-config-prettier` to disable formatting rules. Run `pnpm lint` to check.
 - **Build:** `pnpm build` runs `rm -rf dist && vite build && cp -r templates dist/`.
 - **Runtime:** Node.js 24+. `#!/usr/bin/env node` shebang set via Vite `output.banner`.
 - **Version:** Single source of truth in `VERSION` file at repo root. Inlined at build time via Vite `define` as `__VERSION__` (declared in `src/env.d.ts`).
@@ -500,10 +516,10 @@ describe("labels", () => {
 
 **Formatting violations:**
 
-- Never use single quotes for string literals — the codebase uses double quotes consistently.
-- Never use tabs for indentation — always 2 spaces.
-- Never omit trailing commas in multi-line imports, objects, or arrays.
-- Never add trailing newlines at end of file — the codebase convention is no trailing newline.
+- Never use single quotes for string literals — the codebase uses double quotes consistently. Enforced by Prettier (`singleQuote: false`).
+- Never use tabs for indentation — always 2 spaces. Enforced by Prettier (`tabWidth: 2`).
+- Never omit trailing commas in multi-line imports, objects, or arrays. Enforced by Prettier (`trailingComma: "all"`).
+- Prettier handles all formatting — run `pnpm format` before committing. CI enforces `pnpm format:check`.
 
 **Architectural violations:**
 
@@ -522,7 +538,6 @@ describe("labels", () => {
 - Never use `SCREAMING_SNAKE_CASE` for anything except module-level constants — functions and variables are `camelCase`.
 - Never add JSDoc comments — the codebase has zero doc comments. Use descriptive names and typed parameters instead.
 - Never use `console.info` for output — use `console.log` for stdout, `console.error` for stderr, and `console.table` for tabular label display.
-- Never use `consola/core` in `src/core/logger.ts` — it has no reporters and produces no output. Use `import { createConsola } from "consola"` instead.
 
 **Testing violations:**
 

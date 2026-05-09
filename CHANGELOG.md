@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 Complete architecture overhaul. The CLI is now organized into layered modules (cli → commands → services → api → core) with structured JSON output, error hierarchies, and a Vite-based build pipeline.
 
 ### Added
+
 - `config get <key>` command to retrieve stored configuration values
 - `labels pull --template <name>` flag for pulling from built-in label templates
 - `labels push --template <name>` flag for pushing from built-in label templates
@@ -38,6 +39,7 @@ Complete architecture overhaul. The CLI is now organized into layered modules (c
 - Tests for `cli/ascii.ts` and `cli/index.ts`
 
 ### Changed
+
 - Restructured CLI into layered architecture: `cli/ → commands/ → services/ → api/ → core/`
 - Eliminated circular dependency between old `app/config.js` and `app/functions.js`
 - Split monolithic `app/library.ts` into focused `services/labels.ts` and `services/config.ts`
@@ -55,6 +57,7 @@ Complete architecture overhaul. The CLI is now organized into layered modules (c
 - GitHub Actions upgraded to Node.js 24, checkout@v6, setup-node@v6, pnpm/action-setup@v6
 
 ### Fixed
+
 - `labels prune` fire-and-forget bug: all delete promises are now awaited
 - `handleError` in `client.ts` now throws `GhitgudError` for unmapped status codes instead of bare `Error`
 - Redundant `declare const __VERSION__` removed from `cli/index.ts` (already in `env.d.ts`)
@@ -76,10 +79,12 @@ Deployment trigger release.
 ## [1.0.1] - 2025-05-09
 
 ### Changed
+
 - Base metadata folder path changed
 
 ## [1.0.0] - 2025-05-09
 
 ### Added
+
 - Base CLI with `labels`, `ping`, and `config` commands
 - GitHub label templates (base, conventional, github)

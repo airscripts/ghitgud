@@ -3,10 +3,7 @@ import logger from "@/core/logger";
 import { ConfigError } from "@/core/errors";
 import type { SupportedKey } from "@/core/constants";
 
-import {
-  ERROR_UNSUPPORTED_KEY,
-  SUPPORTED_CONFIG_KEYS,
-} from "@/core/constants";
+import { ERROR_UNSUPPORTED_KEY, SUPPORTED_CONFIG_KEYS } from "@/core/constants";
 
 const validateKey = (key: string): SupportedKey => {
   if (!SUPPORTED_CONFIG_KEYS.includes(key as SupportedKey)) {

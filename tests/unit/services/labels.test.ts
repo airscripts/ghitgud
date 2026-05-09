@@ -101,7 +101,9 @@ describe("labels", () => {
   it("should push labels creating new ones when not found", async () => {
     vi.spyOn(io, "fileExists").mockReturnValue(true);
     vi.spyOn(io, "readJsonFile").mockReturnValue(METADATA_LABELS);
-    (api.get as Mock).mockRejectedValue(new NotFoundError("Resource not found."));
+    (api.get as Mock).mockRejectedValue(
+      new NotFoundError("Resource not found."),
+    );
     (api.create as Mock).mockResolvedValue({ status: 201 });
     const result = await labelsService.push();
     expect(result).toEqual({ success: true });
@@ -119,12 +121,16 @@ describe("labels", () => {
 
   it("should throw when no metadata file for push", async () => {
     vi.spyOn(io, "fileExists").mockReturnValue(false);
-    await expect(labelsService.push()).rejects.toThrow("No metadata file found.");
+    await expect(labelsService.push()).rejects.toThrow(
+      "No metadata file found.",
+    );
   });
 
   it("should throw when no metadata file for prune", async () => {
     vi.spyOn(io, "fileExists").mockReturnValue(false);
-    await expect(labelsService.prune()).rejects.toThrow("No metadata file found.");
+    await expect(labelsService.prune()).rejects.toThrow(
+      "No metadata file found.",
+    );
   });
 
   it("should pull from template", async () => {
@@ -141,15 +147,19 @@ describe("labels", () => {
   it("should throw for nonexistent template", async () => {
     vi.spyOn(io, "fileExists").mockReturnValue(false);
 
-    await expect(labelsService.pullTemplate("nonexistent", "/mock/templates")).rejects.toThrow(
-      'Template "nonexistent" not found at /mock/templates/nonexistent.json.'
+    await expect(
+      labelsService.pullTemplate("nonexistent", "/mock/templates"),
+    ).rejects.toThrow(
+      'Template "nonexistent" not found at /mock/templates/nonexistent.json.',
     );
   });
 
   it("should push from template", async () => {
     vi.spyOn(io, "fileExists").mockReturnValue(true);
     vi.spyOn(io, "readJsonFile").mockReturnValue(METADATA_LABELS);
-    (api.get as Mock).mockRejectedValue(new NotFoundError("Resource not found."));
+    (api.get as Mock).mockRejectedValue(
+      new NotFoundError("Resource not found."),
+    );
     (api.create as Mock).mockResolvedValue({ status: 201 });
     const result = await labelsService.pushTemplate("base", "/mock/templates");
     expect(result).toEqual({ success: true });
@@ -159,8 +169,10 @@ describe("labels", () => {
     vi.spyOn(io, "fileExists").mockReturnValue(false);
     (api.get as Mock).mockResolvedValue({ status: 200 });
 
-    await expect(labelsService.pushTemplate("nonexistent", "/mock/templates")).rejects.toThrow(
-      'Template "nonexistent" not found at /mock/templates/nonexistent.json.'
+    await expect(
+      labelsService.pushTemplate("nonexistent", "/mock/templates"),
+    ).rejects.toThrow(
+      'Template "nonexistent" not found at /mock/templates/nonexistent.json.',
     );
   });
 });

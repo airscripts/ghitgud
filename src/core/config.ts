@@ -23,9 +23,7 @@ function resolve(key: string, envVar: string): string {
   const credentials = readCredentialsFile();
   if (credentials && credentials[key]) return credentials[key];
 
-  throw new ConfigError(
-    key === "repo" ? ERROR_NO_REPO : ERROR_NO_TOKEN
-  );
+  throw new ConfigError(key === "repo" ? ERROR_NO_REPO : ERROR_NO_TOKEN);
 }
 
 function read(key: string): string | null {
@@ -35,7 +33,10 @@ function read(key: string): string | null {
 }
 
 function has(key: string): boolean {
-  if (process.env[key === "repo" ? "GHITGUD_GITHUB_REPO" : "GHITGUD_GITHUB_TOKEN"]) return true;
+  if (
+    process.env[key === "repo" ? "GHITGUD_GITHUB_REPO" : "GHITGUD_GITHUB_TOKEN"]
+  )
+    return true;
   const credentials = readCredentialsFile();
   return !!credentials?.[key];
 }
@@ -51,7 +52,11 @@ function write(key: string, value: string): void {
   }
 
   credentials[key] = value;
-  fs.writeFileSync(CREDENTIALS_PATH, JSON.stringify(credentials, null, 2), ENCODING);
+  fs.writeFileSync(
+    CREDENTIALS_PATH,
+    JSON.stringify(credentials, null, 2),
+    ENCODING,
+  );
 }
 
 function getRepo(): string {
