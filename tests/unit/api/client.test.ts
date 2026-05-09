@@ -76,6 +76,21 @@ describe("client", () => {
       );
     });
 
+    it("should make a PUT request", async () => {
+      (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValue({
+        status: 200,
+      });
+
+      await client.put("/notifications/threads/123/subscription", {
+        ignored: true,
+      });
+
+      expect(global.fetch).toHaveBeenCalledWith(
+        "https://api.github.com/notifications/threads/123/subscription",
+        expect.objectContaining({ method: "PUT" }),
+      );
+    });
+
     it("should throw AuthError on 401", async () => {
       (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValue({
         status: 401,
