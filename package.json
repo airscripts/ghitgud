@@ -31,7 +31,7 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "clean": "rm -rf dist coverage",
-    "prepare": "husky"
+    "prepare": "husky && pnpm build"
   },
   "repository": {
     "type": "git",
