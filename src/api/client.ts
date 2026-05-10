@@ -88,6 +88,9 @@ const client = {
   patch: (endpoint: string, body: unknown) =>
     request(endpoint, { method: "PATCH", body }),
 
+  put: (endpoint: string, body: unknown) =>
+    request(endpoint, { method: "PUT", body }),
+
   getRepo: () => config.getRepo(),
   isOk: (status: number) => isSuccessful(status),
   isNotFound: (status: number) => status === STATUS_NOT_FOUND,
