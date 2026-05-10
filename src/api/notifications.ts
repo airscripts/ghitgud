@@ -1,5 +1,7 @@
 import client from "./client";
 
+const BASE_PATH = "/notifications";
+
 const notifications = {
   fetch: (params?: {
     all?: boolean;
@@ -12,7 +14,8 @@ const notifications = {
     if (params?.perPage) query.set("per_page", String(params.perPage));
 
     const qs = query.toString();
-    return client.get(`/notifications${qs ? "?" + qs : ""}`);
+    const endpoint = qs ? `${BASE_PATH}?${qs}` : BASE_PATH;
+    return client.get(endpoint);
   },
 
   markRead: (id: string): Promise<Response> => {

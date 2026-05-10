@@ -12,13 +12,13 @@ const register = (program: Command) => {
     .option("-a, --all", "Include read notifications")
     .option("-p, --participating", "Only participating notifications")
     .option("-r, --repo <owner/repo>", "Filter by repository")
-    .option("-l, --limit <n>", "Max results", "30")
+    .option("-l, --limit <n>", "Max results")
     .action((options) => {
       void service.list({
         all: options.all,
         participating: options.participating,
         repo: options.repo,
-        limit: parseInt(options.limit, 10),
+        limit: options.limit ? parseInt(options.limit, 10) : undefined,
       });
     });
 
