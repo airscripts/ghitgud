@@ -1,5 +1,6 @@
 import api from "@/api/notifications";
 import logger from "@/core/logger";
+import { INFO_NO_NOTIFICATIONS } from "@/core/constants";
 import {
   Notification,
   ActivityResult,
@@ -10,6 +11,11 @@ import {
 } from "@/types/notifications";
 
 const formatTable = (notifications: Notification[]) => {
+  if (notifications.length === 0) {
+    logger.info(INFO_NO_NOTIFICATIONS);
+    return;
+  }
+
   console.log();
   console.table(
     notifications.map((n) => ({

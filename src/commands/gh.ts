@@ -11,6 +11,7 @@ const register = (program: Command) => {
     .allowUnknownOption()
     .action((_opts, command) => {
       const args = command.args;
+
       const child = spawn("gh", args, {
         stdio: "inherit",
         shell: false,
@@ -22,6 +23,7 @@ const register = (program: Command) => {
             "gh CLI is not installed. " +
               "Install it from https://cli.github.com.",
           );
+
           process.exit(1);
         }
 

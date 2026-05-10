@@ -24,6 +24,7 @@ describe("notifications api", () => {
   it("should call client.get with query params", async () => {
     (client.get as Mock).mockResolvedValue({ status: 200 });
     await notifications.fetch({ all: true, participating: true, perPage: 50 });
+
     expect(client.get).toHaveBeenCalledWith(
       "/notifications?all=true&participating=true&per_page=50",
     );
@@ -38,6 +39,7 @@ describe("notifications api", () => {
   it("should call client.put for markDone", async () => {
     (client.put as Mock).mockResolvedValue({ status: 200 });
     await notifications.markDone("123");
+
     expect(client.put).toHaveBeenCalledWith(
       "/notifications/threads/123/subscription",
       { ignored: true },
@@ -47,6 +49,7 @@ describe("notifications api", () => {
   it("should call client.get for assignedIssues", async () => {
     (client.get as Mock).mockResolvedValue({ status: 200 });
     await notifications.assignedIssues();
+
     expect(client.get).toHaveBeenCalledWith(
       "/issues?filter=assigned&state=open",
     );
@@ -55,6 +58,7 @@ describe("notifications api", () => {
   it("should call client.get for reviewRequests", async () => {
     (client.get as Mock).mockResolvedValue({ status: 200 });
     await notifications.reviewRequests();
+
     expect(client.get).toHaveBeenCalledWith(
       "/search/issues?q=is:pr+is:open+review-requested:@me",
     );

@@ -30,6 +30,7 @@ export const ERROR_NO_TOKEN =
   "Token not configured. Set it with: ghitgud config set token <your-token>.";
 export const ERROR_UNSUPPORTED_KEY = "Trying to set unsupported key.";
 export const ERROR_NO_METADATA = "No metadata file found.";
+export const INFO_NO_NOTIFICATIONS = "No notifications found.";
 
 export const PING_RESPONSE = "pong";
 

@@ -40,6 +40,7 @@ const notifications = {
     const since = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
       .toISOString()
       .split("T")[0];
+
     return client.get(
       `/search/issues?q=mentions:${username}+updated:>${since}`,
     );

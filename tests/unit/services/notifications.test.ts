@@ -1,4 +1,5 @@
 import api from "@/api/notifications";
+import logger from "@/core/logger";
 import service from "@/services/notifications";
 import { describe, it, expect, vi, Mock, beforeEach } from "vitest";
 
@@ -23,11 +24,11 @@ vi.mock("@/core/logger", () => ({
 const THREAD_RESPONSE = [
   {
     id: "1",
+    unread: true,
+    reason: "review_requested",
+    updated_at: "2026-05-09T20:00:00Z",
     repository: { full_name: "airscripts/ghitgud" },
     subject: { title: "Test PR", type: "PullRequest", url: "..." },
-    reason: "review_requested",
-    unread: true,
-    updated_at: "2026-05-09T20:00:00Z",
   },
 ];
 
@@ -66,6 +67,17 @@ describe("notifications service", () => {
 
       const result = await service.list({ repo: "other/repo" });
       expect(result.metadata).toHaveLength(0);
+      expect(logger.info).toHaveBeenCalledWith("No notifications found.");
+    });
+
+    it("should show info when no notifications", async () => {
+      (api.fetch as Mock).mockResolvedValue({
+        json: () => Promise.resolve([]),
+      });
+
+      const result = await service.list();
+      expect(result.metadata).toHaveLength(0);
+      expect(logger.info).toHaveBeenCalledWith("No notifications found.");
     });
   });
 
@@ -90,9 +102,11 @@ describe("notifications service", () => {
       (api.assignedIssues as Mock).mockResolvedValue({
         json: () => Promise.resolve([]),
       });
+
       (api.reviewRequests as Mock).mockResolvedValue({
         json: () => Promise.resolve(SEARCH_RESPONSE),
       });
+
       (api.mentions as Mock).mockResolvedValue({
         json: () => Promise.resolve(SEARCH_RESPONSE),
       });
