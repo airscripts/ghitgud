@@ -17,6 +17,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `mentions` — search for recent @mentions
 - `client.put` method in API layer
 
+### Fixed
+
+- `prepare` script now builds the project so `dist/` exists on git installs
+
 ## [2.0.0] - 2025-05-09
 
 ### Added
