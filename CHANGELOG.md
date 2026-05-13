@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.2.0] - 2026-05-13
+
+### Added
+
+- `pr cleanup` command to delete merged branches locally and remotely
+- `pr cleanup --dry-run` flag to preview changes without applying them
+- `pr cleanup --force` flag to skip ahead-of-base safety checks
+- `src/api/pr.ts` for GitHub pull request API calls
+- `src/services/pr.ts` with branch detection, squash/rebase safety, and fast-forward logic
+- `src/commands/pr.ts` with self-registering `pr` subcommand module
+- Fast-forward of default branch (`main`/`master`) after cleanup
+
 ## [2.1.0] - 2026-05-09
 
 ### Added
