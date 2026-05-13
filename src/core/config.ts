@@ -10,6 +10,7 @@ import {
   ERROR_NO_TOKEN,
   CREDENTIALS_PATH,
 } from "@/core/constants";
+import profileService from "@/services/profile";
 
 function readCredentialsFile(): Record<string, string> | null {
   if (!fs.existsSync(CREDENTIALS_PATH)) return null;
@@ -24,12 +25,25 @@ function resolve(key: string, envVar: string): string {
   const credentials = readCredentialsFile();
   if (credentials && credentials[key]) return credentials[key];
 
+  const active = profileService.getActiveProfile();
+  if (active) {
+    if (key === "token") return active.token;
+    if (key === "repo" && active.repo) return active.repo;
+  }
+
   throw new ConfigError(key === "repo" ? ERROR_NO_REPO : ERROR_NO_TOKEN);
 }
 
 function read(key: string): string | null {
   const credentials = readCredentialsFile();
   if (credentials && credentials[key]) return credentials[key];
+
+  const active = profileService.getActiveProfile();
+  if (active) {
+    if (key === "token") return active.token;
+    if (key === "repo" && active.repo) return active.repo;
+  }
+
   return null;
 }
 
@@ -44,7 +58,17 @@ function has(key: string): boolean {
   }
 
   const credentials = readCredentialsFile();
-  return !!credentials?.[key];
+  if (credentials?.[key]) {
+    return true;
+  }
+
+  const active = profileService.getActiveProfile();
+  if (active) {
+    if (key === "token") return true;
+    if (key === "repo" && active.repo) return true;
+  }
+
+  return false;
 }
 
 function write(key: string, value: string): void {

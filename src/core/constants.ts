@@ -3,6 +3,7 @@ import path from "path";
 
 export const GHITGUD_FOLDER = path.join(os.homedir(), ".config", "ghitgud");
 export const CREDENTIALS_FILE = "credentials.json";
+export const PROFILES_FILE = "profiles.json";
 export const METADATA_FILE = "labels.json";
 export const ENCODING = "utf8";
 

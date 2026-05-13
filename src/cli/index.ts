@@ -10,6 +10,7 @@ import configCommand from "@/commands/config";
 import mentionsCommand from "@/commands/mentions";
 import activityCommand from "@/commands/activity";
 import notificationsCommand from "@/commands/notifications";
+import profileCommand from "@/commands/profile";
 import { GhitgudError } from "@/core/errors";
 
 const NAME = "ghitgud";
@@ -24,6 +25,7 @@ mentionsCommand.register(program);
 pingCommand.register(program);
 labelsCommand.register(program);
 configCommand.register(program);
+profileCommand.register(program);
 
 program.addHelpText("before", ascii);
 program.exitOverride();
