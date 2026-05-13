@@ -16,6 +16,13 @@ const register = (program: Command) => {
         force: options.force,
       });
     });
+
+  pr.command("push <pr-number>")
+    .description("Push current local changes back to a contributor's fork.")
+    .option("-f, --force", "Force push even if there are diverged commits")
+    .action(async (prNumber: string, options) => {
+      await prService.push(parseInt(prNumber, 10), options.force);
+    });
 };
 
 export default { register };

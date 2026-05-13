@@ -9,6 +9,7 @@ interface PullRequest {
     ref: string;
     repo: {
       full_name: string;
+      html_url: string;
     } | null;
   };
   base: {
@@ -26,6 +27,22 @@ const pr = {
   getCommit: async (sha: string): Promise<Response> => {
     const repo = client.getRepo();
     return client.get(`/repos/${repo}/commits/${sha}`);
+  },
+
+  fetch: async (prNumber: number): Promise<PullRequest> => {
+    const repo = client.getRepo();
+    const response = await client.get(`/repos/${repo}/pulls/${prNumber}`);
+    return response.json();
+  },
+
+  checkPushAccess: async (repo: string): Promise<boolean> => {
+    try {
+      const response = await client.get(`/repos/${repo}`);
+      const data = await response.json();
+      return data.permissions?.push === true;
+    } catch {
+      return false;
+    }
   },
 };
 

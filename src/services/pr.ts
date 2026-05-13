@@ -5,6 +5,8 @@ import api from "@/api/pr";
 import logger from "@/core/logger";
 import { PullRequest } from "@/api/pr";
 
+import { GhitgudError } from "@/core/errors";
+
 const execAsync = promisify(exec);
 
 interface CleanupResult {
@@ -202,4 +204,115 @@ const cleanup = async (options: { dryRun: boolean; force: boolean }) => {
   return { success: true, results, fastForward: ffSuccess };
 };
 
-export default { cleanup };
+async function remoteExists(remote: string): Promise<boolean> {
+  try {
+    await execAsync(`git remote get-url ${remote}`, {
+      stdio: ["pipe", "pipe", "ignore"] as unknown as import("child_process").StdioOptions,
+    });
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+async function addRemote(name: string, url: string): Promise<void> {
+  await execAsync(`git remote add ${name} ${url}`, { stdio: "inherit" });
+}
+
+async function pushToRemote(
+  remote: string,
+  branch: string,
+  force: boolean,
+): Promise<void> {
+  const flag = force ? " --force-with-lease" : "";
+  await execAsync(`git push${flag} ${remote} HEAD:${branch}`, {
+    stdio: "inherit",
+  });
+}
+
+async function branchExistsOnRemote(
+  remote: string,
+  branch: string,
+): Promise<boolean> {
+  try {
+    await execAsync(
+      `git ls-remote --heads ${remote} refs/heads/${branch}`,
+      { encoding: "utf8", stdio: ["pipe", "pipe", "ignore"] as unknown as import("child_process").StdioOptions },
+    );
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+async function hasDiverged(
+  localBranch: string,
+  remoteRef: string,
+): Promise<boolean> {
+  try {
+    await execAsync(
+      `git merge-base --is-ancestor ${remoteRef} ${localBranch}`,
+      { stdio: ["pipe", "pipe", "ignore"] as unknown as import("child_process").StdioOptions },
+    );
+    return false;
+  } catch {
+    return true;
+  }
+}
+
+const push = async (prNumber: number, force: boolean) => {
+  logger.info(`Fetching PR #${prNumber}.`);
+  const pr = await api.fetch(prNumber);
+
+  if (!pr.head.repo) {
+    throw new GhitgudError(
+      "PR is from a deleted fork or same-repo branch. " +
+        "Cannot push to a non-existent fork.",
+    );
+  }
+
+  const forkRepo = pr.head.repo.full_name;
+  const forkBranch = pr.head.ref;
+  const forkUrl = pr.head.repo.html_url;
+
+  const currentBranch = await getCurrentBranch();
+
+  logger.info(
+    `Pushing branch "${currentBranch}" to ${forkRepo}:${forkBranch}.`,
+  );
+
+  const remoteName = `fork-${forkRepo.replace(/\//g, "-")}`;
+
+  if (!(await remoteExists(remoteName))) {
+    logger.info(`Adding remote ${remoteName}.`);
+    await addRemote(remoteName, forkUrl);
+  }
+
+  const hasAccess = await api.checkPushAccess(forkRepo);
+  if (!hasAccess) {
+    throw new GhitgudError(
+      `You do not have push access to ${forkRepo}. ` +
+        "Ask the contributor to enable 'Allow edits from maintainers'.",
+    );
+  }
+
+  const remoteRef = `${remoteName}/${forkBranch}`;
+
+  if (!force && (await branchExistsOnRemote(remoteName, forkBranch))) {
+    const diverged = await hasDiverged(currentBranch, remoteRef);
+    if (diverged) {
+      throw new GhitgudError(
+        "Local branch has diverged from remote. " +
+          "Use --force to push anyway.",
+      );
+    }
+  }
+
+  await pushToRemote(remoteName, forkBranch, force);
+  logger.success(`Pushed to ${forkRepo}:${forkBranch}.`);
+};
+
+export default {
+  cleanup,
+  push,
+};
