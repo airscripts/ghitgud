@@ -1,5 +1,6 @@
 import { Command } from "commander";
 import prService from "@/services/pr";
+import stackService from "@/services/stack";
 
 const register = (program: Command) => {
   const pr = program
@@ -22,6 +23,45 @@ const register = (program: Command) => {
     .option("-f, --force", "Force push even if there are diverged commits")
     .action(async (prNumber: string, options) => {
       await prService.push(parseInt(prNumber, 10), options.force);
+    });
+
+  const stack = pr
+    .command("stack")
+    .description("Manage stacked PRs (create/update dependent chains).");
+
+  stack
+    .command("create")
+    .description("Create a new stack from current branch.")
+    .option("--base <branch>", "Base branch for the stack (default: auto)", "auto")
+    .action(async (options) => {
+      await stackService.create({ base: options.base });
+    });
+
+  stack
+    .command("list")
+    .description("Show current stack status.")
+    .action(async () => {
+      await stackService.list();
+    });
+
+  stack
+    .command("update")
+    .description("Update existing stack after parent PR merges.")
+    .action(async () => {
+      await stackService.update();
+    });
+
+  stack
+    .command("push")
+    .description("Push entire stack and create/update PRs.")
+    .option("--base <branch>", "Base branch for the stack")
+    .option("--title <title>", "Title template for stacked PRs", "feat: {branch}")
+    .option("--draft", "Create PRs as drafts", false)
+    .action(async (options) => {
+      await stackService.push({
+        title: options.title,
+        draft: options.draft,
+      });
     });
 };
 
