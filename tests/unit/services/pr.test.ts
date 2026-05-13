@@ -75,27 +75,35 @@ describe("pr service", () => {
 
   describe("cleanup", () => {
     it("returns early when no merged PRs", async () => {
-      (api.fetchMerged as Mock).mockResolvedValue({ json: () => Promise.resolve([]) });
+      (api.fetchMerged as Mock).mockReturnValue({
+        json: () => Promise.resolve([]),
+      });
       const result = await prService.cleanup({ dryRun: false, force: false });
       expect(result.success).toBe(true);
       expect(result.results).toEqual([]);
-      expect(logger.info).toHaveBeenCalledWith("No merged pull requests found.");
+      expect(logger.info).toHaveBeenCalledWith(
+        "No merged pull requests found.",
+      );
     });
 
     it("deletes local and remote branches for merged PR", async () => {
       const pr = mockMergedPr();
-      (api.fetchMerged as Mock).mockResolvedValue({ json: () => Promise.resolve([pr]) });
-      (git.getCurrentBranch as Mock).mockResolvedValue("main");
-      (git.getDefaultBranch as Mock).mockResolvedValue("main");
-      (git.branchExistsLocally as Mock).mockResolvedValue(true);
-      (git.branchExistsRemotely as Mock).mockResolvedValue(true);
-      (git.deleteLocalBranch as Mock).mockResolvedValue(true);
-      (git.deleteRemoteBranch as Mock).mockResolvedValue(true);
-      (git.fastForwardBase as Mock).mockResolvedValue(true);
-      (git.getAheadCount as Mock).mockResolvedValue(0);
+      (api.fetchMerged as Mock).mockReturnValue({
+        json: () => Promise.resolve([pr]),
+      });
+      (git.getCurrentBranch as Mock).mockReturnValue("main");
+      (git.getDefaultBranch as Mock).mockReturnValue("main");
+      (git.branchExistsLocally as Mock).mockReturnValue(true);
+      (git.branchExistsRemotely as Mock).mockReturnValue(true);
+      (git.deleteLocalBranch as Mock).mockReturnValue(true);
+      (git.deleteRemoteBranch as Mock).mockReturnValue(true);
+      (git.fastForwardBase as Mock).mockReturnValue(true);
+      (git.getAheadCount as Mock).mockReturnValue(0);
 
       // isSquashOrRebaseMerge — commit with 2 parents (merge commit)
-      (api.getCommit as Mock).mockResolvedValue({ json: () => Promise.resolve({ parents: [{}, {}] }) });
+      (api.getCommit as Mock).mockReturnValue({
+        json: () => Promise.resolve({ parents: [{}, {}] }),
+      });
 
       const result = await prService.cleanup({ dryRun: false, force: false });
       expect(result.success).toBe(true);
@@ -107,26 +115,36 @@ describe("pr service", () => {
 
     it("skips squash/rebase merged PRs", async () => {
       const pr = mockMergedPr();
-      (api.fetchMerged as Mock).mockResolvedValue({ json: () => Promise.resolve([pr]) });
-      (git.getCurrentBranch as Mock).mockResolvedValue("main");
-      (git.getDefaultBranch as Mock).mockResolvedValue("main");
+      (api.fetchMerged as Mock).mockReturnValue({
+        json: () => Promise.resolve([pr]),
+      });
+      (git.getCurrentBranch as Mock).mockReturnValue("main");
+      (git.getDefaultBranch as Mock).mockReturnValue("main");
 
       // isSquashOrRebaseMerge — commit with 1 parent
-      (api.getCommit as Mock).mockResolvedValue({ json: () => Promise.resolve({ parents: [{}] }) });
+      (api.getCommit as Mock).mockReturnValue({
+        json: () => Promise.resolve({ parents: [{}] }),
+      });
 
       const result = await prService.cleanup({ dryRun: false, force: false });
       expect(result.results[0].skipped).toBe(true);
-      expect(result.results[0].reason).toBe("squash/rebase merge detected — skipping");
+      expect(result.results[0].reason).toBe(
+        "squash/rebase merge detected — skipping",
+      );
     });
 
     it("skips branches already deleted", async () => {
       const pr = mockMergedPr();
-      (api.fetchMerged as Mock).mockResolvedValue({ json: () => Promise.resolve([pr]) });
-      (git.getCurrentBranch as Mock).mockResolvedValue("main");
-      (git.getDefaultBranch as Mock).mockResolvedValue("main");
-      (git.branchExistsLocally as Mock).mockResolvedValue(false);
-      (git.branchExistsRemotely as Mock).mockResolvedValue(false);
-      (api.getCommit as Mock).mockResolvedValue({ json: () => Promise.resolve({ parents: [{}, {}] }) });
+      (api.fetchMerged as Mock).mockReturnValue({
+        json: () => Promise.resolve([pr]),
+      });
+      (git.getCurrentBranch as Mock).mockReturnValue("main");
+      (git.getDefaultBranch as Mock).mockReturnValue("main");
+      (git.branchExistsLocally as Mock).mockReturnValue(false);
+      (git.branchExistsRemotely as Mock).mockReturnValue(false);
+      (api.getCommit as Mock).mockReturnValue({
+        json: () => Promise.resolve({ parents: [{}, {}] }),
+      });
 
       const result = await prService.cleanup({ dryRun: false, force: false });
       expect(result.results[0].skipped).toBe(true);
@@ -135,12 +153,16 @@ describe("pr service", () => {
 
     it("skips branches ahead of default when not forced", async () => {
       const pr = mockMergedPr();
-      (api.fetchMerged as Mock).mockResolvedValue({ json: () => Promise.resolve([pr]) });
-      (git.getCurrentBranch as Mock).mockResolvedValue("main");
-      (git.getDefaultBranch as Mock).mockResolvedValue("main");
-      (git.branchExistsLocally as Mock).mockResolvedValue(true);
-      (git.branchExistsRemotely as Mock).mockResolvedValue(true);
-      (api.getCommit as Mock).mockResolvedValue({ json: () => Promise.resolve({ parents: [{}, {}] }) });
+      (api.fetchMerged as Mock).mockReturnValue({
+        json: () => Promise.resolve([pr]),
+      });
+      (git.getCurrentBranch as Mock).mockReturnValue("main");
+      (git.getDefaultBranch as Mock).mockReturnValue("main");
+      (git.branchExistsLocally as Mock).mockReturnValue(true);
+      (git.branchExistsRemotely as Mock).mockReturnValue(true);
+      (api.getCommit as Mock).mockReturnValue({
+        json: () => Promise.resolve({ parents: [{}, {}] }),
+      });
 
       // We need to mock exec for the ahead check — but prService uses exec directly.
       // The ahead check won't run because branch exists locally and remotely, and not forced.
@@ -152,9 +174,9 @@ describe("pr service", () => {
       // Alternatively, we can mock child_process at the module level.
 
       // For a working test, let's use force:true so the ahead check is skipped
-      (git.deleteLocalBranch as Mock).mockResolvedValue(true);
-      (git.deleteRemoteBranch as Mock).mockResolvedValue(true);
-      (git.fastForwardBase as Mock).mockResolvedValue(true);
+      (git.deleteLocalBranch as Mock).mockReturnValue(true);
+      (git.deleteRemoteBranch as Mock).mockReturnValue(true);
+      (git.fastForwardBase as Mock).mockReturnValue(true);
 
       const result = await prService.cleanup({ dryRun: false, force: true });
       expect(result.results[0].skipped).toBe(false);
@@ -162,15 +184,19 @@ describe("pr service", () => {
 
     it("dry-run mode logs without deleting", async () => {
       const pr = mockMergedPr();
-      (api.fetchMerged as Mock).mockResolvedValue({ json: () => Promise.resolve([pr]) });
-      (git.getCurrentBranch as Mock).mockResolvedValue("main");
-      (git.getDefaultBranch as Mock).mockResolvedValue("main");
-      (git.branchExistsLocally as Mock).mockResolvedValue(true);
-      (git.branchExistsRemotely as Mock).mockResolvedValue(true);
-      (git.deleteLocalBranch as Mock).mockResolvedValue(true);
-      (git.deleteRemoteBranch as Mock).mockResolvedValue(true);
-      (git.fastForwardBase as Mock).mockResolvedValue(true);
-      (api.getCommit as Mock).mockResolvedValue({ json: () => Promise.resolve({ parents: [{}, {}] }) });
+      (api.fetchMerged as Mock).mockReturnValue({
+        json: () => Promise.resolve([pr]),
+      });
+      (git.getCurrentBranch as Mock).mockReturnValue("main");
+      (git.getDefaultBranch as Mock).mockReturnValue("main");
+      (git.branchExistsLocally as Mock).mockReturnValue(true);
+      (git.branchExistsRemotely as Mock).mockReturnValue(true);
+      (git.deleteLocalBranch as Mock).mockReturnValue(true);
+      (git.deleteRemoteBranch as Mock).mockReturnValue(true);
+      (git.fastForwardBase as Mock).mockReturnValue(true);
+      (api.getCommit as Mock).mockReturnValue({
+        json: () => Promise.resolve({ parents: [{}, {}] }),
+      });
 
       const result = await prService.cleanup({ dryRun: true, force: true });
       expect(result.success).toBe(true);
@@ -181,15 +207,19 @@ describe("pr service", () => {
 
     it("checks out default branch when current branch is being deleted", async () => {
       const pr = mockMergedPr();
-      (api.fetchMerged as Mock).mockResolvedValue({ json: () => Promise.resolve([pr]) });
-      (git.getCurrentBranch as Mock).mockResolvedValue("feature");
-      (git.getDefaultBranch as Mock).mockResolvedValue("main");
-      (git.branchExistsLocally as Mock).mockResolvedValue(true);
-      (git.branchExistsRemotely as Mock).mockResolvedValue(false);
-      (git.deleteLocalBranch as Mock).mockResolvedValue(true);
-      (git.fastForwardBase as Mock).mockResolvedValue(true);
-      (git.checkoutBranch as Mock).mockResolvedValue(undefined);
-      (api.getCommit as Mock).mockResolvedValue({ json: () => Promise.resolve({ parents: [{}, {}] }) });
+      (api.fetchMerged as Mock).mockReturnValue({
+        json: () => Promise.resolve([pr]),
+      });
+      (git.getCurrentBranch as Mock).mockReturnValue("feature");
+      (git.getDefaultBranch as Mock).mockReturnValue("main");
+      (git.branchExistsLocally as Mock).mockReturnValue(true);
+      (git.branchExistsRemotely as Mock).mockReturnValue(false);
+      (git.deleteLocalBranch as Mock).mockReturnValue(true);
+      (git.fastForwardBase as Mock).mockReturnValue(true);
+      (git.checkoutBranch as Mock).mockReturnValue(undefined);
+      (api.getCommit as Mock).mockReturnValue({
+        json: () => Promise.resolve({ parents: [{}, {}] }),
+      });
 
       await prService.cleanup({ dryRun: false, force: true });
       expect(git.checkoutBranch).toHaveBeenCalledWith("main");
@@ -198,9 +228,12 @@ describe("pr service", () => {
 
   describe("push", () => {
     it("throws when PR head repo is null", async () => {
-      const pr = makePr({ head: { ref: "feature", repo: null }, base: { ref: "main" } });
-      (api.fetch as Mock).mockResolvedValue(pr);
-      (git.getCurrentBranch as Mock).mockResolvedValue("fix");
+      const pr = makePr({
+        head: { ref: "feature", repo: null },
+        base: { ref: "main" },
+      });
+      (api.fetch as Mock).mockReturnValue(pr);
+      (git.getCurrentBranch as Mock).mockReturnValue("fix");
 
       await expect(prService.push(1, false)).rejects.toThrow(GhitgudError);
       await expect(prService.push(1, false)).rejects.toThrow("deleted fork");
@@ -208,11 +241,11 @@ describe("pr service", () => {
 
     it("throws when no push access", async () => {
       const pr = makePr();
-      (api.fetch as Mock).mockResolvedValue(pr);
-      (git.getCurrentBranch as Mock).mockResolvedValue("fix");
-      (git.remoteExists as Mock).mockResolvedValue(false);
-      (git.addRemote as Mock).mockResolvedValue(undefined);
-      (api.checkPushAccess as Mock).mockResolvedValue(false);
+      (api.fetch as Mock).mockReturnValue(pr);
+      (git.getCurrentBranch as Mock).mockReturnValue("fix");
+      (git.remoteExists as Mock).mockReturnValue(false);
+      (git.addRemote as Mock).mockReturnValue(undefined);
+      (api.checkPushAccess as Mock).mockReturnValue(false);
 
       await expect(prService.push(1, false)).rejects.toThrow(GhitgudError);
       await expect(prService.push(1, false)).rejects.toThrow("push access");
@@ -220,12 +253,12 @@ describe("pr service", () => {
 
     it("throws when diverged and not forced", async () => {
       const pr = makePr();
-      (api.fetch as Mock).mockResolvedValue(pr);
-      (git.getCurrentBranch as Mock).mockResolvedValue("fix");
-      (git.remoteExists as Mock).mockResolvedValue(true);
-      (api.checkPushAccess as Mock).mockResolvedValue(true);
-      (git.branchExistsOnRemote as Mock).mockResolvedValue(true);
-      (git.hasDiverged as Mock).mockResolvedValue(true);
+      (api.fetch as Mock).mockReturnValue(pr);
+      (git.getCurrentBranch as Mock).mockReturnValue("fix");
+      (git.remoteExists as Mock).mockReturnValue(true);
+      (api.checkPushAccess as Mock).mockReturnValue(true);
+      (git.branchExistsOnRemote as Mock).mockReturnValue(true);
+      (git.hasDiverged as Mock).mockReturnValue(true);
 
       await expect(prService.push(1, false)).rejects.toThrow(GhitgudError);
       await expect(prService.push(1, false)).rejects.toThrow("diverged");
@@ -233,43 +266,58 @@ describe("pr service", () => {
 
     it("pushes to fork remote successfully", async () => {
       const pr = makePr();
-      (api.fetch as Mock).mockResolvedValue(pr);
-      (git.getCurrentBranch as Mock).mockResolvedValue("fix");
-      (git.remoteExists as Mock).mockResolvedValue(true);
-      (api.checkPushAccess as Mock).mockResolvedValue(true);
-      (git.branchExistsOnRemote as Mock).mockResolvedValue(false);
-      (git.pushToRemote as Mock).mockResolvedValue(undefined);
+      (api.fetch as Mock).mockReturnValue(pr);
+      (git.getCurrentBranch as Mock).mockReturnValue("fix");
+      (git.remoteExists as Mock).mockReturnValue(true);
+      (api.checkPushAccess as Mock).mockReturnValue(true);
+      (git.branchExistsOnRemote as Mock).mockReturnValue(false);
+      (git.pushToRemote as Mock).mockReturnValue(undefined);
 
       await prService.push(1, false);
-      expect(git.pushToRemote).toHaveBeenCalledWith("fork-owner-repo", "feature", false);
-      expect(logger.success).toHaveBeenCalledWith("Pushed to owner/repo:feature.");
+      expect(git.pushToRemote).toHaveBeenCalledWith(
+        "fork-owner-repo",
+        "feature",
+        false,
+      );
+      expect(logger.success).toHaveBeenCalledWith(
+        "Pushed to owner/repo:feature.",
+      );
     });
 
     it("adds remote when it does not exist", async () => {
       const pr = makePr();
-      (api.fetch as Mock).mockResolvedValue(pr);
-      (git.getCurrentBranch as Mock).mockResolvedValue("fix");
-      (git.remoteExists as Mock).mockResolvedValue(false);
-      (git.addRemote as Mock).mockResolvedValue(undefined);
-      (api.checkPushAccess as Mock).mockResolvedValue(true);
-      (git.branchExistsOnRemote as Mock).mockResolvedValue(false);
-      (git.pushToRemote as Mock).mockResolvedValue(undefined);
+      (api.fetch as Mock).mockReturnValue(pr);
+      (git.getCurrentBranch as Mock).mockReturnValue("fix");
+      (git.remoteExists as Mock).mockReturnValue(false);
+      (git.addRemote as Mock).mockReturnValue(undefined);
+      (api.checkPushAccess as Mock).mockReturnValue(true);
+      (git.branchExistsOnRemote as Mock).mockReturnValue(false);
+      (git.pushToRemote as Mock).mockReturnValue(undefined);
 
       await prService.push(1, false);
-      expect(git.addRemote).toHaveBeenCalledWith("fork-owner-repo", "https://github.com/owner/repo");
-      expect(logger.info).toHaveBeenCalledWith("Adding remote fork-owner-repo.");
+      expect(git.addRemote).toHaveBeenCalledWith(
+        "fork-owner-repo",
+        "https://github.com/owner/repo",
+      );
+      expect(logger.info).toHaveBeenCalledWith(
+        "Adding remote fork-owner-repo.",
+      );
     });
 
     it("pushes with force when flag is set", async () => {
       const pr = makePr();
-      (api.fetch as Mock).mockResolvedValue(pr);
-      (git.getCurrentBranch as Mock).mockResolvedValue("fix");
-      (git.remoteExists as Mock).mockResolvedValue(true);
-      (api.checkPushAccess as Mock).mockResolvedValue(true);
-      (git.pushToRemote as Mock).mockResolvedValue(undefined);
+      (api.fetch as Mock).mockReturnValue(pr);
+      (git.getCurrentBranch as Mock).mockReturnValue("fix");
+      (git.remoteExists as Mock).mockReturnValue(true);
+      (api.checkPushAccess as Mock).mockReturnValue(true);
+      (git.pushToRemote as Mock).mockReturnValue(undefined);
 
       await prService.push(1, true);
-      expect(git.pushToRemote).toHaveBeenCalledWith("fork-owner-repo", "feature", true);
+      expect(git.pushToRemote).toHaveBeenCalledWith(
+        "fork-owner-repo",
+        "feature",
+        true,
+      );
     });
   });
 });

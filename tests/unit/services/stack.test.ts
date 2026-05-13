@@ -50,7 +50,13 @@ function mockPr(overrides: Record<string, unknown> = {}) {
     title: "PR",
     state: "open",
     merged: false,
-    head: { ref: "feature", repo: { full_name: "owner/repo", html_url: "https://github.com/owner/repo" } },
+    head: {
+      ref: "feature",
+      repo: {
+        full_name: "owner/repo",
+        html_url: "https://github.com/owner/repo",
+      },
+    },
     base: { ref: "main" },
     merge_commit_sha: null,
     ...overrides,
@@ -64,9 +70,9 @@ describe("stack service", () => {
 
   describe("create", () => {
     it("creates stack entry for current branch with auto parent", async () => {
-      (git.getCurrentBranch as Mock).mockResolvedValue("feature");
-      (git.getDefaultBranch as Mock).mockResolvedValue("main");
-      (git.branchExistsLocally as Mock).mockResolvedValue(true);
+      (git.getCurrentBranch as Mock).mockReturnValue("feature");
+      (git.getDefaultBranch as Mock).mockReturnValue("main");
+      (git.branchExistsLocally as Mock).mockReturnValue(true);
       (io.fileExists as Mock).mockReturnValue(false);
 
       const result = await stackService.create({ base: "auto" });
@@ -78,9 +84,9 @@ describe("stack service", () => {
     });
 
     it("creates stack entry with explicit base", async () => {
-      (git.getCurrentBranch as Mock).mockResolvedValue("feature");
-      (git.getDefaultBranch as Mock).mockResolvedValue("main");
-      (git.branchExistsLocally as Mock).mockResolvedValue(true);
+      (git.getCurrentBranch as Mock).mockReturnValue("feature");
+      (git.getDefaultBranch as Mock).mockReturnValue("main");
+      (git.branchExistsLocally as Mock).mockReturnValue(true);
       (io.fileExists as Mock).mockReturnValue(false);
 
       const result = await stackService.create({ base: "develop" });
@@ -90,8 +96,8 @@ describe("stack service", () => {
     });
 
     it("throws when current branch cannot be determined", async () => {
-      (git.getCurrentBranch as Mock).mockResolvedValue("");
-      (git.branchExistsLocally as Mock).mockResolvedValue(false);
+      (git.getCurrentBranch as Mock).mockReturnValue("");
+      (git.branchExistsLocally as Mock).mockReturnValue(false);
 
       await expect(stackService.create({ base: "auto" })).rejects.toThrow(
         GhitgudError,
@@ -101,7 +107,7 @@ describe("stack service", () => {
 
   describe("list", () => {
     it("returns info when current branch has no stack", async () => {
-      (git.getCurrentBranch as Mock).mockResolvedValue("feature");
+      (git.getCurrentBranch as Mock).mockReturnValue("feature");
       (io.fileExists as Mock).mockReturnValue(false);
 
       const result = await stackService.list();
@@ -113,14 +119,16 @@ describe("stack service", () => {
     });
 
     it("returns stack info with parent and children", async () => {
-      (git.getCurrentBranch as Mock).mockResolvedValue("feature");
+      (git.getCurrentBranch as Mock).mockReturnValue("feature");
       (io.fileExists as Mock).mockReturnValue(true);
       (io.readJsonFile as Mock).mockReturnValue({
         stacks: {
           feature: { parent: "main", parentPr: null, children: ["feature-2"] },
         },
       });
-      (api.listOpen as Mock).mockResolvedValue({ json: () => Promise.resolve([]) });
+      (api.listOpen as Mock).mockReturnValue({
+        json: () => Promise.resolve([]),
+      });
 
       const result = await stackService.list();
       expect(result.success).toBe(true);
@@ -131,7 +139,7 @@ describe("stack service", () => {
 
   describe("update", () => {
     it("throws when current branch is not in stack", async () => {
-      (git.getCurrentBranch as Mock).mockResolvedValue("feature");
+      (git.getCurrentBranch as Mock).mockReturnValue("feature");
       (io.fileExists as Mock).mockReturnValue(false);
 
       await expect(stackService.update()).rejects.toThrow(
@@ -140,7 +148,7 @@ describe("stack service", () => {
     });
 
     it("rebases children when parent PR is merged", async () => {
-      (git.getCurrentBranch as Mock).mockResolvedValue("feature");
+      (git.getCurrentBranch as Mock).mockReturnValue("feature");
       (io.fileExists as Mock).mockReturnValue(true);
       (io.readJsonFile as Mock).mockReturnValue({
         stacks: {
@@ -148,11 +156,11 @@ describe("stack service", () => {
           "feature-2": { parent: "feature", parentPr: null, children: [] },
         },
       });
-      (api.listOpen as Mock).mockResolvedValue({
+      (api.listOpen as Mock).mockReturnValue({
         json: () => Promise.resolve([]),
       });
-      (git.branchExistsLocally as Mock).mockResolvedValue(true);
-      (git.rebaseBranch as Mock).mockResolvedValue(undefined);
+      (git.branchExistsLocally as Mock).mockReturnValue(true);
+      (git.rebaseBranch as Mock).mockReturnValue(undefined);
 
       const result = await stackService.update();
       expect(result.success).toBe(true);
@@ -160,28 +168,32 @@ describe("stack service", () => {
     });
 
     it("does nothing when parent PR is still open", async () => {
-      (git.getCurrentBranch as Mock).mockResolvedValue("feature");
+      (git.getCurrentBranch as Mock).mockReturnValue("feature");
       (io.fileExists as Mock).mockReturnValue(true);
       (io.readJsonFile as Mock).mockReturnValue({
         stacks: {
           feature: { parent: "main", parentPr: 10, children: ["feature-2"] },
         },
       });
-      (api.listOpen as Mock).mockResolvedValue({
+      (api.listOpen as Mock).mockReturnValue({
         json: () =>
-          Promise.resolve([mockPr({ number: 10, head: { ref: "main", repo: null } })]),
+          Promise.resolve([
+            mockPr({ number: 10, head: { ref: "main", repo: null } }),
+          ]),
       });
 
       const result = await stackService.update();
       expect(result.success).toBe(true);
       expect(git.rebaseBranch).not.toHaveBeenCalled();
-      expect(logger.info).toHaveBeenCalledWith(expect.stringContaining("still open"));
+      expect(logger.info).toHaveBeenCalledWith(
+        expect.stringContaining("still open"),
+      );
     });
   });
 
   describe("push", () => {
     it("throws when current branch is not in stack", async () => {
-      (git.getCurrentBranch as Mock).mockResolvedValue("feature");
+      (git.getCurrentBranch as Mock).mockReturnValue("feature");
       (io.fileExists as Mock).mockReturnValue(false);
 
       await expect(stackService.push({ draft: false })).rejects.toThrow(
@@ -190,35 +202,38 @@ describe("stack service", () => {
     });
 
     it("pushes branches and creates PRs", async () => {
-      (git.getCurrentBranch as Mock).mockResolvedValue("feature");
+      (git.getCurrentBranch as Mock).mockReturnValue("feature");
       (io.fileExists as Mock).mockReturnValue(true);
       (io.readJsonFile as Mock).mockReturnValue({
         stacks: {
           feature: { parent: "main", parentPr: null, children: [] },
         },
       });
-      (api.listOpen as Mock).mockResolvedValue({
+      (api.listOpen as Mock).mockReturnValue({
         json: () => Promise.resolve([]),
       });
-      (git.branchExistsLocally as Mock).mockResolvedValue(true);
-      (git.pushBranch as Mock).mockResolvedValue(undefined);
-      (api.createPr as Mock).mockResolvedValue(mockPr({ number: 42 }));
+      (git.branchExistsLocally as Mock).mockReturnValue(true);
+      (git.pushBranch as Mock).mockReturnValue(undefined);
+      (api.createPr as Mock).mockReturnValue(mockPr({ number: 42 }));
 
-      const result = await stackService.push({ title: "feat: {branch}", draft: false });
+      const result = await stackService.push({
+        title: "feat: {branch}",
+        draft: false,
+      });
       expect(result.success).toBe(true);
       expect(git.pushBranch).toHaveBeenCalledWith("feature");
       expect(api.createPr).toHaveBeenCalled();
     });
 
     it("updates existing PR base when changed", async () => {
-      (git.getCurrentBranch as Mock).mockResolvedValue("feature");
+      (git.getCurrentBranch as Mock).mockReturnValue("feature");
       (io.fileExists as Mock).mockReturnValue(true);
       (io.readJsonFile as Mock).mockReturnValue({
         stacks: {
           feature: { parent: "main", parentPr: null, children: [] },
         },
       });
-      (api.listOpen as Mock).mockResolvedValue({
+      (api.listOpen as Mock).mockReturnValue({
         json: () =>
           Promise.resolve([
             mockPr({
@@ -228,9 +243,9 @@ describe("stack service", () => {
             }),
           ]),
       });
-      (git.branchExistsLocally as Mock).mockResolvedValue(true);
-      (git.pushBranch as Mock).mockResolvedValue(undefined);
-      (api.updatePr as Mock).mockResolvedValue(mockPr());
+      (git.branchExistsLocally as Mock).mockReturnValue(true);
+      (git.pushBranch as Mock).mockReturnValue(undefined);
+      (api.updatePr as Mock).mockReturnValue(mockPr());
 
       const result = await stackService.push({ draft: false });
       expect(result.success).toBe(true);
@@ -240,7 +255,7 @@ describe("stack service", () => {
 
   describe("next", () => {
     it("throws when current branch is not in stack", async () => {
-      (git.getCurrentBranch as Mock).mockResolvedValue("feature");
+      (git.getCurrentBranch as Mock).mockReturnValue("feature");
       (io.fileExists as Mock).mockReturnValue(false);
 
       await expect(stackService.next({})).rejects.toThrow(
@@ -249,15 +264,15 @@ describe("stack service", () => {
     });
 
     it("checks out next child branch", async () => {
-      (git.getCurrentBranch as Mock).mockResolvedValue("feature");
+      (git.getCurrentBranch as Mock).mockReturnValue("feature");
       (io.fileExists as Mock).mockReturnValue(true);
       (io.readJsonFile as Mock).mockReturnValue({
         stacks: {
           feature: { parent: "main", parentPr: null, children: ["feature-2"] },
         },
       });
-      (git.branchExistsLocally as Mock).mockResolvedValue(true);
-      (git.checkoutBranch as Mock).mockResolvedValue(undefined);
+      (git.branchExistsLocally as Mock).mockReturnValue(true);
+      (git.checkoutBranch as Mock).mockReturnValue(undefined);
 
       const result = await stackService.next({});
       expect(result.success).toBe(true);
@@ -266,15 +281,15 @@ describe("stack service", () => {
     });
 
     it("checks out previous parent branch with reverse", async () => {
-      (git.getCurrentBranch as Mock).mockResolvedValue("feature");
+      (git.getCurrentBranch as Mock).mockReturnValue("feature");
       (io.fileExists as Mock).mockReturnValue(true);
       (io.readJsonFile as Mock).mockReturnValue({
         stacks: {
           feature: { parent: "main", parentPr: null, children: ["feature-2"] },
         },
       });
-      (git.branchExistsLocally as Mock).mockResolvedValue(true);
-      (git.checkoutBranch as Mock).mockResolvedValue(undefined);
+      (git.branchExistsLocally as Mock).mockReturnValue(true);
+      (git.checkoutBranch as Mock).mockReturnValue(undefined);
 
       const result = await stackService.next({ reverse: true });
       expect(result.success).toBe(true);
@@ -283,7 +298,7 @@ describe("stack service", () => {
     });
 
     it("throws when no next branch exists", async () => {
-      (git.getCurrentBranch as Mock).mockResolvedValue("feature");
+      (git.getCurrentBranch as Mock).mockReturnValue("feature");
       (io.fileExists as Mock).mockReturnValue(true);
       (io.readJsonFile as Mock).mockReturnValue({
         stacks: {
@@ -297,7 +312,7 @@ describe("stack service", () => {
     });
 
     it("throws when no previous branch exists", async () => {
-      (git.getCurrentBranch as Mock).mockResolvedValue("feature");
+      (git.getCurrentBranch as Mock).mockReturnValue("feature");
       (io.fileExists as Mock).mockReturnValue(true);
       (io.readJsonFile as Mock).mockReturnValue({
         stacks: {
@@ -311,7 +326,7 @@ describe("stack service", () => {
     });
 
     it("lists stack chain with list option", async () => {
-      (git.getCurrentBranch as Mock).mockResolvedValue("feature");
+      (git.getCurrentBranch as Mock).mockReturnValue("feature");
       (io.fileExists as Mock).mockReturnValue(true);
       (io.readJsonFile as Mock).mockReturnValue({
         stacks: {

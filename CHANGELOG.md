@@ -12,9 +12,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `pr cleanup` command to delete merged branches locally and remotely
 - `pr cleanup --dry-run` flag to preview changes without applying them
 - `pr cleanup --force` flag to skip ahead-of-base safety checks
+- `pr push <pr-number>` command to push local changes back to contributor's fork
+- `pr stack init --base <branch>` command to initialize a stacked PR chain
+- `pr stack add <branch> --depends-on <branch>` command to add PRs to a stack
+- `pr stack status` command to view stacked PR chain status
+- `pr stack sync` command to synchronize stacked PRs with base branch
+- `pr next` command to checkout the next PR in a dependency chain
+- `pr next --reverse` command to checkout the previous PR in a chain
 - `src/api/pr.ts` for GitHub pull request API calls
 - `src/services/pr.ts` with branch detection, squash/rebase safety, and fast-forward logic
+- `src/services/stack.ts` for stacked PR chain management
 - `src/commands/pr.ts` with self-registering `pr` subcommand module
+- `src/core/git.ts` for Git operations (branch detection, remote tracking, fast-forward)
+- Unit tests for `pr` service functionality
+- Unit tests for `stack` service functionality
+- Unit tests for `core/git` operations
 - Fast-forward of default branch (`main`/`master`) after cleanup
 
 ## [2.1.0] - 2026-05-09

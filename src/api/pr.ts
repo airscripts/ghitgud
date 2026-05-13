@@ -72,7 +72,10 @@ const pr = {
     },
   ): Promise<PullRequest> => {
     const repo = client.getRepo();
-    const response = await client.patch(`/repos/${repo}/pulls/${prNumber}`, body);
+    const response = await client.patch(
+      `/repos/${repo}/pulls/${prNumber}`,
+      body,
+    );
     return response.json();
   },
 };

@@ -1,53 +1,48 @@
-import { promisify } from "util";
-import { exec } from "child_process";
+import { execSync } from "child_process";
 
 import logger from "@/core/logger";
 
-const execAsync = promisify(exec);
-
-async function getCurrentBranch(): Promise<string> {
-  const { stdout } = await execAsync("git branch --show-current");
-  return stdout.trim();
+function getCurrentBranch(): string {
+  return execSync("git branch --show-current", { encoding: "utf8" }).trim();
 }
 
-async function branchExistsLocally(branch: string): Promise<boolean> {
+function branchExistsLocally(branch: string): boolean {
   try {
-    await execAsync(`git show-ref --verify --quiet refs/heads/${branch}`);
+    execSync(`git show-ref --verify --quiet refs/heads/${branch}`);
     return true;
   } catch {
     return false;
   }
 }
 
-async function branchExistsRemotely(branch: string): Promise<boolean> {
+function branchExistsRemotely(branch: string): boolean {
   try {
-    await execAsync(
-      `git ls-remote --heads origin ${branch} | grep -q "${branch}"`,
-    );
+    execSync(`git ls-remote --heads origin ${branch} | grep -q "${branch}"`);
     return true;
   } catch {
     return false;
   }
 }
 
-async function getDefaultBranch(): Promise<string> {
+function getDefaultBranch(): string {
   try {
-    const { stdout } = await execAsync(
+    const output = execSync(
       "git remote show origin | grep 'HEAD branch' | cut -d' ' -f5",
+      { encoding: "utf8" },
     );
-    return stdout.trim() || "main";
+    return output.trim() || "main";
   } catch {
     return "main";
   }
 }
 
-async function deleteLocalBranch(branch: string, dryRun = false): Promise<boolean> {
+function deleteLocalBranch(branch: string, dryRun = false): boolean {
   if (dryRun) {
     logger.info(`[dry-run] Would delete local branch: ${branch}`);
     return true;
   }
   try {
-    await execAsync(`git branch -D ${branch}`);
+    execSync(`git branch -D ${branch}`);
     return true;
   } catch (error) {
     logger.warn(`Failed to delete local branch ${branch}: ${error}`);
@@ -55,13 +50,13 @@ async function deleteLocalBranch(branch: string, dryRun = false): Promise<boolea
   }
 }
 
-async function deleteRemoteBranch(branch: string, dryRun = false): Promise<boolean> {
+function deleteRemoteBranch(branch: string, dryRun = false): boolean {
   if (dryRun) {
     logger.info(`[dry-run] Would delete remote branch: origin/${branch}`);
     return true;
   }
   try {
-    await execAsync(`git push origin --delete ${branch}`);
+    execSync(`git push origin --delete ${branch}`);
     return true;
   } catch (error) {
     logger.warn(`Failed to delete remote branch origin/${branch}: ${error}`);
@@ -69,14 +64,14 @@ async function deleteRemoteBranch(branch: string, dryRun = false): Promise<boole
   }
 }
 
-async function fastForwardBase(baseBranch: string, dryRun = false): Promise<boolean> {
+function fastForwardBase(baseBranch: string, dryRun = false): boolean {
   if (dryRun) {
     logger.info(`[dry-run] Would fast-forward ${baseBranch}`);
     return true;
   }
   try {
-    await execAsync(`git checkout ${baseBranch}`);
-    await execAsync(`git pull origin ${baseBranch} --ff-only`);
+    execSync(`git checkout ${baseBranch}`);
+    execSync(`git pull origin ${baseBranch} --ff-only`);
     return true;
   } catch (error) {
     logger.warn(`Could not fast-forward ${baseBranch}: ${error}`);
@@ -84,84 +79,71 @@ async function fastForwardBase(baseBranch: string, dryRun = false): Promise<bool
   }
 }
 
-async function checkoutBranch(branch: string): Promise<void> {
-  await execAsync(`git checkout ${branch}`);
+function checkoutBranch(branch: string): void {
+  execSync(`git checkout ${branch}`);
 }
 
-async function remoteExists(remote: string): Promise<boolean> {
+function remoteExists(remote: string): boolean {
   try {
-    await execAsync(`git remote get-url ${remote}`, {
-      stdio: ["pipe", "pipe", "ignore"] as unknown as import("child_process").StdioOptions,
-    });
+    execSync(`git remote get-url ${remote}`);
     return true;
   } catch {
     return false;
   }
 }
 
-async function addRemote(name: string, url: string): Promise<void> {
-  await execAsync(`git remote add ${name} ${url}`, { stdio: "inherit" });
+function addRemote(name: string, url: string): void {
+  execSync(`git remote add ${name} ${url}`, { stdio: "inherit" });
 }
 
-async function pushToRemote(
-  remote: string,
-  branch: string,
-  force: boolean,
-): Promise<void> {
+function pushToRemote(remote: string, branch: string, force: boolean): void {
   const flag = force ? " --force-with-lease" : "";
-  await execAsync(`git push${flag} ${remote} HEAD:${branch}`, {
-    stdio: "inherit",
+  execSync(`git push${flag} ${remote} HEAD:${branch}`, { stdio: "inherit" });
+}
+
+function branchExistsOnRemote(remote: string, branch: string): boolean {
+  try {
+    execSync(`git ls-remote --heads ${remote} refs/heads/${branch}`);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+function hasDiverged(localBranch: string, remoteRef: string): boolean {
+  try {
+    execSync(`git merge-base --is-ancestor ${remoteRef} ${localBranch}`);
+    return false;
+  } catch {
+    return true;
+  }
+}
+
+function listBranches(): string[] {
+  const output = execSync("git branch --format='%(refname:short)'", {
+    encoding: "utf8",
   });
+  return output.trim().split("\n").filter(Boolean);
 }
 
-async function branchExistsOnRemote(
-  remote: string,
-  branch: string,
-): Promise<boolean> {
+function rebaseBranch(branch: string, newBase: string): void {
+  execSync(`git checkout ${branch}`);
+  execSync(`git rebase ${newBase}`);
+}
+
+function pushBranch(branch: string): void {
+  execSync(`git push -u origin ${branch} --force-with-lease`);
+}
+
+function getAheadCount(branch: string, baseBranch: string): number {
   try {
-    await execAsync(
-      `git ls-remote --heads ${remote} refs/heads/${branch}`,
-      { encoding: "utf8", stdio: ["pipe", "pipe", "ignore"] as unknown as import("child_process").StdioOptions },
+    const output = execSync(
+      `git log --oneline ${baseBranch}..${branch} | wc -l`,
+      {
+        encoding: "utf8",
+      },
     );
-    return true;
-  } catch {
-    return false;
-  }
-}
-
-async function hasDiverged(
-  localBranch: string,
-  remoteRef: string,
-): Promise<boolean> {
-  try {
-    await execAsync(
-      `git merge-base --is-ancestor ${remoteRef} ${localBranch}`,
-      { stdio: ["pipe", "pipe", "ignore"] as unknown as import("child_process").StdioOptions },
-    );
-    return false;
-  } catch {
-    return true;
-  }
-}
-
-async function listBranches(): Promise<string[]> {
-  const { stdout } = await execAsync("git branch --format='%(refname:short)'");
-  return stdout.trim().split("\n").filter(Boolean);
-}
-
-async function rebaseBranch(branch: string, newBase: string): Promise<void> {
-  await execAsync(`git checkout ${branch}`);
-  await execAsync(`git rebase ${newBase}`);
-}
-
-async function pushBranch(branch: string): Promise<void> {
-  await execAsync(`git push -u origin ${branch} --force-with-lease`);
-}
-
-async function getAheadCount(branch: string, baseBranch: string): Promise<number> {
-  try {
-    const { stdout } = await execAsync(`git log --oneline ${baseBranch}..${branch} | wc -l`);
-    return parseInt(stdout.trim(), 10);
+    return parseInt(output.trim(), 10);
   } catch {
     return 0;
   }

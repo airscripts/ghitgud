@@ -8,8 +8,14 @@ const register = (program: Command) => {
     .description("Manage pull requests for a repository.");
 
   pr.command("cleanup")
-    .description("Delete merged branches locally and remotely, and fast-forward the base branch.")
-    .option("--dry-run", "Show what would be done without making changes", false)
+    .description(
+      "Delete merged branches locally and remotely, and fast-forward the base branch.",
+    )
+    .option(
+      "--dry-run",
+      "Show what would be done without making changes",
+      false,
+    )
     .option("--force", "Skip confirmation prompts (commits ahead check)", false)
     .action(async (options) => {
       await prService.cleanup({
@@ -43,7 +49,11 @@ const register = (program: Command) => {
   stack
     .command("create")
     .description("Create a new stack from current branch.")
-    .option("--base <branch>", "Base branch for the stack (default: auto)", "auto")
+    .option(
+      "--base <branch>",
+      "Base branch for the stack (default: auto)",
+      "auto",
+    )
     .action(async (options) => {
       await stackService.create({ base: options.base });
     });
@@ -66,7 +76,11 @@ const register = (program: Command) => {
     .command("push")
     .description("Push entire stack and create/update PRs.")
     .option("--base <branch>", "Base branch for the stack")
-    .option("--title <title>", "Title template for stacked PRs", "feat: {branch}")
+    .option(
+      "--title <title>",
+      "Title template for stacked PRs",
+      "feat: {branch}",
+    )
     .option("--draft", "Create PRs as drafts", false)
     .action(async (options) => {
       await stackService.push({

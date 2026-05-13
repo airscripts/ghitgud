@@ -38,8 +38,8 @@ const cleanup = async (options: { dryRun: boolean; force: boolean }) => {
 
   logger.info(`Found ${mergedPrs.length} merged pull request(s).`);
 
-  const currentBranch = await git.getCurrentBranch();
-  const defaultBranch = await git.getDefaultBranch();
+  const currentBranch = git.getCurrentBranch();
+  const defaultBranch = git.getDefaultBranch();
   const results: CleanupResult[] = [];
 
   for (const pr of mergedPrs) {
@@ -59,8 +59,8 @@ const cleanup = async (options: { dryRun: boolean; force: boolean }) => {
       continue;
     }
 
-    const localExists = await git.branchExistsLocally(branch);
-    const remoteExists = await git.branchExistsRemotely(branch);
+    const localExists = git.branchExistsLocally(branch);
+    const remoteExists = git.branchExistsRemotely(branch);
 
     if (!localExists && !remoteExists) {
       result.skipped = true;
@@ -70,7 +70,7 @@ const cleanup = async (options: { dryRun: boolean; force: boolean }) => {
     }
 
     if (!options.force) {
-      const aheadCount = await git.getAheadCount(branch, defaultBranch);
+      const aheadCount = git.getAheadCount(branch, defaultBranch);
       if (aheadCount > 0) {
         result.skipped = true;
         result.reason = `branch is ${aheadCount} commit(s) ahead of ${defaultBranch}`;
@@ -80,25 +80,25 @@ const cleanup = async (options: { dryRun: boolean; force: boolean }) => {
     }
 
     if (remoteExists) {
-      result.remoteDeleted = await git.deleteRemoteBranch(branch, options.dryRun);
+      result.remoteDeleted = git.deleteRemoteBranch(branch, options.dryRun);
     }
 
     if (localExists) {
       if (currentBranch === branch && !options.dryRun) {
         logger.info(`Checking out ${defaultBranch} to delete ${branch}.`);
-        await git.checkoutBranch(defaultBranch);
+        git.checkoutBranch(defaultBranch);
       }
-      result.localDeleted = await git.deleteLocalBranch(branch, options.dryRun);
+      result.localDeleted = git.deleteLocalBranch(branch, options.dryRun);
     }
 
     results.push(result);
   }
 
   if (!options.dryRun && currentBranch !== defaultBranch) {
-    await git.checkoutBranch(defaultBranch);
+    git.checkoutBranch(defaultBranch);
   }
 
-  const ffSuccess = await git.fastForwardBase(defaultBranch, options.dryRun);
+  const ffSuccess = git.fastForwardBase(defaultBranch, options.dryRun);
 
   const deletedCount = results.filter(
     (r) => !r.skipped && (r.localDeleted || r.remoteDeleted),
@@ -133,7 +133,7 @@ const push = async (prNumber: number, force: boolean) => {
   const forkBranch = pr.head.ref;
   const forkUrl = pr.head.repo.html_url;
 
-  const currentBranch = await git.getCurrentBranch();
+  const currentBranch = git.getCurrentBranch();
 
   logger.info(
     `Pushing branch "${currentBranch}" to ${forkRepo}:${forkBranch}.`,
@@ -141,9 +141,9 @@ const push = async (prNumber: number, force: boolean) => {
 
   const remoteName = `fork-${forkRepo.replace(/\//g, "-")}`;
 
-  if (!(await git.remoteExists(remoteName))) {
+  if (!git.remoteExists(remoteName)) {
     logger.info(`Adding remote ${remoteName}.`);
-    await git.addRemote(remoteName, forkUrl);
+    git.addRemote(remoteName, forkUrl);
   }
 
   const hasAccess = await api.checkPushAccess(forkRepo);
@@ -156,8 +156,8 @@ const push = async (prNumber: number, force: boolean) => {
 
   const remoteRef = `${remoteName}/${forkBranch}`;
 
-  if (!force && (await git.branchExistsOnRemote(remoteName, forkBranch))) {
-    const diverged = await git.hasDiverged(currentBranch, remoteRef);
+  if (!force && git.branchExistsOnRemote(remoteName, forkBranch)) {
+    const diverged = git.hasDiverged(currentBranch, remoteRef);
     if (diverged) {
       throw new GhitgudError(
         "Local branch has diverged from remote. " +
@@ -166,7 +166,7 @@ const push = async (prNumber: number, force: boolean) => {
     }
   }
 
-  await git.pushToRemote(remoteName, forkBranch, force);
+  git.pushToRemote(remoteName, forkBranch, force);
   logger.success(`Pushed to ${forkRepo}:${forkBranch}.`);
 };
 
