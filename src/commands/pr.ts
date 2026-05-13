@@ -25,6 +25,17 @@ const register = (program: Command) => {
       await prService.push(parseInt(prNumber, 10), options.force);
     });
 
+  pr.command("next")
+    .description("Checkout the next PR in a dependency chain.")
+    .option("--reverse", "Go to previous PR in chain instead of next")
+    .option("--list", "Show all PRs in current stack without checking out")
+    .action(async (options) => {
+      await stackService.next({
+        reverse: options.reverse,
+        list: options.list,
+      });
+    });
+
   const stack = pr
     .command("stack")
     .description("Manage stacked PRs (create/update dependent chains).");

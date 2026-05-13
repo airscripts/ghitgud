@@ -89,6 +89,31 @@ async function pushBranch(branch: string): Promise<void> {
   await execAsync(`git push -u origin ${branch} --force-with-lease`);
 }
 
+async function getFullChain(data: StackData, startBranch: string): Promise<string[]> {
+  let root = startBranch;
+  while (data.stacks[root]?.parent && data.stacks[data.stacks[root].parent]) {
+    root = data.stacks[root].parent;
+  }
+
+  const chain: string[] = [];
+  const visited = new Set<string>();
+
+  function walk(b: string) {
+    if (visited.has(b)) return;
+    visited.add(b);
+    chain.push(b);
+    const entry = data.stacks[b];
+    if (entry) {
+      for (const child of entry.children) {
+        walk(child);
+      }
+    }
+  }
+
+  walk(root);
+  return chain;
+}
+
 function getOpenPrsMap(prs: PullRequest[]): Record<string, PullRequest> {
   const map: Record<string, PullRequest> = {};
   for (const pr of prs) {
@@ -318,9 +343,59 @@ const pushStack = async (options: { title?: string; draft: boolean }) => {
   return { success: true };
 };
 
+const next = async (options: { reverse?: boolean; list?: boolean }) => {
+  const data = getStackData();
+  const branch = await getCurrentBranch();
+  const stack = data.stacks[branch];
+
+  if (!stack) {
+    throw new GhitgudError(`Current branch "${branch}" is not part of a tracked stack.`);
+  }
+
+  if (options.list) {
+    const chain = await getFullChain(data, branch);
+    logger.info("Stack chain:");
+    for (let i = 0; i < chain.length; i++) {
+      const marker = chain[i] === branch ? " (current)" : "";
+      logger.info(`  ${i + 1}. ${chain[i]}${marker}`);
+    }
+    return { success: true, chain };
+  }
+
+  let targetBranch: string | null = null;
+
+  if (options.reverse) {
+    targetBranch = stack.parent;
+    if (!targetBranch) {
+      throw new GhitgudError("No previous branch in the stack — you are at the beginning of the chain.");
+    }
+    if (!(await branchExistsLocally(targetBranch))) {
+      throw new GhitgudError(`Parent branch "${targetBranch}" does not exist locally. Run "git fetch" if it should be remote.`);
+    }
+    await execAsync(`git checkout ${targetBranch}`);
+    logger.success(`Checked out "${targetBranch}".`);
+  } else {
+    if (stack.children.length === 0) {
+      throw new GhitgudError("No next branch in the stack — you are at the end of the chain.");
+    }
+    if (stack.children.length > 1) {
+      logger.warn(`Multiple children found: ${stack.children.join(", ")}. Checking out first: ${stack.children[0]}.`);
+    }
+    targetBranch = stack.children[0];
+    if (!(await branchExistsLocally(targetBranch))) {
+      throw new GhitgudError(`Child branch "${targetBranch}" does not exist locally. Run "git fetch" if it should be remote.`);
+    }
+    await execAsync(`git checkout ${targetBranch}`);
+    logger.success(`Checked out "${targetBranch}".`);
+  }
+
+  return { success: true, branch: targetBranch };
+};
+
 export default {
   create,
   list,
   update,
   push: pushStack,
+  next,
 };
