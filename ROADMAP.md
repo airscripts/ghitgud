@@ -1,22 +1,7 @@
 # Ghitgud Roadmap — Superset Features gh CLI Doesn't Have
 
 > Compiled from deep research of the `cli/cli` repository, community extensions, and top user requests.
-> Current ghitgud version: **2.1.0** (labels + config + templates + notifications + activity + mentions + gh passthrough)
-
----
-
-## v2.2.0 — PR Lifecycle Automation
-
-**Why gh doesn't have it:** Issues #380 (cleanup, Feb 2020) and #2189 (pr push, Sep 2020) are among the most upvoted open issues. Extension `gh-poi` and `gh-stack` fill partial gaps but no official solution exists.
-
-**Commands:**
-
-- `ghitgud pr cleanup` — delete merged branches locally and remotely, fast-forward base branch, handle squash/rebase safely
-- `ghitgud pr push` — push changes back to a contributor's fork after `gh pr checkout`
-- `ghitgud pr stack` — manage stacked PRs (create/update dependent chains)
-- `ghitgud pr next` — checkout the next PR in a dependency chain
-
-**Value:** Eliminates the most tedious post-merge manual steps. The cleanup workflow alone saves minutes per merged PR.
+> Current ghitgud version: **2.2.0** (labels + config + templates + notifications + activity + mentions + gh passthrough + pr lifecycle)
 
 ---
 
