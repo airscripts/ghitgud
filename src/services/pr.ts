@@ -150,10 +150,9 @@ const push = async (prNumber: number, force: boolean) => {
     git.addRemote(remoteName, forkUrl);
   }
 
-  const hasAccess = await api.checkPushAccess(forkRepo);
-  if (!hasAccess) {
+  if (!pr.maintainer_can_modify) {
     throw new GhitgudError(
-      `You do not have push access to ${forkRepo}. ` +
+      `PR #${prNumber} does not allow edits from maintainers. ` +
         "Ask the contributor to enable 'Allow edits from maintainers'.",
     );
   }

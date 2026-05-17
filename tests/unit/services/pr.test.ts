@@ -10,7 +10,6 @@ vi.mock("@/api/pr", () => ({
     fetchMerged: vi.fn(),
     getCommit: vi.fn(),
     fetch: vi.fn(),
-    checkPushAccess: vi.fn(),
     listOpen: vi.fn(),
     createPr: vi.fn(),
     updatePr: vi.fn(),
@@ -55,6 +54,7 @@ function makePr(overrides: Record<string, unknown> = {}) {
     title: "PR Title",
     state: "closed",
     merged: false,
+    maintainer_can_modify: true,
     head: {
       ref: "feature",
       repo: {
@@ -239,16 +239,15 @@ describe("pr service", () => {
       await expect(prService.push(1, false)).rejects.toThrow("deleted fork");
     });
 
-    it("throws when no push access", async () => {
-      const pr = makePr();
+    it("throws when PR does not allow edits from maintainers", async () => {
+      const pr = makePr({ maintainer_can_modify: false });
       (api.fetch as Mock).mockReturnValue(pr);
       (git.getCurrentBranch as Mock).mockReturnValue("fix");
-      (git.remoteExists as Mock).mockReturnValue(false);
-      (git.addRemote as Mock).mockReturnValue(undefined);
-      (api.checkPushAccess as Mock).mockReturnValue(false);
-
       await expect(prService.push(1, false)).rejects.toThrow(GhitgudError);
-      await expect(prService.push(1, false)).rejects.toThrow("push access");
+
+      await expect(prService.push(1, false)).rejects.toThrow(
+        "does not allow edits from maintainers",
+      );
     });
 
     it("throws when diverged and not forced", async () => {
@@ -256,7 +255,6 @@ describe("pr service", () => {
       (api.fetch as Mock).mockReturnValue(pr);
       (git.getCurrentBranch as Mock).mockReturnValue("fix");
       (git.remoteExists as Mock).mockReturnValue(true);
-      (api.checkPushAccess as Mock).mockReturnValue(true);
       (git.branchExistsOnRemote as Mock).mockReturnValue(true);
       (git.hasDiverged as Mock).mockReturnValue(true);
 
@@ -269,7 +267,6 @@ describe("pr service", () => {
       (api.fetch as Mock).mockReturnValue(pr);
       (git.getCurrentBranch as Mock).mockReturnValue("fix");
       (git.remoteExists as Mock).mockReturnValue(true);
-      (api.checkPushAccess as Mock).mockReturnValue(true);
       (git.branchExistsOnRemote as Mock).mockReturnValue(false);
       (git.pushToRemote as Mock).mockReturnValue(undefined);
 
@@ -290,7 +287,6 @@ describe("pr service", () => {
       (git.getCurrentBranch as Mock).mockReturnValue("fix");
       (git.remoteExists as Mock).mockReturnValue(false);
       (git.addRemote as Mock).mockReturnValue(undefined);
-      (api.checkPushAccess as Mock).mockReturnValue(true);
       (git.branchExistsOnRemote as Mock).mockReturnValue(false);
       (git.pushToRemote as Mock).mockReturnValue(undefined);
 
@@ -309,7 +305,6 @@ describe("pr service", () => {
       (api.fetch as Mock).mockReturnValue(pr);
       (git.getCurrentBranch as Mock).mockReturnValue("fix");
       (git.remoteExists as Mock).mockReturnValue(true);
-      (api.checkPushAccess as Mock).mockReturnValue(true);
       (git.pushToRemote as Mock).mockReturnValue(undefined);
 
       await prService.push(1, true);

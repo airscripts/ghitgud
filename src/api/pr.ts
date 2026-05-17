@@ -5,6 +5,7 @@ interface PullRequest {
   title: string;
   state: string;
   merged: boolean;
+  maintainer_can_modify: boolean;
 
   head: {
     ref: string;
