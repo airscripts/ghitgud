@@ -38,15 +38,17 @@ function findParentBranch(branch: string, branches: string[]): string {
       `git log --oneline --ancestry-path ${branch} --not origin/main --simplify-by-decoration --format="%D"`,
       { encoding: "utf8" },
     );
+
     const lines = stdout.trim().split("\n").filter(Boolean);
     for (const line of lines) {
       const match = line.match(/HEAD -> (.+)/);
+
       if (match && match[1] !== branch && branches.includes(match[1])) {
         return match[1];
       }
     }
   } catch {
-    // fall through
+    // If the git command fails (e.g., no commits), fall back to default.
   }
   return "main";
 }
@@ -56,6 +58,7 @@ async function getFullChain(
   startBranch: string,
 ): Promise<string[]> {
   let root = startBranch;
+
   while (data.stacks[root]?.parent && data.stacks[data.stacks[root].parent]) {
     root = data.stacks[root].parent;
   }
@@ -68,6 +71,7 @@ async function getFullChain(
     visited.add(b);
     chain.push(b);
     const entry = data.stacks[b];
+
     if (entry) {
       for (const child of entry.children) {
         walk(child);
@@ -81,9 +85,11 @@ async function getFullChain(
 
 function getOpenPrsMap(prs: PullRequest[]): Record<string, PullRequest> {
   const map: Record<string, PullRequest> = {};
+
   for (const pr of prs) {
     if (pr.state === "open") map[pr.head.ref] = pr;
   }
+
   return map;
 }
 
@@ -102,7 +108,6 @@ function createStackEntry(branch: string, baseBranch: string): void {
     children: [],
   };
 
-  // If parent is also a tracked stack, add this branch as child
   if (data.stacks[parent]) {
     if (!data.stacks[parent].children.includes(branch)) {
       data.stacks[parent].children.push(branch);
@@ -158,6 +163,7 @@ const list = async () => {
 
   logger.info(`Stack for "${branch}":`);
   logger.info(`  Parent: ${stack.parent} (${parentStatus})`);
+
   logger.info(
     `  Children: ${childStatuses.length > 0 ? childStatuses.join(", ") : "none"}`,
   );
@@ -183,16 +189,12 @@ const update = async () => {
   const response = await api.listOpen();
   const prs: PullRequest[] = await response.json();
   const prMap = getOpenPrsMap(prs);
-
-  // Check if parent PR is still open
   const parentPr = stack.parentPr ? prMap[stack.parent] : null;
 
   if (!parentPr && stack.parentPr) {
-    // Parent PR was merged/closed — rebase children
     logger.info(
       `Parent PR #${stack.parentPr} merged/closed. Rebasing children onto ${stack.parent}.`,
     );
-
     for (const child of stack.children) {
       if (git.branchExistsLocally(child)) {
         logger.info(`Rebasing ${child} onto ${stack.parent}.`);
@@ -207,8 +209,6 @@ const update = async () => {
         }
       }
     }
-
-    // Update stack: parent PR is now null, children become direct
     data.stacks[branch].parentPr = null;
     saveStackData(data);
   } else if (parentPr) {
@@ -234,8 +234,6 @@ const pushStack = async (options: { title?: string; draft: boolean }) => {
   const response = await api.listOpen();
   const prs: PullRequest[] = await response.json();
   const prMap = getOpenPrsMap(prs);
-
-  // Collect all branches in this stack chain
   const branchesToPush: { branch: string; base: string }[] = [];
 
   function collectUpward(b: string): void {
@@ -244,9 +242,11 @@ const pushStack = async (options: { title?: string; draft: boolean }) => {
     const parent = s.parent;
     const parentPrObj = prMap[parent];
     const base = parentPrObj ? parentPrObj.head.ref : parent;
+
     if (!branchesToPush.find((x) => x.branch === b)) {
       branchesToPush.unshift({ branch: b, base });
     }
+
     if (s.parent && data.stacks[s.parent]) {
       collectUpward(s.parent);
     }
@@ -257,14 +257,17 @@ const pushStack = async (options: { title?: string; draft: boolean }) => {
     if (!s) return;
     const ownPr = prMap[b];
     const base = ownPr ? ownPr.base.ref : s.parent;
+
     if (!branchesToPush.find((x) => x.branch === b)) {
       branchesToPush.push({ branch: b, base });
     }
+
     for (const child of s.children) {
       if (!branchesToPush.find((x) => x.branch === child)) {
         const childBase = ownPr ? ownPr.head.ref : b;
         branchesToPush.push({ branch: child, base: childBase });
       }
+
       collectDownward(child);
     }
   }
@@ -272,9 +275,9 @@ const pushStack = async (options: { title?: string; draft: boolean }) => {
   collectUpward(branch);
   collectDownward(branch);
 
-  // Deduplicate and order
   const seen = new Set<string>();
   const ordered: typeof branchesToPush = [];
+
   for (const item of branchesToPush) {
     if (!seen.has(item.branch)) {
       seen.add(item.branch);
@@ -289,7 +292,6 @@ const pushStack = async (options: { title?: string; draft: boolean }) => {
 
       const existingPr = prMap[b];
       if (existingPr) {
-        // Update existing PR base if changed
         if (existingPr.base.ref !== base) {
           await api.updatePr(existingPr.number, { base });
           logger.success(`Updated PR #${existingPr.number} base to ${base}.`);
@@ -300,9 +302,11 @@ const pushStack = async (options: { title?: string; draft: boolean }) => {
         const titleTemplate = options.title || "feat: {branch}";
         const title = titleTemplate.replace(/{branch}/g, b);
         const parentPr = prMap[base];
+
         const dependsLine = parentPr
           ? `\n\nDepends on #${parentPr.number}`
           : "";
+
         const body = `Stacked PR for ${b}.${dependsLine}`;
 
         const newPr = await api.createPr({
@@ -335,10 +339,12 @@ const next = async (options: { reverse?: boolean; list?: boolean }) => {
   if (options.list) {
     const chain = await getFullChain(data, branch);
     logger.info("Stack chain:");
+
     for (let i = 0; i < chain.length; i++) {
       const marker = chain[i] === branch ? " (current)" : "";
       logger.info(`  ${i + 1}. ${chain[i]}${marker}`);
     }
+
     return { success: true, chain };
   }
 
@@ -349,11 +355,13 @@ const next = async (options: { reverse?: boolean; list?: boolean }) => {
         "No previous branch in the stack — you are at the beginning of the chain.",
       );
     }
+
     if (!git.branchExistsLocally(targetBranch)) {
       throw new GhitgudError(
         `Parent branch "${targetBranch}" does not exist locally. Run "git fetch" if it should be remote.`,
       );
     }
+
     git.checkoutBranch(targetBranch);
     logger.success(`Checked out "${targetBranch}".`);
     return { success: true, branch: targetBranch };
@@ -363,6 +371,7 @@ const next = async (options: { reverse?: boolean; list?: boolean }) => {
         "No next branch in the stack — you are at the end of the chain.",
       );
     }
+
     if (stack.children.length > 1) {
       logger.warn(
         `Multiple children found: ${stack.children.join(", ")}. Checking out first: ${stack.children[0]}.`,
@@ -374,6 +383,7 @@ const next = async (options: { reverse?: boolean; list?: boolean }) => {
         `Child branch "${targetBranch}" does not exist locally. Run "git fetch" if it should be remote.`,
       );
     }
+
     git.checkoutBranch(targetBranch);
     logger.success(`Checked out "${targetBranch}".`);
     return { success: true, branch: targetBranch };

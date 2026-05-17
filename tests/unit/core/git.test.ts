@@ -1,6 +1,6 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
 import git from "@/core/git";
 import logger from "@/core/logger";
+import { describe, it, expect, vi, beforeEach } from "vitest";
 
 const execSyncMock = vi.fn();
 
@@ -14,8 +14,8 @@ vi.mock("@/core/logger", () => ({
   default: {
     info: vi.fn(),
     warn: vi.fn(),
-    success: vi.fn(),
     error: vi.fn(),
+    success: vi.fn(),
   },
 }));
 
@@ -39,6 +39,7 @@ describe("git core", () => {
     mockExecSync("feature-branch\n");
     const result = git.getCurrentBranch();
     expect(result).toBe("feature-branch");
+
     expect(execSyncMock).toHaveBeenCalledWith("git branch --show-current", {
       encoding: "utf8",
     });
@@ -48,6 +49,7 @@ describe("git core", () => {
     mockExecSync("");
     const result = git.branchExistsLocally("feature");
     expect(result).toBe(true);
+
     expect(execSyncMock).toHaveBeenCalledWith(
       "git show-ref --verify --quiet refs/heads/feature",
     );
@@ -93,9 +95,11 @@ describe("git core", () => {
   it("deleteLocalBranch logs info in dry-run and returns true", () => {
     const result = git.deleteLocalBranch("feature", true);
     expect(result).toBe(true);
+
     expect(logger.info).toHaveBeenCalledWith(
       "[dry-run] Would delete local branch: feature",
     );
+
     expect(execSyncMock).not.toHaveBeenCalled();
   });
 
@@ -110,6 +114,7 @@ describe("git core", () => {
     mockExecSync("");
     const result = git.deleteRemoteBranch("feature");
     expect(result).toBe(true);
+
     expect(execSyncMock).toHaveBeenCalledWith(
       "git push origin --delete feature",
     );
@@ -118,9 +123,11 @@ describe("git core", () => {
   it("deleteRemoteBranch logs info in dry-run and returns true", () => {
     const result = git.deleteRemoteBranch("feature", true);
     expect(result).toBe(true);
+
     expect(logger.info).toHaveBeenCalledWith(
       "[dry-run] Would delete remote branch: origin/feature",
     );
+
     expect(execSyncMock).not.toHaveBeenCalled();
   });
 
@@ -142,9 +149,11 @@ describe("git core", () => {
   it("fastForwardBase logs info in dry-run and returns true", () => {
     const result = git.fastForwardBase("main", true);
     expect(result).toBe(true);
+
     expect(logger.info).toHaveBeenCalledWith(
       "[dry-run] Would fast-forward main",
     );
+
     expect(execSyncMock).not.toHaveBeenCalled();
   });
 
@@ -177,6 +186,7 @@ describe("git core", () => {
   it("addRemote adds a remote", () => {
     mockExecSync("");
     git.addRemote("fork", "https://github.com/fork/repo.git");
+
     expect(execSyncMock).toHaveBeenCalledWith(
       "git remote add fork https://github.com/fork/repo.git",
       { stdio: "inherit" },
@@ -186,6 +196,7 @@ describe("git core", () => {
   it("pushToRemote pushes without force by default", () => {
     mockExecSync("");
     git.pushToRemote("origin", "feature", false);
+
     expect(execSyncMock).toHaveBeenCalledWith("git push origin HEAD:feature", {
       stdio: "inherit",
     });
@@ -194,6 +205,7 @@ describe("git core", () => {
   it("pushToRemote pushes with force-with-lease when force is true", () => {
     mockExecSync("");
     git.pushToRemote("origin", "feature", true);
+
     expect(execSyncMock).toHaveBeenCalledWith(
       "git push --force-with-lease origin HEAD:feature",
       { stdio: "inherit" },
@@ -246,6 +258,7 @@ describe("git core", () => {
   it("pushBranch pushes with force-with-lease and sets upstream", () => {
     mockExecSync("");
     git.pushBranch("feature");
+
     expect(execSyncMock).toHaveBeenCalledWith(
       "git push -u origin feature --force-with-lease",
     );

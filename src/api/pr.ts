@@ -5,6 +5,7 @@ interface PullRequest {
   title: string;
   state: string;
   merged: boolean;
+
   head: {
     ref: string;
     repo: {
@@ -12,9 +13,11 @@ interface PullRequest {
       html_url: string;
     } | null;
   };
+
   base: {
     ref: string;
   };
+
   merge_commit_sha: string | null;
 }
 
@@ -72,10 +75,12 @@ const pr = {
     },
   ): Promise<PullRequest> => {
     const repo = client.getRepo();
+
     const response = await client.patch(
       `/repos/${repo}/pulls/${prNumber}`,
       body,
     );
+
     return response.json();
   },
 };

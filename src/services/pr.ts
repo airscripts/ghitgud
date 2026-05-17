@@ -1,16 +1,16 @@
 import api from "@/api/pr";
-import logger from "@/core/logger";
 import git from "@/core/git";
+import logger from "@/core/logger";
 import { PullRequest } from "@/api/pr";
 
 import { GhitgudError } from "@/core/errors";
 
 interface CleanupResult {
   branch: string;
+  reason?: string;
+  skipped: boolean;
   localDeleted: boolean;
   remoteDeleted: boolean;
-  skipped: boolean;
-  reason?: string;
 }
 
 async function isSquashOrRebaseMerge(pr: PullRequest): Promise<boolean> {
@@ -88,6 +88,7 @@ const cleanup = async (options: { dryRun: boolean; force: boolean }) => {
         logger.info(`Checking out ${defaultBranch} to delete ${branch}.`);
         git.checkoutBranch(defaultBranch);
       }
+
       result.localDeleted = git.deleteLocalBranch(branch, options.dryRun);
     }
 
@@ -103,14 +104,17 @@ const cleanup = async (options: { dryRun: boolean; force: boolean }) => {
   const deletedCount = results.filter(
     (r) => !r.skipped && (r.localDeleted || r.remoteDeleted),
   ).length;
+
   const skippedCount = results.filter((r) => r.skipped).length;
 
   if (deletedCount > 0) {
     logger.success(`Cleaned up ${deletedCount} branch(es).`);
   }
+
   if (skippedCount > 0) {
     logger.info(`Skipped ${skippedCount} branch(es).`);
   }
+
   if (!ffSuccess) {
     logger.warn(`Could not fast-forward ${defaultBranch}.`);
   }

@@ -30,6 +30,7 @@ function getDefaultBranch(): string {
       "git remote show origin | grep 'HEAD branch' | cut -d' ' -f5",
       { encoding: "utf8" },
     );
+
     return output.trim() || "main";
   } catch {
     return "main";
@@ -41,6 +42,7 @@ function deleteLocalBranch(branch: string, dryRun = false): boolean {
     logger.info(`[dry-run] Would delete local branch: ${branch}`);
     return true;
   }
+
   try {
     execSync(`git branch -D ${branch}`);
     return true;
@@ -55,6 +57,7 @@ function deleteRemoteBranch(branch: string, dryRun = false): boolean {
     logger.info(`[dry-run] Would delete remote branch: origin/${branch}`);
     return true;
   }
+
   try {
     execSync(`git push origin --delete ${branch}`);
     return true;
@@ -69,6 +72,7 @@ function fastForwardBase(baseBranch: string, dryRun = false): boolean {
     logger.info(`[dry-run] Would fast-forward ${baseBranch}`);
     return true;
   }
+
   try {
     execSync(`git checkout ${baseBranch}`);
     execSync(`git pull origin ${baseBranch} --ff-only`);
@@ -139,9 +143,7 @@ function getAheadCount(branch: string, baseBranch: string): number {
   try {
     const output = execSync(
       `git log --oneline ${baseBranch}..${branch} | wc -l`,
-      {
-        encoding: "utf8",
-      },
+      { encoding: "utf8" },
     );
     return parseInt(output.trim(), 10);
   } catch {
