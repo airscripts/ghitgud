@@ -74,6 +74,37 @@ ghitgud config set <key> <val>   Set a configuration value (token or repo)
 ghitgud config get <key>         Get a configuration value
 ```
 
+## PR Workflow Commands
+
+### Clean up merged branches
+
+```bash
+ghitgud pr cleanup --dry-run  # Preview what would be deleted
+ghitgud pr cleanup            # Delete merged branches
+```
+
+### Push back to contributor's fork
+
+```bash
+ghitgud pr push <pr-number>   # Push local changes to contributor's fork
+```
+
+### Manage stacked PRs
+
+```bash
+ghitgud pr stack init --base main
+ghitgud pr stack add feature-part-2 --depends-on feature-part-1
+ghitgud pr stack status
+ghitgud pr stack sync
+```
+
+### Navigate PR chain
+
+```bash
+ghitgud pr next        # Checkout next PR in chain
+ghitgud pr next --reverse  # Checkout previous PR
+```
+
 ## Templates
 
 Built-in label presets are available with the `--template` / `-t` flag:

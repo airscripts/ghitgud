@@ -4,13 +4,14 @@ import { program } from "commander";
 import ascii from "./ascii";
 import logger from "@/core/logger";
 import ghCommand from "@/commands/gh";
+import prCommand from "@/commands/pr";
 import pingCommand from "@/commands/ping";
+import { GhitgudError } from "@/core/errors";
 import labelsCommand from "@/commands/labels";
 import configCommand from "@/commands/config";
 import mentionsCommand from "@/commands/mentions";
 import activityCommand from "@/commands/activity";
 import notificationsCommand from "@/commands/notifications";
-import { GhitgudError } from "@/core/errors";
 
 const NAME = "ghitgud";
 const DESCRIPTION = "A simple CLI to give superpowers to GitHub.";
@@ -24,6 +25,7 @@ mentionsCommand.register(program);
 pingCommand.register(program);
 labelsCommand.register(program);
 configCommand.register(program);
+prCommand.register(program);
 
 program.addHelpText("before", ascii);
 program.exitOverride();
