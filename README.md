@@ -72,6 +72,11 @@ ghitgud labels push -t <name>   Push a built-in template to a repository
 ghitgud labels prune             Delete all local labels from a repository
 ghitgud config set <key> <val>   Set a configuration value (token or repo)
 ghitgud config get <key>         Get a configuration value
+ghitgud profile add <name>       Add or update a profile
+ghitgud profile add <name> --repo <owner/repo> --token <token>
+ghitgud profile list             List all configured profiles
+ghitgud profile switch <name>    Activate a profile for the session
+ghitgud profile detect           Detect profile for current repository
 ```
 
 ## PR Workflow Commands
