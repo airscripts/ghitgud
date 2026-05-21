@@ -5,6 +5,38 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.3.0] - 2026-05-22
+
+### Added
+
+- `profile add <name>` command to add or update a named account profile
+- `profile add --repo <owner/repo>` to associate a profile with a repository
+- `profile add --token <token>` to store a per-profile token
+- `profile list` command to show all configured profiles
+- `profile switch <name>` command to activate a profile for the current session
+- `profile detect` command to infer the correct profile from the current repository
+- Multi-account support via profile system — tokens and repos scoped per profile
+- `src/services/profile.ts` with `add`, `list`, `switch`, and `detect` logic
+- `src/commands/profile.ts` with self-registering `profile` subcommand module
+- `Profile` and `CredentialsFile` types in `src/types/index.ts`
+- `src/core/config.ts` refactor to support profiles, active profile tracking, and repo-matching
+- Per-repository `.ghitgudrc` file support for automatic profile detection
+- `client.useProfile` method in API layer to switch tokens dynamically
+- Unit tests for `profile` service (`add`, `list`, `switch`, `detect`)
+- Unit tests for `profile` command wiring
+- Unit tests for config profile functionality
+- Unit tests for git remote URL parsing and profile detection helpers
+
+### Changed
+
+- `src/core/config.ts` expanded with profile-aware token and repo resolution
+- `src/core/git.ts` added `getRepoRoot`, `getRemoteNames`, `getRemoteUrl`, `getRepoOwnerAndName`
+- `src/cli/index.ts` wired to register the `profile` command
+
+### Removed
+
+- `v2.3.0` roadmap section from `ROADMAP.md` (now shipped)
+
 ## [2.2.0] - 2026-05-13
 
 ### Added

@@ -1,7 +1,7 @@
 # Ghitgud Roadmap — Superset Features gh CLI Doesn't Have
 
 > Compiled from deep research of the `cli/cli` repository, community extensions, and top user requests.
-> Current ghitgud version: **2.2.0** (labels + config + templates + notifications + activity + mentions + gh passthrough + pr lifecycle)
+> Current ghitgud version: **2.3.0** (labels + config + templates + notifications + activity + mentions + gh passthrough + pr lifecycle)
 
 ---
 
