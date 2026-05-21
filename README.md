@@ -1,37 +1,98 @@
-<h1 align="center">
-  Ghitgud
-</h1>
+# ghitgud
 
-<p align="center">
-  A simple CLI to give superpowers to GitHub.
-</p>
+[![Main](https://github.com/airscripts/ghitgud/actions/workflows/main.yml/badge.svg)](https://github.com/airscripts/ghitgud/actions/workflows/main.yml)
+[![Release](https://github.com/airscripts/ghitgud/actions/workflows/release.yml/badge.svg)](https://github.com/airscripts/ghitgud/actions/workflows/release.yml)
+[![npm](https://img.shields.io/npm/v/@airscript/ghitgud)](https://www.npmjs.com/package/@airscript/ghitgud)
+[![License](https://img.shields.io/github/license/airscripts/ghitgud)](https://github.com/airscripts/ghitgud/blob/main/LICENSE)
+
+A simple CLI to give superpowers to GitHub.
 
 <p align="center">
   <img src="https://github.com/user-attachments/assets/57aac0c0-1bd2-4cb4-8445-36a161a7e2ee" alt="Usage GIF" />
 </p>
 
-<p align="center">
-  <a href="https://www.npmjs.com/package/@airscript/ghitgud"><img src="https://img.shields.io/npm/v/@airscript/ghitgud" alt="npm" /></a>
-  <a href="https://github.com/airscripts/ghitgud/blob/main/LICENSE"><img src="https://img.shields.io/github/license/airscripts/ghitgud" alt="License" /></a>
-</p>
+---
 
 ## Table of Contents
 
-- [Installation](#installation)
+- [What It Does](#what-it-does)
+- [How It Works](#how-it-works)
+- [Features](#features)
+- [Install](#install)
 - [Configuration](#configuration)
+- [Profile Management](#profile-management)
 - [Commands](#commands)
+- [PR Workflow](#pr-workflow)
 - [Templates](#templates)
 - [Output Format](#output-format)
-- [Development](#development)
+- [Development Checks](#development-checks)
+- [Repository Structure](#repository-structure)
 - [Contributing](#contributing)
+- [Security](#security)
 - [Support](#support)
 - [License](#license)
 
-## Installation
+---
+
+## What It Does
+
+ghitgud is not a replacement for `gh`. It is a companion that fills the gaps in the official GitHub CLI where GitHub has chosen not to ship features that power users need daily.
+
+The output is not a wrapper. It is a superset.
+
+---
+
+## How It Works
+
+ghitgud layers its commands on top of the GitHub REST API and local Git operations. Each command is self-contained — it resolves configuration, validates inputs, makes the minimal necessary API calls, and returns structured JSON.
+
+The architecture is flat and explicit:
+
+| Layer      | Responsibility                                                |
+| ---------- | ------------------------------------------------------------- |
+| `cli`      | Commander program setup, global error boundary, ASCII banner  |
+| `commands` | Self-registering subcommand modules with argument parsing     |
+| `services` | Business logic — validation, orchestration, output formatting |
+| `api`      | GitHub REST API client with auth, retry, and error mapping    |
+| `core`     | Config resolution, Git helpers, file I/O, logging, errors     |
+| `types`    | Shared TypeScript interfaces and normalization helpers        |
+
+Every command reads from `src/core/config.ts`, which resolves values in this order: environment variables, active profile credentials, fallback defaults. All HTTP calls go through `src/api/client.ts` — no direct `fetch` anywhere else.
+
+---
+
+## Features
+
+- **Label Management** — list, pull, push, and prune repository labels with built-in templates
+- **Notifications** — list, read, and dismiss GitHub notifications from the terminal
+- **Activity & Mentions** — composite views of assigned issues, review requests, and @mentions
+- **PR Lifecycle** — cleanup merged branches, push back to forks, manage stacked PR chains
+- **Multi-Account Profiles** — switch between GitHub accounts and tokens per repository
+- **gh Passthrough** — proxy any unrecognized command directly to the `gh` CLI
+- **Structured JSON Output** — every command returns machine-parseable JSON
+
+---
+
+## Install
 
 ```bash
 npm install -g @airscript/ghitgud
 ```
+
+Published package is available at:
+
+- npm: <https://www.npmjs.com/package/@airscript/ghitgud>
+- GitHub Releases: <https://github.com/airscripts/ghitgud/releases>
+
+For local development:
+
+```bash
+pnpm install            # install dependencies
+pnpm build              # build single CJS bundle with Vite
+pnpm start              # run the CLI locally
+```
+
+---
 
 ## Configuration
 
@@ -51,47 +112,109 @@ ghitgud config get repo
 
 > Create a token at: https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens
 
+Configuration is stored in `~/.config/ghitgud/credentials.json` and supports per-repository `.ghitgudrc` files for automatic profile detection.
+
+---
+
+## Profile Management
+
+ghitgud 2.3.0 introduces multi-account support through named profiles. Each profile stores its own token and optional repository association.
+
+```bash
+# Add or update a profile
+ghitgud profile add work --repo owner/repo --token ghp_xxx
+
+# List all profiles
+ghitgud profile list
+
+# Activate a profile for the current session
+ghitgud profile switch work
+
+# Auto-detect profile from current repository
+ghitgud profile detect
+```
+
+When a profile is active, all API calls use that profile's token. The `detect` command reads the current repository's remote URL and matches it against profile associations, including a per-repo `.ghitgudrc` file if present.
+
+---
+
 ## Commands
 
-```
-ghitgud gh <args>              Pass through to the gh CLI
-ghitgud notifications list       List notifications
-ghitgud notifications list -a    Include read notifications
-ghitgud notifications list -p    Only participating
-ghitgud notifications list -r owner/repo  Filter by repository
-ghitgud notifications read <id>   Mark a notification as read
-ghitgud notifications done <id>   Mark a notification as done
-ghitgud activity                 Assigned issues, review requests, mentions
-ghitgud mentions                 Recent @mentions of you
-ghitgud ping                     Check if the CLI is working
-ghitgud labels list              List all labels for a repository
-ghitgud labels pull              Pull labels from a repository to local config
-ghitgud labels pull -t <name>   Pull labels from a built-in template
-ghitgud labels push              Push local labels to a repository
-ghitgud labels push -t <name>   Push a built-in template to a repository
-ghitgud labels prune             Delete all local labels from a repository
-ghitgud config set <key> <val>   Set a configuration value (token or repo)
-ghitgud config get <key>         Get a configuration value
-ghitgud profile add <name>       Add or update a profile
-ghitgud profile add <name> --repo <owner/repo> --token <token>
-ghitgud profile list             List all configured profiles
-ghitgud profile switch <name>    Activate a profile for the session
-ghitgud profile detect           Detect profile for current repository
+### Notifications
+
+```bash
+ghitgud notifications list          # List unread notifications
+ghitgud notifications list -a     # Include read notifications
+ghitgud notifications list -p     # Only participating
+ghitgud notifications list -r owner/repo  # Filter by repository
+ghitgud notifications list --limit 20     # Limit results
+ghitgud notifications read <id>     # Mark as read
+ghitgud notifications done <id>     # Mark as done
 ```
 
-## PR Workflow Commands
+### Activity & Mentions
+
+```bash
+ghitgud activity                    # Assigned issues, review requests, mentions
+ghitgud mentions                    # Recent @mentions of you
+```
+
+### Labels
+
+```bash
+ghitgud labels list                 # List all labels
+ghitgud labels pull                 # Pull labels from repo to local config
+ghitgud labels pull -t <name>      # Pull from built-in template
+ghitgud labels push                 # Push local labels to repo
+ghitgud labels push -t <name>      # Push built-in template to repo
+ghitgud labels prune                # Delete all labels from repo
+```
+
+### Configuration
+
+```bash
+ghitgud config set <key> <val>      # Set token or repo
+ghitgud config get <key>            # Get configured value
+```
+
+### Profile (2.3.0+)
+
+```bash
+ghitgud profile add <name>          # Add or update profile
+ghitgud profile add <name> --repo <owner/repo> --token <token>
+ghitgud profile list                # List all profiles
+ghitgud profile switch <name>       # Activate profile
+ghitgud profile detect              # Detect profile for current repo
+```
+
+### Passthrough
+
+```bash
+ghitgud gh <args>                   # Proxy any args to the gh CLI
+```
+
+### Utility
+
+```bash
+ghitgud ping                        # Check if the CLI is working
+```
+
+---
+
+## PR Workflow
 
 ### Clean up merged branches
 
 ```bash
-ghitgud pr cleanup --dry-run  # Preview what would be deleted
-ghitgud pr cleanup            # Delete merged branches
+ghitgud pr cleanup --dry-run        # Preview what would be deleted
+ghitgud pr cleanup                  # Delete merged branches locally and remotely
+ghitgud pr cleanup --force         # Skip ahead-of-base safety checks
 ```
 
 ### Push back to contributor's fork
 
 ```bash
-ghitgud pr push <pr-number>   # Push local changes to contributor's fork
+ghitgud pr push <pr-number>         # Push local changes to contributor's fork
 ```
 
 ### Manage stacked PRs
@@ -106,9 +229,11 @@ ghitgud pr stack sync
 ### Navigate PR chain
 
 ```bash
-ghitgud pr next        # Checkout next PR in chain
-ghitgud pr next --reverse  # Checkout previous PR
+ghitgud pr next                     # Checkout next PR in chain
+ghitgud pr next --reverse          # Checkout previous PR in chain
 ```
+
+---
 
 ## Templates
 
@@ -124,6 +249,8 @@ Built-in label presets are available with the `--template` / `-t` flag:
 ghitgud labels pull -t conventional
 ghitgud labels push -t conventional
 ```
+
+---
 
 ## Output Format
 
@@ -147,24 +274,105 @@ Error:
 }
 ```
 
-## Development
+---
+
+## Development Checks
+
+Run the canonical local checks:
 
 ```bash
-pnpm install            # install dependencies
-pnpm build              # build with Vite (single CJS bundle)
-pnpm start              # run the CLI locally
-pnpm test               # run tests (watch mode)
-pnpm test -- --run      # single test run (no watch)
-pnpm test:coverage      # run tests with coverage
 pnpm typecheck          # type check without emitting
-pnpm lint               # type check (alias for typecheck)
-pnpm clean              # remove build artifacts
+pnpm lint               # ESLint flat config
+pnpm format             # Prettier format
+pnpm test -- --run      # single test run (no watch)
 ```
+
+To verify formatting without rewriting files:
+
+```bash
+pnpm typecheck
+pnpm lint
+pnpm format:check
+pnpm test -- --run
+```
+
+Optional commit-time hooks are available if you want them locally:
+
+```bash
+pnpm prepare            # install husky hooks
+```
+
+The pre-commit setup mirrors the lightweight formatting and lint passes. Full test runs remain part of normal local verification and CI.
+
+---
+
+## Repository Structure
+
+```
+src/
+  cli/
+    index.ts            # entry point — Commander program setup
+    ascii.ts            # figlet banner for help output
+  commands/
+    ping.ts             # ghitgud ping
+    labels.ts           # ghitgud labels <list|pull|push|prune>
+    config.ts           # ghitgud config <get|set>
+    profile.ts          # ghitgud profile <add|list|switch|detect>
+    pr.ts               # ghitgud pr <cleanup|push|stack|next>
+    notifications.ts    # ghitgud notifications <list|read|done>
+    activity.ts         # ghitgud activity
+    mentions.ts         # ghitgud mentions
+    gh.ts               # ghitgud gh <passthrough>
+  services/
+    labels.ts           # label business logic
+    config.ts           # config business logic
+    profile.ts          # profile business logic
+    pr.ts               # PR lifecycle business logic
+    stack.ts            # stacked PR chain management
+    notifications.ts    # notifications business logic
+  api/
+    client.ts           # base HTTP client
+    labels.ts           # GitHub Labels API methods
+    pr.ts               # GitHub PR API methods
+    notifications.ts    # GitHub Notifications API methods
+  core/
+    constants.ts        # shared constants, error messages, config keys
+    errors.ts           # custom error class hierarchy
+    config.ts           # config resolver — env vars, profiles, credentials file
+    git.ts              # Git operations (branch detection, remote tracking)
+    io.ts               # generic file helpers
+    logger.ts           # consola instance for rich CLI output
+  types/
+    index.ts            # shared type definitions
+templates/
+  base.json             # minimal label template
+  conventional.json     # conventional-commits label template
+  github.json           # GitHub default label template
+tests/
+  unit/                 # unit tests mirroring src/ structure
+```
+
+- New commands go in `src/commands/`. Each exports `{ register }` — a function that takes the Commander `program` and wires up subcommands.
+- New service logic goes in `src/services/`. Services hold business logic and I/O.
+- New API endpoints go in `src/api/`. API modules use the shared `client.ts` — never call `fetch` directly.
+- All constants live in `src/core/constants.ts`. No magic strings or numbers elsewhere.
+- All custom errors live in `src/core/errors.ts`. No bare `new Error()` for domain errors.
+- `@/` import aliases are used throughout. Resolved by Vite at build time and by `tsconfig.json` paths for type checking.
+
+---
 
 ## Contributing
 
 Contributions and suggestions about how to improve this project are welcome!
 Please follow [our contribution guidelines](https://github.com/airscripts/ghitgud/blob/main/CONTRIBUTING.md).
+
+---
+
+## Security
+
+See [SECURITY.md](https://github.com/airscripts/ghitgud/blob/main/SECURITY.md) for reporting vulnerabilities.
+
+---
 
 ## Support
 
@@ -173,10 +381,12 @@ Choose what you find more suitable for you:
 
 <a href="https://sponsor.airscript.it" target="blank">
   <img src="https://raw.githubusercontent.com/airscripts/assets/main/images/github-sponsors.svg" alt="GitHub Sponsors" width="30px" />
-</a>&nbsp;
+</a>
 <a href="https://kofi.airscript.it" target="blank">
   <img src="https://raw.githubusercontent.com/airscripts/assets/main/images/kofi.svg" alt="Kofi" width="30px" />
 </a>
+
+---
 
 ## License
 
