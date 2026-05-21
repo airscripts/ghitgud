@@ -9,6 +9,7 @@ import pingCommand from "@/commands/ping";
 import { GhitgudError } from "@/core/errors";
 import labelsCommand from "@/commands/labels";
 import configCommand from "@/commands/config";
+import profileCommand from "@/commands/profile";
 import mentionsCommand from "@/commands/mentions";
 import activityCommand from "@/commands/activity";
 import notificationsCommand from "@/commands/notifications";
@@ -24,6 +25,7 @@ activityCommand.register(program);
 mentionsCommand.register(program);
 pingCommand.register(program);
 labelsCommand.register(program);
+profileCommand.register(program);
 configCommand.register(program);
 prCommand.register(program);
 

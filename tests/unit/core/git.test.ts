@@ -85,6 +85,71 @@ describe("git core", () => {
     expect(result).toBe("main");
   });
 
+  it("getRepoRoot returns the repository root", () => {
+    mockExecSync("/repo/root\n");
+    const result = git.getRepoRoot();
+    expect(result).toBe("/repo/root");
+
+    expect(execSyncMock).toHaveBeenCalledWith("git rev-parse --show-toplevel", {
+      encoding: "utf8",
+    });
+  });
+
+  it("getRemoteUrl returns the configured remote url", () => {
+    mockExecSync("https://github.com/owner/repo.git\n");
+    const result = git.getRemoteUrl();
+    expect(result).toBe("https://github.com/owner/repo.git");
+
+    expect(execSyncMock).toHaveBeenCalledWith("git remote get-url origin", {
+      encoding: "utf8",
+    });
+  });
+
+  it("getRemoteUrl falls back to another remote when origin is missing", () => {
+    execSyncMock.mockImplementation((command: string) => {
+      if (command === "git remote get-url origin") {
+        throw new Error("missing origin");
+      }
+
+      if (command === "git remote") {
+        return "upstream\nfork\n";
+      }
+
+      if (command === "git remote get-url upstream") {
+        return "https://github.com/owner/repo.git\n";
+      }
+
+      throw new Error(`unexpected command: ${command}`);
+    });
+
+    const result = git.getRemoteUrl();
+    expect(result).toBe("https://github.com/owner/repo.git");
+
+    expect(execSyncMock).toHaveBeenCalledWith("git remote", {
+      encoding: "utf8",
+    });
+  });
+
+  it("parseRepoFromRemoteUrl parses ssh and https remotes", () => {
+    expect(git.parseRepoFromRemoteUrl("git@github.com:owner/repo.git")).toBe(
+      "owner/repo",
+    );
+
+    expect(
+      git.parseRepoFromRemoteUrl("https://github.com/owner/repo.git"),
+    ).toBe("owner/repo");
+
+    expect(git.parseRepoFromRemoteUrl("https://example.com/repo.git")).toBe(
+      null,
+    );
+  });
+
+  it("getRemoteNames returns all configured remote names", () => {
+    mockExecSync("origin\nupstream\n");
+    const result = git.getRemoteNames();
+    expect(result).toEqual(["origin", "upstream"]);
+  });
+
   it("deleteLocalBranch deletes branch and returns true", () => {
     mockExecSync("");
     const result = git.deleteLocalBranch("feature");

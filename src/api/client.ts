@@ -39,10 +39,10 @@ const ERROR_MESSAGES: Record<number, string> = {
   [STATUS_UNPROCESSABLE]: ERROR_UNPROCESSABLE,
 };
 
-function buildHeaders(): Record<string, string> {
+function buildHeaders(token?: string): Record<string, string> {
   return {
     Accept: GITHUB_API_ACCEPT,
-    Authorization: `Bearer ${config.getToken()}`,
+    Authorization: `Bearer ${token ?? config.getToken()}`,
     "X-GitHub-Api-Version": GITHUB_API_VERSION,
   };
 }
@@ -60,9 +60,10 @@ function isSuccessful(status: number): boolean {
 async function request(
   endpoint: string,
   options: RequestOptions = {},
+  token?: string,
 ): Promise<Response> {
   const url = `${GITHUB_API_BASE_URL}${endpoint}`;
-  const headers = buildHeaders();
+  const headers = buildHeaders(token);
 
   const fetchOptions: RequestInit = {
     method: options.method || "GET",
@@ -92,6 +93,7 @@ const client = {
     request(endpoint, { method: "PUT", body }),
 
   getRepo: () => config.getRepo(),
+  validateToken: (token: string) => request("/user", {}, token),
   isOk: (status: number) => isSuccessful(status),
   isNotFound: (status: number) => status === STATUS_NOT_FOUND,
   delete: (endpoint: string) => request(endpoint, { method: "DELETE" }),

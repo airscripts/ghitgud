@@ -4,7 +4,10 @@ import path from "path";
 export const GHITGUD_FOLDER = path.join(os.homedir(), ".config", "ghitgud");
 export const CREDENTIALS_FILE = "credentials.json";
 export const METADATA_FILE = "labels.json";
+export const GHITGUD_RC_FILE = ".ghitgudrc";
+export const DEFAULT_PROFILE_NAME = "default";
 export const ENCODING = "utf8";
+export const GHITGUD_PROFILE_ENV = "GHITGUD_PROFILE";
 
 export const CREDENTIALS_PATH = path.join(GHITGUD_FOLDER, CREDENTIALS_FILE);
 export const METADATA_FILE_PATH = path.join(GHITGUD_FOLDER, METADATA_FILE);
@@ -24,10 +27,20 @@ export const ERROR_UNAUTHORIZED = "Unauthorized.";
 export const ERROR_NOT_FOUND = "Resource not found.";
 export const ERROR_UNPROCESSABLE = "Content is unprocessable.";
 export const ERROR_UNEXPECTED = "Unexpected status code.";
+export const ERROR_INVALID_CREDENTIALS = "Invalid credentials file.";
+export const ERROR_INVALID_PROFILE_RC = "Invalid profile config file.";
+export const ERROR_PROFILE_NOT_FOUND = "Profile not found.";
+export const ERROR_PROFILE_NAME_REQUIRED = "Profile name is required.";
+export const ERROR_PROFILE_TOKEN_REQUIRED = "Token is required.";
+export const ERROR_NO_GIT_ROOT = "Git repository root not found.";
+export const ERROR_NO_REMOTE_URL = "Unable to detect repository remote.";
+
 export const ERROR_NO_REPO =
   "Repository not configured. Set it with: ghitgud config set repo owner/repo.";
+
 export const ERROR_NO_TOKEN =
   "Token not configured. Set it with: ghitgud config set token <your-token>.";
+
 export const ERROR_UNSUPPORTED_KEY = "Trying to set unsupported key.";
 export const ERROR_NO_METADATA = "No metadata file found.";
 export const INFO_NO_NOTIFICATIONS = "No notifications found.";

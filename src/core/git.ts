@@ -1,6 +1,7 @@
-import { execSync } from "child_process";
-
 import logger from "@/core/logger";
+import { execSync } from "child_process";
+import { ConfigError } from "@/core/errors";
+import { ERROR_NO_GIT_ROOT, ERROR_NO_REMOTE_URL } from "@/core/constants";
 
 function getCurrentBranch(): string {
   return execSync("git branch --show-current", { encoding: "utf8" }).trim();
@@ -35,6 +36,63 @@ function getDefaultBranch(): string {
   } catch {
     return "main";
   }
+}
+
+function getRepoRoot(): string {
+  try {
+    const output = execSync("git rev-parse --show-toplevel", {
+      encoding: "utf8",
+    });
+
+    return output.trim();
+  } catch {
+    throw new ConfigError(ERROR_NO_GIT_ROOT);
+  }
+}
+
+function getRemoteNames(): string[] {
+  const output = execSync("git remote", { encoding: "utf8" });
+  return output.trim().split("\n").filter(Boolean);
+}
+
+function getRemoteUrl(remote = "origin"): string {
+  try {
+    const output = execSync(`git remote get-url ${remote}`, {
+      encoding: "utf8",
+    });
+
+    return output.trim();
+  } catch {
+    if (remote !== "origin") {
+      throw new ConfigError(ERROR_NO_REMOTE_URL);
+    }
+  }
+
+  const remotes = getRemoteNames().filter((name) => name !== remote);
+
+  for (const name of remotes) {
+    try {
+      const output = execSync(`git remote get-url ${name}`, {
+        encoding: "utf8",
+      });
+
+      return output.trim();
+    } catch {
+      continue;
+    }
+  }
+
+  throw new ConfigError(ERROR_NO_REMOTE_URL);
+}
+
+function parseRepoFromRemoteUrl(remoteUrl: string): string | null {
+  const sshMatch = remoteUrl.match(/github\.com[:/](.+?)(?:\.git)?$/);
+  if (sshMatch?.[1]) return sshMatch[1];
+
+  const httpsMatch = remoteUrl.match(/github\.com\/(.+?)(?:\.git)?$/);
+  if (httpsMatch?.[1]) return httpsMatch[1];
+
+  return null;
 }
 
 function deleteLocalBranch(branch: string, dryRun = false): boolean {
@@ -156,6 +214,10 @@ export default {
   branchExistsLocally,
   branchExistsRemotely,
   getDefaultBranch,
+  getRepoRoot,
+  getRemoteNames,
+  getRemoteUrl,
+  parseRepoFromRemoteUrl,
   deleteLocalBranch,
   deleteRemoteBranch,
   fastForwardBase,

@@ -2,24 +2,52 @@ import fs from "fs";
 import path from "path";
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 
+vi.mock("os", () => ({
+  default: {
+    homedir: () => "/tmp/ghitgud-home",
+  },
+}));
+
+import git from "@/core/git";
+
 import {
   ERROR_NO_REPO,
-  GHITGUD_FOLDER,
   ERROR_NO_TOKEN,
+  GHITGUD_FOLDER,
+  GHITGUD_RC_FILE,
   CREDENTIALS_FILE,
 } from "@/core/constants";
 
+vi.mock("@/core/git", () => ({
+  default: {
+    getRepoRoot: vi.fn(() => {
+      throw new Error("no repo");
+    }),
+
+    getRemoteUrl: vi.fn(),
+    parseRepoFromRemoteUrl: vi.fn(),
+  },
+}));
+
 const originalEnv = { ...process.env };
+const TEST_HOME = "/tmp/ghitgud-home";
 const credentialsPath = path.join(GHITGUD_FOLDER, CREDENTIALS_FILE);
+const repoRoot = path.join(TEST_HOME, ".config", "ghitgud", "repo");
+const repoRcPath = path.join(repoRoot, GHITGUD_RC_FILE);
 
 describe("config", () => {
   beforeEach(() => {
     delete process.env.GHITGUD_GITHUB_REPO;
     delete process.env.GHITGUD_GITHUB_TOKEN;
+    delete process.env.GHITGUD_PROFILE;
 
     if (fs.existsSync(GHITGUD_FOLDER)) {
       fs.rmSync(GHITGUD_FOLDER, { recursive: true });
     }
+
+    (git.getRepoRoot as ReturnType<typeof vi.fn>).mockImplementation(() => {
+      throw new Error("no repo");
+    });
   });
 
   afterEach(() => {
@@ -27,6 +55,8 @@ describe("config", () => {
     if (fs.existsSync(GHITGUD_FOLDER)) {
       fs.rmSync(GHITGUD_FOLDER, { recursive: true });
     }
+
+    vi.restoreAllMocks();
   });
 
   describe("getRepo", () => {
@@ -80,11 +110,167 @@ describe("config", () => {
       expect(value).toBe("test-token");
     });
 
+    it("should migrate legacy credentials into the new profile format on write", async () => {
+      fs.mkdirSync(GHITGUD_FOLDER, { recursive: true });
+
+      fs.writeFileSync(
+        credentialsPath,
+        JSON.stringify({ repo: "owner/repo", token: "legacy-token" }),
+      );
+
+      vi.resetModules();
+      const { default: config } = await import("@/core/config");
+      config.write("token", "new-token");
+
+      const data = JSON.parse(fs.readFileSync(credentialsPath, "utf8"));
+      expect(data).toEqual({
+        activeProfile: "default",
+        profiles: {
+          default: {
+            repo: "owner/repo",
+            token: "new-token",
+          },
+        },
+      });
+    });
+
     it("should return null for non-existent key", async () => {
       vi.resetModules();
       const { default: config } = await import("@/core/config");
       const value = config.read("nonexistent");
       expect(value).toBeNull();
+    });
+  });
+
+  describe("profiles", () => {
+    it("should add and list named profiles", async () => {
+      vi.resetModules();
+      const { default: config } = await import("@/core/config");
+
+      config.addProfile("work", {
+        repo: "owner/repo",
+        token: "work-token",
+      });
+
+      const profiles = config.listProfiles();
+      expect(profiles).toEqual([
+        {
+          name: "work",
+          repo: "owner/repo",
+          hasToken: true,
+          active: true,
+        },
+      ]);
+    });
+
+    it("should resolve repo-local profiles before the active profile", async () => {
+      fs.mkdirSync(repoRoot, { recursive: true });
+      fs.writeFileSync(repoRcPath, JSON.stringify({ profile: "work" }));
+      fs.mkdirSync(GHITGUD_FOLDER, { recursive: true });
+
+      fs.writeFileSync(
+        credentialsPath,
+        JSON.stringify({
+          activeProfile: "default",
+          profiles: {
+            default: {
+              repo: "owner/default",
+              token: "default-token",
+            },
+            work: {
+              repo: "owner/repo",
+              token: "work-token",
+            },
+          },
+        }),
+      );
+
+      (git.getRepoRoot as ReturnType<typeof vi.fn>).mockReturnValue(repoRoot);
+
+      vi.resetModules();
+      const { default: config } = await import("@/core/config");
+
+      expect(config.getRepo()).toBe("owner/repo");
+      expect(config.getToken()).toBe("work-token");
+    });
+
+    it("should resolve the stored active profile when no repo-local profile is set", async () => {
+      fs.mkdirSync(GHITGUD_FOLDER, { recursive: true });
+
+      fs.writeFileSync(
+        credentialsPath,
+        JSON.stringify({
+          activeProfile: "work",
+          profiles: {
+            default: {
+              repo: "owner/default",
+              token: "default-token",
+            },
+            work: {
+              repo: "owner/repo",
+              token: "work-token",
+            },
+          },
+        }),
+      );
+
+      vi.resetModules();
+      const { default: config } = await import("@/core/config");
+
+      expect(config.getRepo()).toBe("owner/repo");
+      expect(config.getToken()).toBe("work-token");
+      expect(config.findProfileByRepo("owner/repo")).toBe("work");
+    });
+
+    it("should match repository names case-insensitively", async () => {
+      fs.mkdirSync(GHITGUD_FOLDER, { recursive: true });
+
+      fs.writeFileSync(
+        credentialsPath,
+        JSON.stringify({
+          activeProfile: "default",
+          profiles: {
+            default: {
+              repo: "owner/default",
+              token: "default-token",
+            },
+            work: {
+              repo: "owner/repo",
+              token: "work-token",
+            },
+          },
+        }),
+      );
+
+      vi.resetModules();
+      const { default: config } = await import("@/core/config");
+      expect(config.findProfileByRepo("Owner/Repo")).toBe("work");
+    });
+
+    it("should set the active profile explicitly", async () => {
+      fs.mkdirSync(GHITGUD_FOLDER, { recursive: true });
+      fs.writeFileSync(
+        credentialsPath,
+        JSON.stringify({
+          activeProfile: "default",
+          profiles: {
+            default: {
+              repo: "owner/default",
+              token: "default-token",
+            },
+            work: {
+              repo: "owner/repo",
+              token: "work-token",
+            },
+          },
+        }),
+      );
+
+      vi.resetModules();
+      const { default: config } = await import("@/core/config");
+
+      config.setActiveProfile("work");
+      expect(config.getToken()).toBe("work-token");
     });
   });
 

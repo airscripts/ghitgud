@@ -5,23 +5,6 @@
 
 ---
 
-## v2.3.0 — Multi-Account & Profile Switching
-
-**Why gh doesn't have it:** Issue #326 is the #1 most requested feature (open since Feb 2020). Users with work + personal accounts currently use shell scripts, env vars, or separate config files.
-
-**Commands:**
-
-- `ghitgud profile switch <name>` — switch active account instantly
-- `ghitgud profile list` — show all configured profiles
-- `ghitgud profile add <name> --token <token>` — add new profile
-- `ghitgud profile detect` — auto-detect account from current repo
-- Per-directory `.ghitgudrc` for repo-specific profiles
-- Token expiry warnings + refresh helper
-
-**Value:** Every professional developer with a work GitHub account needs this. It's a daily friction point that `gh` has ignored for 6 years.
-
----
-
 ## v2.4.0 — Bulk Repository Governance
 
 **Why gh doesn't have it:** `gh` operates on single repos only. No bulk operations across organizations or repo lists. Enterprise users write custom scripts.

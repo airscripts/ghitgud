@@ -5,6 +5,22 @@ interface Label {
   description: string;
 }
 
+interface Profile {
+  repo?: string;
+  token?: string;
+}
+
+interface CredentialsFile {
+  repo?: string;
+  token?: string;
+  activeProfile?: string;
+  profiles?: Record<string, Profile>;
+}
+
+interface ProfileRcFile {
+  profile?: string;
+}
+
 const normalizeLabel = (label: Label) => ({
   name: label.name,
   color: label.color,
@@ -12,4 +28,7 @@ const normalizeLabel = (label: Label) => ({
 });
 
 export type { Label };
+export type { Profile };
+export type { CredentialsFile };
+export type { ProfileRcFile };
 export { normalizeLabel };
