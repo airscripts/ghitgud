@@ -390,4 +390,4 @@ Choose what you find more suitable for you:
 
 ## License
 
-This repository is licensed under [GPL-3.0 License](https://github.com/airscripts/ghitgud/blob/main/LICENSE).
+This repository is licensed under [MIT License](https://github.com/airscripts/ghitgud/blob/main/LICENSE).
