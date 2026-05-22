@@ -8,7 +8,7 @@
 A simple CLI to give superpowers to GitHub.
 
 <p align="center">
-  <img src="https://github.com/user-attachments/assets/57aac0c0-1bd2-4cb4-8445-36a161a7e2ee" alt="Usage GIF" />
+  <img width="1280" height="640" alt="ghitgud" src="https://github.com/user-attachments/assets/e14fca4e-2efa-40fb-81da-1e5c6be9c11f" />
 </p>
 
 ---
