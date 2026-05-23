@@ -5,7 +5,7 @@
 [![npm](https://img.shields.io/npm/v/@airscript/ghitgud)](https://www.npmjs.com/package/@airscript/ghitgud)
 [![License](https://img.shields.io/github/license/airscripts/ghitgud)](https://github.com/airscripts/ghitgud/blob/main/LICENSE)
 
-A simple CLI to give superpowers to GitHub.
+A better alternative to the official gh CLI, also known as bgh.
 
 <p align="center">
   <img width="1280" height="640" alt="ghitgud" src="https://github.com/user-attachments/assets/e14fca4e-2efa-40fb-81da-1e5c6be9c11f" />
