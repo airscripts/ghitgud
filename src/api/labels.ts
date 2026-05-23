@@ -2,19 +2,15 @@ import client from "./client";
 import { Label } from "@/types";
 
 const labels = {
-  fetch: async (): Promise<Response> => {
-    const repo = client.getRepo();
+  fetch: async (repo = client.getRepo()): Promise<Response> => {
     return client.get(`/repos/${repo}/labels`);
   },
 
-  get: async (name: string): Promise<Response> => {
-    const repo = client.getRepo();
+  get: async (name: string, repo = client.getRepo()): Promise<Response> => {
     return client.get(`/repos/${repo}/labels/${name}`);
   },
 
-  create: async (label: Label): Promise<Response> => {
-    const repo = client.getRepo();
-
+  create: async (label: Label, repo = client.getRepo()): Promise<Response> => {
     return client.post(`/repos/${repo}/labels`, {
       name: label.name,
       color: label.color,
@@ -22,9 +18,7 @@ const labels = {
     });
   },
 
-  patch: async (label: Label): Promise<Response> => {
-    const repo = client.getRepo();
-
+  patch: async (label: Label, repo = client.getRepo()): Promise<Response> => {
     return client.patch(`/repos/${repo}/labels/${label.name}`, {
       color: label.color,
       description: label.description,
@@ -32,8 +26,7 @@ const labels = {
     });
   },
 
-  delete: async (name: string): Promise<Response> => {
-    const repo = client.getRepo();
+  delete: async (name: string, repo = client.getRepo()): Promise<Response> => {
     return client.delete(`/repos/${repo}/labels/${name}`);
   },
 };

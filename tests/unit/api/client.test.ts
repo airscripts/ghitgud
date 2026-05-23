@@ -13,6 +13,7 @@ vi.mock("@/core/config", () => ({
 }));
 
 const ORIGINAL_FETCH = global.fetch;
+const mockFetch = () => global.fetch as ReturnType<typeof vi.fn>;
 
 describe("client", () => {
   beforeEach(() => {
@@ -26,18 +27,14 @@ describe("client", () => {
 
   describe("request", () => {
     it("should make a successful GET request", async () => {
-      (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValue({
-        status: 200,
-      });
+      mockFetch().mockResolvedValue({ status: 200 });
 
       const result = await client.get("/repos/owner/repo/labels");
       expect(result.status).toBe(200);
     });
 
     it("should accept 201 Created response", async () => {
-      (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValue({
-        status: 201,
-      });
+      mockFetch().mockResolvedValue({ status: 201 });
 
       const result = await client.post("/repos/owner/repo/labels", {
         name: "bug",
@@ -51,9 +48,7 @@ describe("client", () => {
     });
 
     it("should accept 204 No Content response", async () => {
-      (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValue({
-        status: 204,
-      });
+      mockFetch().mockResolvedValue({ status: 204 });
 
       const result = await client.delete("/repos/owner/repo/labels/bug");
       expect(result.status).toBe(204);
@@ -65,9 +60,7 @@ describe("client", () => {
     });
 
     it("should make a PATCH request", async () => {
-      (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValue({
-        status: 200,
-      });
+      mockFetch().mockResolvedValue({ status: 200 });
 
       await client.patch("/repos/owner/repo/labels/bug", { color: "fff" });
       expect(global.fetch).toHaveBeenCalledWith(
@@ -77,9 +70,7 @@ describe("client", () => {
     });
 
     it("should make a PUT request", async () => {
-      (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValue({
-        status: 200,
-      });
+      mockFetch().mockResolvedValue({ status: 200 });
 
       await client.put("/notifications/threads/123/subscription", {
         ignored: true,
@@ -92,25 +83,19 @@ describe("client", () => {
     });
 
     it("should throw AuthError on 401", async () => {
-      (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValue({
-        status: 401,
-      });
+      mockFetch().mockResolvedValue({ status: 401 });
 
       await expect(client.get("/test")).rejects.toThrow("Unauthorized.");
     });
 
     it("should throw NotFoundError on 404", async () => {
-      (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValue({
-        status: 404,
-      });
+      mockFetch().mockResolvedValue({ status: 404 });
 
       await expect(client.get("/test")).rejects.toThrow("Resource not found.");
     });
 
     it("should throw UnprocessableError on 422", async () => {
-      (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValue({
-        status: 422,
-      });
+      mockFetch().mockResolvedValue({ status: 422 });
 
       await expect(client.get("/test")).rejects.toThrow(
         "Content is unprocessable.",
@@ -118,9 +103,7 @@ describe("client", () => {
     });
 
     it("should throw GhitgudError on unexpected status", async () => {
-      (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValue({
-        status: 500,
-      });
+      mockFetch().mockResolvedValue({ status: 500 });
 
       await expect(client.get("/test")).rejects.toThrow(
         "Unexpected status code.: 500",
@@ -130,9 +113,7 @@ describe("client", () => {
     });
 
     it("should include auth and api headers", async () => {
-      (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValue({
-        status: 200,
-      });
+      mockFetch().mockResolvedValue({ status: 200 });
 
       await client.get("/test");
       expect(global.fetch).toHaveBeenCalledWith(
@@ -148,13 +129,32 @@ describe("client", () => {
     });
 
     it("should send JSON body when provided", async () => {
-      (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValue({
-        status: 201,
-      });
+      mockFetch().mockResolvedValue({ status: 201 });
 
       await client.post("/test", { name: "bug" });
-      const call = (global.fetch as ReturnType<typeof vi.fn>).mock.calls[0];
+      const call = mockFetch().mock.calls[0];
       expect(call[1].body).toBe(JSON.stringify({ name: "bug" }));
+    });
+
+    it("should follow pagination links", async () => {
+      mockFetch()
+        .mockResolvedValueOnce({
+          status: 200,
+          json: () => Promise.resolve([{ id: 1 }]),
+          headers: {
+            get: vi.fn(
+              () => '<https://api.github.com/test?page=2>; rel="next"',
+            ),
+          },
+        })
+        .mockResolvedValueOnce({
+          status: 200,
+          json: () => Promise.resolve([{ id: 2 }]),
+          headers: { get: vi.fn(() => null) },
+        });
+
+      const result = await client.getPaginated<{ id: number }>("/test?page=1");
+      expect(result).toEqual([{ id: 1 }, { id: 2 }]);
     });
   });
 

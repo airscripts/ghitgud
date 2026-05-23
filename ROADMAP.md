@@ -11,10 +11,10 @@
 
 **Commands:**
 
-- `ghitgud repos audit` — find repos missing LICENSE, CODEOWNERS, README, SECURITY.md
-- `ghitgud repos apply-ruleset` — apply branch protection/ruleset across multiple repos
-- `ghitgud repos sync-labels` — push label templates across a whole org
-- `ghitgud repos archive-stale` — find repos with no commits in N months
+- `ghitgud repos inspect` — find repos missing LICENSE, CODEOWNERS, README, SECURITY.md
+- `ghitgud repos govern` — apply branch protection/rulesets across multiple repos
+- `ghitgud repos label` — push label templates across a whole org
+- `ghitgud repos retire` — find repos with no commits in N months
 - `ghitgud repos report` — contributor metrics, PR velocity, issue aging per repo
 
 **Value:** Turn ghitgud into an enterprise governance tool. Open source maintainers and platform engineers need this weekly.

@@ -23,6 +23,29 @@ const formatLabels = (labels: Label[]) => {
   console.table(rows);
 };
 
+const getTemplatePath = (templateName: string, templatesDir: string) => {
+  return path.join(templatesDir, `${templateName}.json`);
+};
+
+const loadLabelsFromPath = (filePath: string) => {
+  return io.readJsonFile<Label[]>(filePath);
+};
+
+const loadLabelsFromTemplate = (templateName: string, templatesDir: string) => {
+  const templatePath = getTemplatePath(templateName, templatesDir);
+
+  if (!io.fileExists(templatePath)) {
+    throw new Error(`Template "${templateName}" not found at ${templatePath}.`);
+  }
+
+  return loadLabelsFromPath(templatePath);
+};
+
+const loadLabelsFromMetadata = (metadataPath = METADATA_FILE_PATH) => {
+  if (!io.fileExists(metadataPath)) throw new Error(ERROR_NO_METADATA);
+  return loadLabelsFromPath(metadataPath);
+};
+
 const ping = () => {
   logger.success(PING_RESPONSE + ".");
   return { success: true, message: PING_RESPONSE };
@@ -53,13 +76,7 @@ const pull = async () => {
 
 const pullTemplate = async (templateName: string, templatesDir: string) => {
   logger.info(`Pulling labels from template "${templateName}".`);
-  const templatePath = path.join(templatesDir, `${templateName}.json`);
-
-  if (!io.fileExists(templatePath)) {
-    throw new Error(`Template "${templateName}" not found at ${templatePath}.`);
-  }
-
-  const labels: Label[] = io.readJsonFile(templatePath);
+  const labels = loadLabelsFromTemplate(templateName, templatesDir);
   io.ensureDir(GHITGUD_FOLDER);
   io.writeJsonFile(METADATA_FILE_PATH, labels);
 
@@ -68,29 +85,75 @@ const pullTemplate = async (templateName: string, templatesDir: string) => {
   return { success: true, metadata: labels };
 };
 
-const upsertLabels = async (labels: Label[]) => {
+const hasJsonMethod = (
+  response: unknown,
+): response is { json: () => Promise<unknown> } => {
+  return typeof (response as { json?: unknown }).json === "function";
+};
+
+const labelsEqual = (existing: Label, incoming: Label) => {
+  const colorMatch = existing.color === incoming.color;
+  const descriptionMatch = existing.description === incoming.description;
+  const noRename = !incoming.newName;
+
+  return colorMatch && descriptionMatch && noRename;
+};
+
+const upsertLabels = async (
+  labels: Label[],
+  repo?: string,
+  options: { dryRun?: boolean } = {},
+) => {
   logger.info(`Upserting ${labels.length} label(s).`);
 
-  await Promise.all(
+  const results = await Promise.all(
     labels.map(async (label) => {
       try {
-        await api.get(label.name);
-        await api.patch(label);
+        const response = await api.get(label.name, repo);
+
+        const existing = hasJsonMethod(response)
+          ? normalizeLabel((await response.json()) as Label)
+          : null;
+
+        if (existing && labelsEqual(existing, label)) {
+          return { action: "unchanged", name: label.name };
+        }
+
+        if (!options.dryRun) {
+          await api.patch(label, repo);
+        }
+
+        return { action: "updated", name: label.name };
       } catch (error) {
         if (error instanceof NotFoundError) {
-          await api.create(label);
-        } else {
-          throw error;
+          if (!options.dryRun) {
+            await api.create(label, repo);
+          }
+
+          return { action: "created", name: label.name };
         }
+
+        throw error;
       }
     }),
   );
+
+  return {
+    created: results
+      .filter((result) => result.action === "created")
+      .map((result) => result.name),
+    updated: results
+      .filter((result) => result.action === "updated")
+      .map((result) => result.name),
+    unchanged: results
+      .filter((result) => result.action === "unchanged")
+      .map((result) => result.name),
+  };
 };
 
 const push = async () => {
-  if (!io.fileExists(METADATA_FILE_PATH)) throw new Error(ERROR_NO_METADATA);
   logger.info("Pushing labels to repository.");
-  const labels: Label[] = io.readJsonFile(METADATA_FILE_PATH);
+  const labels = loadLabelsFromMetadata();
   await upsertLabels(labels);
 
   logger.success("Labels pushed successfully.");
@@ -99,13 +162,7 @@ const push = async () => {
 
 const pushTemplate = async (templateName: string, templatesDir: string) => {
   logger.info(`Pushing labels from template "${templateName}".`);
-  const templatePath = path.join(templatesDir, `${templateName}.json`);
-
-  if (!io.fileExists(templatePath)) {
-    throw new Error(`Template "${templateName}" not found at ${templatePath}.`);
-  }
-
-  const labels: Label[] = io.readJsonFile(templatePath);
+  const labels = loadLabelsFromTemplate(templateName, templatesDir);
   await upsertLabels(labels);
 
   logger.success(`Labels pushed from template "${templateName}".`);
@@ -113,8 +170,7 @@ const pushTemplate = async (templateName: string, templatesDir: string) => {
 };
 
 const prune = async () => {
-  if (!io.fileExists(METADATA_FILE_PATH)) throw new Error(ERROR_NO_METADATA);
-  const labels: Label[] = io.readJsonFile(METADATA_FILE_PATH);
+  const labels = loadLabelsFromMetadata();
   logger.info(`Pruning ${labels.length} label(s) from repository.`);
 
   await Promise.all(
@@ -131,8 +187,11 @@ export default {
   ping,
   list,
   pull,
-  pullTemplate,
   push,
-  pushTemplate,
   prune,
+  pullTemplate,
+  pushTemplate,
+  upsertLabels,
+  loadLabelsFromMetadata,
+  loadLabelsFromTemplate,
 };

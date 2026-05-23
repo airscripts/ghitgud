@@ -19,6 +19,12 @@ describe("labels api", () => {
     expect(client.get).toHaveBeenCalledWith("/repos/owner/repo/labels");
   });
 
+  it("should accept an explicit repo for fetch", async () => {
+    (client.get as Mock).mockResolvedValue({ status: 200 });
+    await labels.fetch("owner/other");
+    expect(client.get).toHaveBeenCalledWith("/repos/owner/other/labels");
+  });
+
   it("should call client.get for get with name", async () => {
     (client.get as Mock).mockResolvedValue({ status: 200 });
     await labels.get("bug");
