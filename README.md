@@ -68,6 +68,7 @@ Every command reads from `src/core/config.ts`, which resolves values in this ord
 - **Activity & Mentions** — composite views of assigned issues, review requests, and @mentions
 - **PR Lifecycle** — cleanup merged branches, push back to forks, manage stacked PR chains
 - **Multi-Account Profiles** — switch between GitHub accounts and tokens per repository
+- **Bulk Repository Governance** — inspect, govern, label, retire, and report across repo sets
 - **gh Passthrough** — proxy any unrecognized command directly to the `gh` CLI
 - **Structured JSON Output** — every command returns machine-parseable JSON
 
@@ -118,7 +119,7 @@ Configuration is stored in `~/.config/ghitgud/credentials.json` and supports per
 
 ## Profile Management
 
-ghitgud 2.3.0 introduces multi-account support through named profiles. Each profile stores its own token and optional repository association.
+ghitgud introduces multi-account support through named profiles. Each profile stores its own token and optional repository association.
 
 ```bash
 # Add or update a profile
@@ -170,6 +171,22 @@ ghitgud labels push -t <name>      # Push built-in template to repo
 ghitgud labels prune                # Delete all labels from repo
 ```
 
+### Repository Governance
+
+```bash
+ghitgud repos inspect --org airscripts
+ghitgud repos govern --org airscripts --ruleset ./ruleset.json --dry-run
+ghitgud repos label --org airscripts --template conventional --dry-run
+ghitgud repos retire --org airscripts --months 12 --dry-run
+ghitgud repos report --org airscripts --since 30d
+```
+
+- `inspect` checks for README, LICENSE, SECURITY.md, and CODEOWNERS.
+- `govern` applies repository rulesets across the selected repositories.
+- `label` syncs label templates or metadata across many repositories.
+- `retire` finds and optionally archives inactive repositories.
+- `report` summarizes repository health and velocity.
+
 ### Configuration
 
 ```bash
@@ -177,7 +194,7 @@ ghitgud config set <key> <val>      # Set token or repo
 ghitgud config get <key>            # Get configured value
 ```
 
-### Profile (2.3.0+)
+### Profile
 
 ```bash
 ghitgud profile add <name>          # Add or update profile

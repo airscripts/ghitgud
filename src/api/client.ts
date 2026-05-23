@@ -12,6 +12,7 @@ import {
   STATUS_OK_MAX,
   ERROR_NOT_FOUND,
   ERROR_UNEXPECTED,
+  DEFAULT_PER_PAGE,
   STATUS_NOT_FOUND,
   GITHUB_API_ACCEPT,
   GITHUB_API_VERSION,
@@ -57,12 +58,23 @@ function isSuccessful(status: number): boolean {
   return status >= STATUS_OK_MIN && status <= STATUS_OK_MAX;
 }
 
-async function request(
-  endpoint: string,
+function getNextPageUrl(linkHeader: string | null): string | null {
+  if (!linkHeader) return null;
+
+  const links = linkHeader.split(",");
+  const nextLink = links.find((link) => link.includes('rel="next"'));
+
+  if (!nextLink) return null;
+
+  const match = nextLink.match(/<([^>]+)>/);
+  return match?.[1] ?? null;
+}
+
+async function requestUrl(
+  url: string,
   options: RequestOptions = {},
   token?: string,
 ): Promise<Response> {
-  const url = `${GITHUB_API_BASE_URL}${endpoint}`;
   const headers = buildHeaders(token);
 
   const fetchOptions: RequestInit = {
@@ -80,8 +92,32 @@ async function request(
   handleError(response.status);
 }
 
+async function request(
+  endpoint: string,
+  options: RequestOptions = {},
+  token?: string,
+): Promise<Response> {
+  const url = `${GITHUB_API_BASE_URL}${endpoint}`;
+  return requestUrl(url, options, token);
+}
+
+async function getPaginated<T>(endpoint: string): Promise<T[]> {
+  let nextUrl: string | null = `${GITHUB_API_BASE_URL}${endpoint}`;
+  const results: T[] = [];
+
+  while (nextUrl) {
+    const response = await requestUrl(nextUrl);
+    const data = (await response.json()) as T[];
+    results.push(...data);
+    nextUrl = getNextPageUrl(response.headers.get("link"));
+  }
+
+  return results;
+}
+
 const client = {
   get: (endpoint: string) => request(endpoint),
+  getPaginated: <T>(endpoint: string) => getPaginated<T>(endpoint),
 
   post: (endpoint: string, body: unknown) =>
     request(endpoint, { method: "POST", body }),
@@ -96,6 +132,7 @@ const client = {
   validateToken: (token: string) => request("/user", {}, token),
   isOk: (status: number) => isSuccessful(status),
   isNotFound: (status: number) => status === STATUS_NOT_FOUND,
+  getDefaultPerPage: () => DEFAULT_PER_PAGE,
   delete: (endpoint: string) => request(endpoint, { method: "DELETE" }),
 };
 

@@ -43,9 +43,34 @@ export const ERROR_NO_TOKEN =
 
 export const ERROR_UNSUPPORTED_KEY = "Trying to set unsupported key.";
 export const ERROR_NO_METADATA = "No metadata file found.";
+export const ERROR_NO_REPO_TARGET = "No repository target provided.";
+
+export const ERROR_MUTATION_REQUIRES_YES =
+  "This operation changes repositories. Re-run with --yes to apply.";
+
+export const ERROR_RULESET_REQUIRED = "Ruleset file is required.";
+
+export const ERROR_LABEL_SOURCE_REQUIRED =
+  "Either --template or --metadata must be provided.";
+
 export const INFO_NO_NOTIFICATIONS = "No notifications found.";
 
 export const PING_RESPONSE = "pong";
+export const DEFAULT_REPOS_RETIRE_MONTHS = 12;
+export const DEFAULT_REPOS_REPORT_SINCE_DAYS = 30;
+export const DEFAULT_PER_PAGE = 100;
+export const README_LABEL = "README";
+export const LICENSE_LABEL = "LICENSE";
+export const SECURITY_LABEL = "SECURITY.md";
+export const CODEOWNERS_LABEL = "CODEOWNERS";
+
+export const CODEOWNERS_PATHS = [
+  "CODEOWNERS",
+  ".github/CODEOWNERS",
+  "docs/CODEOWNERS",
+] as const;
+
+export const GOVERNANCE_CHECK_COUNT = 4;
 
 export const SUPPORTED_CONFIG_KEYS = ["token", "repo"] as const;
 export type SupportedKey = (typeof SUPPORTED_CONFIG_KEYS)[number];
