@@ -3,6 +3,7 @@ import { describe, it, expect } from "vitest";
 
 describe("logger", () => {
   it("should have standard log methods", () => {
+    expect(typeof logger.start).toBe("function");
     expect(typeof logger.success).toBe("function");
     expect(typeof logger.error).toBe("function");
     expect(typeof logger.info).toBe("function");

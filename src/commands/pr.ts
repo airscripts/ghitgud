@@ -1,5 +1,6 @@
 import { Command } from "commander";
 
+import prompt from "@/core/prompt";
 import command from "@/core/command";
 import prService from "@/services/pr";
 import stackService from "@/services/stack";
@@ -32,18 +33,27 @@ Examples:
     .action(async (options) => {
       await command.run(() =>
         prService.cleanup({
-          dryRun: options.dryRun,
           force: options.force,
+          dryRun: options.dryRun,
         }),
       );
     });
 
-  pr.command("push <pr-number>")
+  pr.command("push")
     .description("Push current local changes back to a contributor's fork.")
+    .arguments("[pr-number]")
     .option("-f, --force", "Force push even if there are diverged commits")
-    .action(async (prNumber: string, options) => {
+    .action(async (prNumber?: string, options?: { force?: boolean }) => {
+      let prNum = prNumber;
+
+      if (!prNum) {
+        prNum = await prompt.text("Enter the PR number to push changes to:", {
+          placeholder: "e.g., 42",
+        });
+      }
+
       await command.run(() =>
-        prService.push(parseInt(prNumber, 10), options.force),
+        prService.push(parseInt(prNum, 10), options?.force ?? false),
       );
     });
 
@@ -54,8 +64,8 @@ Examples:
     .action(async (options) => {
       await command.run(() =>
         stackService.next({
-          reverse: options.reverse,
           list: options.list,
+          reverse: options.reverse,
         }),
       );
     });

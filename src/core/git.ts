@@ -97,7 +97,7 @@ function parseRepoFromRemoteUrl(remoteUrl: string): string | null {
 
 function deleteLocalBranch(branch: string, dryRun = false): boolean {
   if (dryRun) {
-    logger.info(`[dry-run] Would delete local branch: ${branch}`);
+    console.log(`[dry-run] Would delete local branch: ${branch}`);
     return true;
   }
 
@@ -112,7 +112,7 @@ function deleteLocalBranch(branch: string, dryRun = false): boolean {
 
 function deleteRemoteBranch(branch: string, dryRun = false): boolean {
   if (dryRun) {
-    logger.info(`[dry-run] Would delete remote branch: origin/${branch}`);
+    console.log(`[dry-run] Would delete remote branch: origin/${branch}`);
     return true;
   }
 
@@ -127,7 +127,7 @@ function deleteRemoteBranch(branch: string, dryRun = false): boolean {
 
 function fastForwardBase(baseBranch: string, dryRun = false): boolean {
   if (dryRun) {
-    logger.info(`[dry-run] Would fast-forward ${baseBranch}`);
+    console.log(`[dry-run] Would fast-forward ${baseBranch}`);
     return true;
   }
 

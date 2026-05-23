@@ -2,6 +2,7 @@ import { Command } from "commander";
 
 import config from "@/core/config";
 import output from "@/core/output";
+import prompt from "@/core/prompt";
 import command from "@/core/command";
 import { ConfigError } from "@/core/errors";
 import { ERROR_NO_REPO } from "@/core/constants";
@@ -31,9 +32,13 @@ Examples:
     .option("--repo <repo>", "Repository (owner/repo)")
     .action(async (options) => {
       await command.run(async () => {
-        const repo = options.repo || config.getRepoOptional();
-        if (!repo) throw new ConfigError(ERROR_NO_REPO);
+        const repo = await prompt.promptIfMissing(
+          options.repo || config.getRepoOptional(),
+          "Enter repository (owner/repo):",
+          { placeholder: "owner/repo" },
+        );
 
+        if (!repo) throw new ConfigError(ERROR_NO_REPO);
         const data = await insightsService.traffic(repo);
         insightsService.formatTraffic(data);
 
@@ -47,9 +52,13 @@ Examples:
     .option("--repo <repo>", "Repository (owner/repo)")
     .action(async (options) => {
       await command.run(async () => {
-        const repo = options.repo || config.getRepoOptional();
-        if (!repo) throw new ConfigError(ERROR_NO_REPO);
+        const repo = await prompt.promptIfMissing(
+          options.repo || config.getRepoOptional(),
+          "Enter repository (owner/repo):",
+          { placeholder: "owner/repo" },
+        );
 
+        if (!repo) throw new ConfigError(ERROR_NO_REPO);
         const data = await insightsService.contributors(repo);
         insightsService.formatContributors(data);
 
@@ -63,9 +72,13 @@ Examples:
     .option("--repo <repo>", "Repository (owner/repo)")
     .action(async (options) => {
       await command.run(async () => {
-        const repo = options.repo || config.getRepoOptional();
-        if (!repo) throw new ConfigError(ERROR_NO_REPO);
+        const repo = await prompt.promptIfMissing(
+          options.repo || config.getRepoOptional(),
+          "Enter repository (owner/repo):",
+          { placeholder: "owner/repo" },
+        );
 
+        if (!repo) throw new ConfigError(ERROR_NO_REPO);
         const data = await insightsService.commits(repo);
         insightsService.formatCommits(data);
 
@@ -79,9 +92,13 @@ Examples:
     .option("--repo <repo>", "Repository (owner/repo)")
     .action(async (options) => {
       await command.run(async () => {
-        const repo = options.repo || config.getRepoOptional();
-        if (!repo) throw new ConfigError(ERROR_NO_REPO);
+        const repo = await prompt.promptIfMissing(
+          options.repo || config.getRepoOptional(),
+          "Enter repository (owner/repo):",
+          { placeholder: "owner/repo" },
+        );
 
+        if (!repo) throw new ConfigError(ERROR_NO_REPO);
         const data = await insightsService.codeFrequency(repo);
         insightsService.formatCodeFrequency(data);
 
@@ -95,9 +112,13 @@ Examples:
     .option("--repo <repo>", "Repository (owner/repo)")
     .action(async (options) => {
       await command.run(async () => {
-        const repo = options.repo || config.getRepoOptional();
-        if (!repo) throw new ConfigError(ERROR_NO_REPO);
+        const repo = await prompt.promptIfMissing(
+          options.repo || config.getRepoOptional(),
+          "Enter repository (owner/repo):",
+          { placeholder: "owner/repo" },
+        );
 
+        if (!repo) throw new ConfigError(ERROR_NO_REPO);
         const data = await insightsService.popularity(repo);
         insightsService.formatPopularity(data);
 
@@ -111,7 +132,12 @@ Examples:
     .option("--repo <repo>", "Repository (owner/repo)")
     .action(async (options) => {
       await command.run(async () => {
-        const repo = options.repo || config.getRepoOptional();
+        const repo = await prompt.promptIfMissing(
+          options.repo || config.getRepoOptional(),
+          "Enter repository (owner/repo):",
+          { placeholder: "owner/repo" },
+        );
+
         if (!repo) throw new ConfigError(ERROR_NO_REPO);
         const data = await insightsService.participation(repo);
 

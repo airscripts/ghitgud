@@ -4,6 +4,7 @@ import { execSync } from "child_process";
 import api from "@/api/pr";
 import io from "@/core/io";
 import git from "@/core/git";
+import output from "@/core/output";
 import logger from "@/core/logger";
 import { PullRequest } from "@/api/pr";
 import { GhitgudError } from "@/core/errors";
@@ -126,11 +127,12 @@ const create = async (options: { base?: string }) => {
   const baseBranch = options.base || "auto";
 
   if (git.branchExistsLocally(branch)) {
-    logger.info(`Creating stack from current branch: ${branch}`);
+    logger.start(`Creating a stack from "${branch}".`);
     createStackEntry(
       branch,
       baseBranch === "auto" ? defaultBranch : baseBranch,
     );
+
     return { success: true };
   } else {
     throw new GhitgudError("Could not determine current branch.");
@@ -143,7 +145,7 @@ const list = async () => {
   const stack = data.stacks[branch];
 
   if (!stack) {
-    logger.info("Current branch is not part of a tracked stack.");
+    logger.warn("Current branch is not part of a tracked stack.");
     return { success: true, stacks: data.stacks, current: null };
   }
 
@@ -161,12 +163,10 @@ const list = async () => {
     return childPr ? `${child} (#${childPr.number})` : `${child} (no PR)`;
   });
 
-  logger.info(`Stack for "${branch}":`);
-  logger.info(`  Parent: ${stack.parent} (${parentStatus})`);
-
-  logger.info(
-    `  Children: ${childStatuses.length > 0 ? childStatuses.join(", ") : "none"}`,
-  );
+  output.renderSummary(`Stack: ${branch}`, [
+    ["Parent", `${stack.parent} (${parentStatus})`],
+    ["Children", childStatuses.length > 0 ? childStatuses.join(", ") : "none"],
+  ]);
 
   return {
     success: true,
@@ -192,12 +192,13 @@ const update = async () => {
   const parentPr = stack.parentPr ? prMap[stack.parent] : null;
 
   if (!parentPr && stack.parentPr) {
-    logger.info(
+    logger.start(
       `Parent PR #${stack.parentPr} merged/closed. Rebasing children onto ${stack.parent}.`,
     );
+
     for (const child of stack.children) {
       if (git.branchExistsLocally(child)) {
-        logger.info(`Rebasing ${child} onto ${stack.parent}.`);
+        logger.start(`Rebasing ${child} onto ${stack.parent}.`);
         git.rebaseBranch(child, stack.parent);
 
         const childPr = prMap[child];
@@ -212,11 +213,11 @@ const update = async () => {
     data.stacks[branch].parentPr = null;
     saveStackData(data);
   } else if (parentPr) {
-    logger.info(
+    output.log(
       `Parent PR #${parentPr.number} is still open. Nothing to update.`,
     );
   } else {
-    logger.info("No parent PR tracked. Nothing to update.");
+    output.log("No parent PR tracked. Nothing to update.");
   }
 
   return { success: true };
@@ -287,7 +288,7 @@ const pushStack = async (options: { title?: string; draft: boolean }) => {
 
   for (const { branch: b, base } of ordered) {
     if (git.branchExistsLocally(b)) {
-      logger.info(`Pushing ${b}...`);
+      logger.start(`Pushing ${b}...`);
       git.pushBranch(b);
 
       const existingPr = prMap[b];
@@ -296,7 +297,7 @@ const pushStack = async (options: { title?: string; draft: boolean }) => {
           await api.updatePr(existingPr.number, { base });
           logger.success(`Updated PR #${existingPr.number} base to ${base}.`);
         } else {
-          logger.info(`PR #${existingPr.number} already up to date.`);
+          output.log(`PR #${existingPr.number} already up to date.`);
         }
       } else {
         const titleTemplate = options.title || "feat: {branch}";
@@ -338,12 +339,10 @@ const next = async (options: { reverse?: boolean; list?: boolean }) => {
 
   if (options.list) {
     const chain = await getFullChain(data, branch);
-    logger.info("Stack chain:");
-
-    for (let i = 0; i < chain.length; i++) {
-      const marker = chain[i] === branch ? " (current)" : "";
-      logger.info(`  ${i + 1}. ${chain[i]}${marker}`);
-    }
+    output.renderList(
+      chain.map((item) => `${item}${item === branch ? " (current)" : ""}`),
+      "No branches in the current stack.",
+    );
 
     return { success: true, chain };
   }
@@ -391,9 +390,9 @@ const next = async (options: { reverse?: boolean; list?: boolean }) => {
 };
 
 export default {
-  create,
+  next,
   list,
+  create,
   update,
   push: pushStack,
-  next,
 };

@@ -18,6 +18,7 @@ vi.mock("@/api/labels", () => ({
 vi.mock("@/core/logger", () => ({
   default: {
     info: vi.fn(),
+    start: vi.fn(),
     error: vi.fn(),
     success: vi.fn(),
   },
@@ -47,6 +48,7 @@ const METADATA_LABELS = [
 
 describe("labels", () => {
   beforeEach(() => {
+    vi.spyOn(logger, "start").mockImplementation(() => {});
     vi.spyOn(logger, "success").mockImplementation(() => {});
     vi.spyOn(logger, "info").mockImplementation(() => {});
   });
@@ -86,7 +88,9 @@ describe("labels", () => {
       ],
     });
 
-    expect(logger.success).toHaveBeenCalledWith("Labels pulled successfully.");
+    expect(logger.success).toHaveBeenCalledWith(
+      "Saved 1 label(s) to local metadata.",
+    );
   });
 
   it("should push labels", async () => {
@@ -95,8 +99,19 @@ describe("labels", () => {
     (api.get as Mock).mockResolvedValue({ status: 200 });
     (api.patch as Mock).mockResolvedValue({ status: 200 });
     const result = await labelsService.push();
-    expect(result).toEqual({ success: true });
-    expect(logger.success).toHaveBeenCalledWith("Labels pushed successfully.");
+
+    expect(result).toEqual({
+      success: true,
+      metadata: {
+        created: [],
+        unchanged: [],
+        updated: ["bug"],
+      },
+    });
+
+    expect(logger.success).toHaveBeenCalledWith(
+      "Repository labels are up to date.",
+    );
   });
 
   it("should push labels creating new ones when not found", async () => {
@@ -109,7 +124,16 @@ describe("labels", () => {
 
     (api.create as Mock).mockResolvedValue({ status: 201 });
     const result = await labelsService.push();
-    expect(result).toEqual({ success: true });
+
+    expect(result).toEqual({
+      success: true,
+      metadata: {
+        updated: [],
+        unchanged: [],
+        created: ["bug"],
+      },
+    });
+
     expect(api.create).toHaveBeenCalled();
   });
 
@@ -117,9 +141,10 @@ describe("labels", () => {
     vi.spyOn(io, "fileExists").mockReturnValue(true);
     vi.spyOn(io, "readJsonFile").mockReturnValue(METADATA_LABELS);
     (api.delete as Mock).mockResolvedValue({ status: 204 });
+
     const result = await labelsService.prune();
-    expect(result).toEqual({ success: true });
-    expect(logger.success).toHaveBeenCalledWith("Labels pruned successfully.");
+    expect(result).toEqual({ success: true, metadata: { deleted: 1 } });
+    expect(logger.success).toHaveBeenCalledWith("Deleted 1 label(s).");
   });
 
   it("should throw when no metadata file for push", async () => {
@@ -141,6 +166,7 @@ describe("labels", () => {
     vi.spyOn(io, "readJsonFile").mockReturnValue(METADATA_LABELS);
     vi.spyOn(io, "ensureDir").mockImplementation(() => {});
     vi.spyOn(io, "writeJsonFile").mockImplementation(() => {});
+
     const result = await labelsService.pullTemplate("base", "/mock/templates");
     expect(result.success).toBe(true);
     expect(result.metadata).toBeDefined();
@@ -167,7 +193,15 @@ describe("labels", () => {
 
     (api.create as Mock).mockResolvedValue({ status: 201 });
     const result = await labelsService.pushTemplate("base", "/mock/templates");
-    expect(result).toEqual({ success: true });
+
+    expect(result).toEqual({
+      success: true,
+      metadata: {
+        updated: [],
+        unchanged: [],
+        created: ["bug"],
+      },
+    });
   });
 
   it("should throw for nonexistent template on push", async () => {

@@ -20,7 +20,11 @@ interface GovernResult {
 }
 
 const govern = async (options: GovernOptions) => {
-  logger.info("Applying repository governance.");
+  logger.start(
+    options.dryRun
+      ? "Previewing repository governance changes."
+      : "Applying repository governance changes.",
+  );
 
   if (!options.ruleset) {
     throw new GhitgudError(ERROR_RULESET_REQUIRED);
@@ -35,7 +39,7 @@ const govern = async (options: GovernOptions) => {
 
   const repos = await service.resolveTargets(options);
 
-  return service.runBulk<GovernResult>(repos, async (repo) => {
+  const result = await service.runBulk<GovernResult>(repos, async (repo) => {
     const existing = await rulesets.list(repo.fullName);
     const match = existing.find((item) => item.name === ruleset.name);
 
@@ -63,6 +67,18 @@ const govern = async (options: GovernOptions) => {
       dryRun: false,
     };
   });
+
+  service.renderBulkResults(
+    "Governance Summary",
+    result,
+    (_repo, metadata) => ({
+      ruleset: metadata.ruleset,
+      action: metadata.action,
+      mode: metadata.dryRun ? "dry-run" : "apply",
+    }),
+  );
+
+  return result;
 };
 
 export default { govern };

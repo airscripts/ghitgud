@@ -52,17 +52,21 @@ const ping = () => {
 };
 
 const list = async () => {
-  logger.info("Fetching labels from repository.");
+  logger.start("Loading labels from the repository.");
   const response = await api.fetch();
   const data = await response.json();
   const labels = data.map((label: Label) => normalizeLabel(label));
 
   formatLabels(labels);
+  logger.success(
+    labels.length ? `Loaded ${labels.length} label(s).` : "No labels found.",
+  );
+
   return { success: true, metadata: labels };
 };
 
 const pull = async () => {
-  logger.info("Pulling labels from repository.");
+  logger.start("Pulling labels from the repository.");
   const response = await api.fetch();
   const data = await response.json();
   const labels = data.map((label: Label) => normalizeLabel(label));
@@ -70,18 +74,21 @@ const pull = async () => {
   io.ensureDir(GHITGUD_FOLDER);
   io.writeJsonFile(METADATA_FILE_PATH, labels);
 
-  logger.success("Labels pulled successfully.");
+  logger.success(`Saved ${labels.length} label(s) to local metadata.`);
   return { success: true, metadata: labels };
 };
 
 const pullTemplate = async (templateName: string, templatesDir: string) => {
-  logger.info(`Pulling labels from template "${templateName}".`);
+  logger.start(`Loading labels from the "${templateName}" template.`);
   const labels = loadLabelsFromTemplate(templateName, templatesDir);
   io.ensureDir(GHITGUD_FOLDER);
   io.writeJsonFile(METADATA_FILE_PATH, labels);
 
   formatLabels(labels);
-  logger.success(`Labels pulled from template "${templateName}".`);
+  logger.success(
+    `Saved ${labels.length} template label(s) from "${templateName}".`,
+  );
+
   return { success: true, metadata: labels };
 };
 
@@ -104,7 +111,9 @@ const upsertLabels = async (
   repo?: string,
   options: { dryRun?: boolean } = {},
 ) => {
-  logger.info(`Upserting ${labels.length} label(s).`);
+  logger.start(
+    `${options.dryRun ? "Previewing" : "Syncing"} ${labels.length} label(s).`,
+  );
 
   const results = await Promise.all(
     labels.map(async (label) => {
@@ -152,26 +161,38 @@ const upsertLabels = async (
 };
 
 const push = async () => {
-  logger.info("Pushing labels to repository.");
+  logger.start("Syncing local metadata labels to the repository.");
   const labels = loadLabelsFromMetadata();
-  await upsertLabels(labels);
+  const result = await upsertLabels(labels);
 
-  logger.success("Labels pushed successfully.");
-  return { success: true };
+  output.renderSummary("Label Sync", [
+    ["Created", result.created.length],
+    ["Updated", result.updated.length],
+    ["Unchanged", result.unchanged.length],
+  ]);
+
+  logger.success("Repository labels are up to date.");
+  return { success: true, metadata: result };
 };
 
 const pushTemplate = async (templateName: string, templatesDir: string) => {
-  logger.info(`Pushing labels from template "${templateName}".`);
+  logger.start(`Syncing the "${templateName}" label template.`);
   const labels = loadLabelsFromTemplate(templateName, templatesDir);
-  await upsertLabels(labels);
+  const result = await upsertLabels(labels);
 
-  logger.success(`Labels pushed from template "${templateName}".`);
-  return { success: true };
+  output.renderSummary("Label Sync", [
+    ["Created", result.created.length],
+    ["Updated", result.updated.length],
+    ["Unchanged", result.unchanged.length],
+  ]);
+
+  logger.success(`Template "${templateName}" applied successfully.`);
+  return { success: true, metadata: result };
 };
 
 const prune = async () => {
   const labels = loadLabelsFromMetadata();
-  logger.info(`Pruning ${labels.length} label(s) from repository.`);
+  logger.start(`Deleting ${labels.length} label(s) from the repository.`);
 
   await Promise.all(
     labels.map(async (label) => {
@@ -179,8 +200,8 @@ const prune = async () => {
     }),
   );
 
-  logger.success("Labels pruned successfully.");
-  return { success: true };
+  logger.success(`Deleted ${labels.length} label(s).`);
+  return { success: true, metadata: { deleted: labels.length } };
 };
 
 export default {

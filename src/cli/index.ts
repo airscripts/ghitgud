@@ -2,6 +2,7 @@ import process from "process";
 import { program } from "commander";
 
 import ascii from "./ascii";
+import dates from "@/core/dates";
 import output from "@/core/output";
 import ghCommand from "@/commands/gh";
 import prCommand from "@/commands/pr";
@@ -15,6 +16,7 @@ import insightsCommand from "@/commands/insights";
 import mentionsCommand from "@/commands/mentions";
 import { ERROR_NO_TOKEN } from "@/core/constants";
 import activityCommand from "@/commands/activity";
+import { setTheme, initializeTheme } from "@/core/theme";
 import notificationsCommand from "@/commands/notifications";
 
 import {
@@ -28,12 +30,22 @@ const DESCRIPTION = "A simple CLI to give superpowers to GitHub.";
 
 outputState.setJsonOutput(process.argv.includes("--json"));
 
+if (process.argv.includes("--theme=dark")) {
+  setTheme("dark");
+} else if (process.argv.includes("--theme=light")) {
+  setTheme("light");
+} else if (process.argv.includes("--theme=auto")) {
+  setTheme("auto");
+} else {
+  initializeTheme();
+}
+
 program
   .name(NAME)
   .description(DESCRIPTION)
   .version(__VERSION__)
   .option("--json", "Output structured JSON")
-  .showHelpAfterError()
+  .option("--theme <theme>", "Color theme (dark, light, auto)", "auto")
   .showSuggestionAfterError();
 
 ghCommand.register(program);
@@ -47,6 +59,14 @@ labelsCommand.register(program);
 profileCommand.register(program);
 configCommand.register(program);
 prCommand.register(program);
+
+program
+  .command("version")
+  .description("Show version number.")
+  .action(() => {
+    console.log(__VERSION__);
+    process.exit(0);
+  });
 
 program.addHelpText("before", ascii);
 
@@ -73,7 +93,7 @@ function handleError(error: unknown): never {
   if (error instanceof RateLimitError) {
     output.writeError(
       error.message,
-      `Rate limit resets at ${error.resetAt.toISOString()}.`,
+      `Rate limit resets ${dates.formatRelative(error.resetAt)} (${dates.formatDateShort(error.resetAt)}).`,
     );
 
     process.exit(1);
@@ -84,9 +104,24 @@ function handleError(error: unknown): never {
     process.exit(1);
   }
 
-  const commanderError = error as { code?: string; exitCode?: number };
+  const commanderError = error as {
+    code?: string;
+    message?: string;
+    exitCode?: number;
+  };
+
   if (commanderError.exitCode === 0) {
     process.exit(0);
+  }
+
+  if (commanderError.code === "commander.unknownCommand") {
+    console.log();
+    console.log(program.helpInformation());
+    process.exit(1);
+  }
+
+  if (commanderError.code === "commander.help") {
+    process.exit(1);
   }
 
   throw error;

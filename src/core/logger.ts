@@ -13,6 +13,7 @@ const callIfHuman =
   };
 
 const logger = {
+  start: callIfHuman(baseLogger.start.bind(baseLogger)),
   success: callIfHuman(baseLogger.success.bind(baseLogger)),
   error: callIfHuman(baseLogger.error.bind(baseLogger)),
   info: callIfHuman(baseLogger.info.bind(baseLogger)),

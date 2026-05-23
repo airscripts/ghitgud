@@ -1,5 +1,6 @@
 import { Command } from "commander";
 
+import prompt from "@/core/prompt";
 import command from "@/core/command";
 import service from "@/services/notifications";
 
@@ -29,25 +30,45 @@ Examples:
       void command.run(() =>
         service.list({
           all: options.all,
-          participating: options.participating,
           repo: options.repo,
+          participating: options.participating,
           limit: options.limit ? parseInt(options.limit, 10) : undefined,
         }),
       );
     });
 
   notifications
-    .command("read <id>")
+    .command("read")
     .description("Mark a notification as read.")
-    .action((id: string) => {
-      void command.run(() => service.markRead(id));
+    .arguments("[id]")
+    .action(async (id?: string) => {
+      let notificationId = id;
+
+      if (!notificationId) {
+        notificationId = await prompt.text(
+          "Enter the notification ID to mark as read:",
+          { placeholder: "e.g., 123456789" },
+        );
+      }
+
+      void command.run(() => service.markRead(notificationId));
     });
 
   notifications
-    .command("done <id>")
+    .command("done")
     .description("Mark a notification as done.")
-    .action((id: string) => {
-      void command.run(() => service.markDone(id));
+    .arguments("[id]")
+    .action(async (id?: string) => {
+      let notificationId = id;
+
+      if (!notificationId) {
+        notificationId = await prompt.text(
+          "Enter the notification ID to mark as done:",
+          { placeholder: "e.g., 123456789" },
+        );
+      }
+
+      void command.run(() => service.markDone(notificationId));
     });
 };
 

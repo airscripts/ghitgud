@@ -20,9 +20,10 @@ vi.mock("@/api/rulesets", () => ({
 
 vi.mock("@/services/repos", () => ({
   default: {
-    resolveTargets: vi.fn(),
-    requireMutationConfirmation: vi.fn(),
     runBulk: vi.fn(),
+    resolveTargets: vi.fn(),
+    renderBulkResults: vi.fn(),
+    requireMutationConfirmation: vi.fn(),
   },
 }));
 
@@ -45,11 +46,12 @@ describe("repo govern service", () => {
 
     (service.runBulk as Mock).mockImplementation(async (repos, handler) => {
       const metadata = await handler(repos[0]);
+
       return {
         success: true,
         metadata: {
-          completed: 1,
           failed: 0,
+          completed: 1,
           results: [{ repo: repos[0].fullName, success: true, metadata }],
         },
       };

@@ -30,6 +30,7 @@ function add(name: string, options: AddProfileOptions) {
   const profileName = validateName(name);
   if (!options.token) throw new ConfigError(ERROR_PROFILE_TOKEN_REQUIRED);
 
+  logger.start(`Saving profile "${profileName}".`);
   config.addProfile(profileName, {
     repo: options.repo,
     token: options.token,
@@ -67,6 +68,7 @@ async function switchProfile(name: string) {
     throw new ConfigError(ERROR_PROFILE_TOKEN_REQUIRED);
   }
 
+  logger.start(`Validating token for profile "${profileName}".`);
   await client.validateToken(profile.token);
   config.setActiveProfile(profileName);
   logger.success(`Active profile switched to "${profileName}".`);
@@ -91,6 +93,7 @@ function detect() {
   const detectedProfile = repo ? config.findProfileByRepo(repo) : null;
   const profileName = detectedProfile ?? DEFAULT_PROFILE_NAME;
 
+  logger.start("Detecting the best profile for the current repository.");
   config.setRepoLocalProfile(profileName);
 
   if (detectedProfile) {

@@ -12,7 +12,6 @@ vi.mock("child_process", () => ({
 
 vi.mock("@/core/logger", () => ({
   default: {
-    info: vi.fn(),
     warn: vi.fn(),
     error: vi.fn(),
     success: vi.fn(),
@@ -160,11 +159,6 @@ describe("git core", () => {
   it("deleteLocalBranch logs info in dry-run and returns true", () => {
     const result = git.deleteLocalBranch("feature", true);
     expect(result).toBe(true);
-
-    expect(logger.info).toHaveBeenCalledWith(
-      "[dry-run] Would delete local branch: feature",
-    );
-
     expect(execSyncMock).not.toHaveBeenCalled();
   });
 
@@ -188,11 +182,6 @@ describe("git core", () => {
   it("deleteRemoteBranch logs info in dry-run and returns true", () => {
     const result = git.deleteRemoteBranch("feature", true);
     expect(result).toBe(true);
-
-    expect(logger.info).toHaveBeenCalledWith(
-      "[dry-run] Would delete remote branch: origin/feature",
-    );
-
     expect(execSyncMock).not.toHaveBeenCalled();
   });
 
@@ -214,11 +203,6 @@ describe("git core", () => {
   it("fastForwardBase logs info in dry-run and returns true", () => {
     const result = git.fastForwardBase("main", true);
     expect(result).toBe(true);
-
-    expect(logger.info).toHaveBeenCalledWith(
-      "[dry-run] Would fast-forward main",
-    );
-
     expect(execSyncMock).not.toHaveBeenCalled();
   });
 

@@ -1,7 +1,10 @@
 import { Command } from "commander";
 
 import command from "@/core/command";
+import prompt from "@/core/prompt";
 import configService from "@/services/config";
+
+import { SUPPORTED_CONFIG_KEYS } from "@/core/constants";
 
 const register = (program: Command) => {
   const config = program
@@ -11,17 +14,81 @@ const register = (program: Command) => {
   config
     .command("set")
     .description("Set configuration.")
-    .arguments("<key> <value>")
-    .action((key: string, value: string) => {
-      void command.run(() => configService.set(key, value));
+    .arguments("[key] [value]")
+    .action(async (key?: string, value?: string) => {
+      let configKey = key;
+      let configValue = value;
+
+      if (!configKey) {
+        configKey = await prompt.select(
+          "Which configuration would you like to set?",
+          SUPPORTED_CONFIG_KEYS.map((k) => ({
+            value: k,
+            label:
+              k === "token"
+                ? "token (GitHub personal access token)"
+                : "repo (default repository)",
+          })),
+        );
+      }
+
+      if (!configValue) {
+        const currentValue = configService.read(configKey);
+
+        const placeholder =
+          configKey === "token" ? "ghp_xxxxxxxxxxxx" : "owner/repo";
+
+        const initialValue = currentValue
+          ? `${currentValue.substring(0, 4)}...`
+          : undefined;
+
+        configValue = await prompt.text(`Enter value for ${configKey}:`, {
+          placeholder,
+          initialValue,
+        });
+      }
+
+      void command.run(() => configService.set(configKey, configValue));
     });
 
   config
     .command("get")
     .description("Get configuration value.")
-    .arguments("<key>")
-    .action((key: string) => {
-      void command.run(() => configService.get(key));
+    .arguments("[key]")
+    .action(async (key?: string) => {
+      let configKey = key;
+
+      if (!configKey) {
+        configKey = await prompt.select(
+          "Which configuration would you like to view?",
+          SUPPORTED_CONFIG_KEYS.map((k) => ({
+            value: k,
+            label: k,
+          })),
+        );
+      }
+
+      void command.run(() => configService.get(configKey));
+    });
+
+  config
+    .command("unset")
+    .description("Remove configuration value.")
+    .arguments("[key]")
+    .action(async (key?: string) => {
+      let configKey = key;
+
+      if (!configKey) {
+        configKey = await prompt.select(
+          "Which configuration would you like to remove?",
+          SUPPORTED_CONFIG_KEYS.map((k) => ({
+            value: k,
+            label: k,
+          })),
+        );
+      }
+
+      void command.run(() => configService.unset(configKey));
     });
 };
 

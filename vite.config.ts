@@ -16,10 +16,16 @@ export default defineConfig({
     outDir: path.resolve(__dirname, "dist"),
     rollupOptions: {
       external: [
+        "@clack/prompts",
+        "boxen",
+        "cli-progress",
         "commander",
         "consola",
+        "date-fns",
         "dotenv",
         "figlet",
+        "ora",
+        "picocolors",
         ...builtinModules,
         ...builtinModules.map((m) => `node:${m}`),
       ],

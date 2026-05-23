@@ -1,7 +1,8 @@
 import service from "./index";
 import pulls from "@/api/pulls";
+import dates from "@/core/dates";
 import issues from "@/api/issues";
-import logger from "@/core/logger";
+import output from "@/core/output";
 import commits from "@/api/commits";
 import { RepoTargetOptions } from "@/types";
 
@@ -40,12 +41,12 @@ const average = (values: number[]): number => {
 };
 
 const report = async (options: ReportOptions = {}) => {
-  logger.info("Generating repository report.");
+  output.log("Generating repository health report.");
   const since = service.parsePeriod(options.since).toISOString();
   const staleDate = since.split("T")[0];
   const repos = await service.resolveTargets(options);
 
-  return service.runBulk<ReportResult>(repos, async (repo) => {
+  const result = await service.runBulk<ReportResult>(repos, async (repo) => {
     const [
       openIssues,
       staleIssues,
@@ -76,6 +77,18 @@ const report = async (options: ReportOptions = {}) => {
       mergedPullRequests: mergedPullRequests.length,
     };
   });
+
+  service.renderBulkResults("Report Summary", result, (_repo, metadata) => ({
+    issues: metadata.openIssues,
+    prs: metadata.openPullRequests,
+    merged: metadata.mergedPullRequests,
+    contributors: metadata.contributors,
+    lastPush: metadata.lastPushedAt
+      ? dates.formatRelative(metadata.lastPushedAt)
+      : "unknown",
+  }));
+
+  return result;
 };
 
 export default { report };

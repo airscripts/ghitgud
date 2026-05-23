@@ -1,5 +1,6 @@
-import api from "@/api/notifications";
 import logger from "@/core/logger";
+import output from "@/core/output";
+import api from "@/api/notifications";
 import service from "@/services/notifications";
 import { describe, it, expect, vi, Mock, beforeEach } from "vitest";
 
@@ -16,8 +17,16 @@ vi.mock("@/api/notifications", () => ({
 
 vi.mock("@/core/logger", () => ({
   default: {
-    info: vi.fn(),
+    warn: vi.fn(),
+    start: vi.fn(),
     success: vi.fn(),
+  },
+}));
+
+vi.mock("@/core/output", () => ({
+  default: {
+    renderTable: vi.fn(),
+    renderSummary: vi.fn(),
   },
 }));
 
@@ -67,17 +76,17 @@ describe("notifications service", () => {
 
       const result = await service.list({ repo: "other/repo" });
       expect(result.metadata).toHaveLength(0);
-      expect(logger.info).toHaveBeenCalledWith("No notifications found.");
+      expect(output.renderTable).toHaveBeenCalled();
     });
 
-    it("should show info when no notifications", async () => {
+    it("should show success when no notifications", async () => {
       (api.fetch as Mock).mockResolvedValue({
         json: () => Promise.resolve([]),
       });
 
       const result = await service.list();
       expect(result.metadata).toHaveLength(0);
-      expect(logger.info).toHaveBeenCalledWith("No notifications found.");
+      expect(logger.success).toHaveBeenCalledWith("Notifications checked.");
     });
   });
 

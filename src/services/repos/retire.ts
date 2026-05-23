@@ -1,6 +1,7 @@
 import service from "./index";
 import api from "@/api/repos";
-import logger from "@/core/logger";
+import dates from "@/core/dates";
+import output from "@/core/output";
 import { RepoTargetOptions } from "@/types";
 import { DEFAULT_REPOS_RETIRE_MONTHS } from "@/core/constants";
 
@@ -20,7 +21,12 @@ interface RetireResult {
 }
 
 const retire = async (options: RetireOptions) => {
-  logger.info("Evaluating repositories for retirement.");
+  output.log(
+    options.dryRun
+      ? "Previewing repository retirement candidates."
+      : "Evaluating repositories for retirement.",
+  );
+
   service.requireMutationConfirmation(options.dryRun, options.yes);
 
   const threshold = service.parseMonths(
@@ -30,7 +36,7 @@ const retire = async (options: RetireOptions) => {
 
   const repos = await service.resolveTargets(options);
 
-  return service.runBulk<RetireResult>(repos, async (repo) => {
+  const result = await service.runBulk<RetireResult>(repos, async (repo) => {
     const monthsInactive = service.getInactiveMonths(repo.pushedAt);
 
     if (repo.archived) {
@@ -87,6 +93,20 @@ const retire = async (options: RetireOptions) => {
       lastPushedAt: repo.pushedAt,
     };
   });
+
+  service.renderBulkResults(
+    "Retirement Summary",
+    result,
+    (_repo, metadata) => ({
+      action: metadata.action,
+      inactive: metadata.monthsInactive,
+      lastPush: metadata.lastPushedAt
+        ? dates.formatRelative(metadata.lastPushedAt)
+        : "unknown",
+    }),
+  );
+
+  return result;
 };
 
 export default { retire };

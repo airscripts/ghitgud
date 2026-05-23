@@ -14,6 +14,7 @@ vi.mock("@/services/repos", () => ({
     runBulk: vi.fn(),
     parseMonths: vi.fn(),
     resolveTargets: vi.fn(),
+    renderBulkResults: vi.fn(),
     getInactiveMonths: vi.fn(),
     requireMutationConfirmation: vi.fn(),
   },

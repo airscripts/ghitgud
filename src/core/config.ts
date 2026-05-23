@@ -274,6 +274,23 @@ function write(key: string, value: string): void {
   });
 }
 
+function unset(key: string): void {
+  const credentials = readCredentials();
+  const profileName = getWritableProfileName(credentials);
+  const profile = credentials.profiles[profileName] ?? {};
+
+  const { [key]: _removed, ...restProfile } = profile as Record<string, string>;
+  void _removed;
+
+  writeCredentials({
+    activeProfile: credentials.activeProfile || profileName,
+    profiles: {
+      ...credentials.profiles,
+      [profileName]: restProfile as Profile,
+    },
+  });
+}
+
 function getRepo(): string {
   const repo = getRepoOptional();
   if (repo) return repo;
@@ -312,6 +329,7 @@ const config = {
   has,
   read,
   write,
+  unset,
   getRepo,
   getToken,
   getProfile,

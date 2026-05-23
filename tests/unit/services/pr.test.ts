@@ -39,8 +39,9 @@ vi.mock("@/core/logger", () => ({
   default: {
     info: vi.fn(),
     warn: vi.fn(),
-    success: vi.fn(),
+    start: vi.fn(),
     error: vi.fn(),
+    success: vi.fn(),
   },
 }));
 
@@ -78,10 +79,12 @@ describe("pr service", () => {
       (api.fetchMerged as Mock).mockReturnValue({
         json: () => Promise.resolve([]),
       });
+
       const result = await prService.cleanup({ dryRun: false, force: false });
       expect(result.success).toBe(true);
       expect(result.results).toEqual([]);
-      expect(logger.info).toHaveBeenCalledWith(
+
+      expect(logger.success).toHaveBeenCalledWith(
         "No merged pull requests found.",
       );
     });
@@ -91,6 +94,7 @@ describe("pr service", () => {
       (api.fetchMerged as Mock).mockReturnValue({
         json: () => Promise.resolve([pr]),
       });
+
       (git.getCurrentBranch as Mock).mockReturnValue("main");
       (git.getDefaultBranch as Mock).mockReturnValue("main");
       (git.branchExistsLocally as Mock).mockReturnValue(true);
@@ -100,7 +104,6 @@ describe("pr service", () => {
       (git.fastForwardBase as Mock).mockReturnValue(true);
       (git.getAheadCount as Mock).mockReturnValue(0);
 
-      // isSquashOrRebaseMerge — commit with 2 parents (merge commit)
       (api.getCommit as Mock).mockReturnValue({
         json: () => Promise.resolve({ parents: [{}, {}] }),
       });
@@ -118,16 +121,17 @@ describe("pr service", () => {
       (api.fetchMerged as Mock).mockReturnValue({
         json: () => Promise.resolve([pr]),
       });
+
       (git.getCurrentBranch as Mock).mockReturnValue("main");
       (git.getDefaultBranch as Mock).mockReturnValue("main");
 
-      // isSquashOrRebaseMerge — commit with 1 parent
       (api.getCommit as Mock).mockReturnValue({
         json: () => Promise.resolve({ parents: [{}] }),
       });
 
       const result = await prService.cleanup({ dryRun: false, force: false });
       expect(result.results[0].skipped).toBe(true);
+
       expect(result.results[0].reason).toBe(
         "squash/rebase merge detected — skipping",
       );
@@ -138,10 +142,12 @@ describe("pr service", () => {
       (api.fetchMerged as Mock).mockReturnValue({
         json: () => Promise.resolve([pr]),
       });
+
       (git.getCurrentBranch as Mock).mockReturnValue("main");
       (git.getDefaultBranch as Mock).mockReturnValue("main");
       (git.branchExistsLocally as Mock).mockReturnValue(false);
       (git.branchExistsRemotely as Mock).mockReturnValue(false);
+
       (api.getCommit as Mock).mockReturnValue({
         json: () => Promise.resolve({ parents: [{}, {}] }),
       });
@@ -156,10 +162,12 @@ describe("pr service", () => {
       (api.fetchMerged as Mock).mockReturnValue({
         json: () => Promise.resolve([pr]),
       });
+
       (git.getCurrentBranch as Mock).mockReturnValue("main");
       (git.getDefaultBranch as Mock).mockReturnValue("main");
       (git.branchExistsLocally as Mock).mockReturnValue(true);
       (git.branchExistsRemotely as Mock).mockReturnValue(true);
+
       (api.getCommit as Mock).mockReturnValue({
         json: () => Promise.resolve({ parents: [{}, {}] }),
       });
@@ -187,6 +195,7 @@ describe("pr service", () => {
       (api.fetchMerged as Mock).mockReturnValue({
         json: () => Promise.resolve([pr]),
       });
+
       (git.getCurrentBranch as Mock).mockReturnValue("main");
       (git.getDefaultBranch as Mock).mockReturnValue("main");
       (git.branchExistsLocally as Mock).mockReturnValue(true);
@@ -194,6 +203,7 @@ describe("pr service", () => {
       (git.deleteLocalBranch as Mock).mockReturnValue(true);
       (git.deleteRemoteBranch as Mock).mockReturnValue(true);
       (git.fastForwardBase as Mock).mockReturnValue(true);
+
       (api.getCommit as Mock).mockReturnValue({
         json: () => Promise.resolve({ parents: [{}, {}] }),
       });
@@ -210,6 +220,7 @@ describe("pr service", () => {
       (api.fetchMerged as Mock).mockReturnValue({
         json: () => Promise.resolve([pr]),
       });
+
       (git.getCurrentBranch as Mock).mockReturnValue("feature");
       (git.getDefaultBranch as Mock).mockReturnValue("main");
       (git.branchExistsLocally as Mock).mockReturnValue(true);
@@ -217,6 +228,7 @@ describe("pr service", () => {
       (git.deleteLocalBranch as Mock).mockReturnValue(true);
       (git.fastForwardBase as Mock).mockReturnValue(true);
       (git.checkoutBranch as Mock).mockReturnValue(undefined);
+
       (api.getCommit as Mock).mockReturnValue({
         json: () => Promise.resolve({ parents: [{}, {}] }),
       });
@@ -229,9 +241,10 @@ describe("pr service", () => {
   describe("push", () => {
     it("throws when PR head repo is null", async () => {
       const pr = makePr({
-        head: { ref: "feature", repo: null },
         base: { ref: "main" },
+        head: { ref: "feature", repo: null },
       });
+
       (api.fetch as Mock).mockReturnValue(pr);
       (git.getCurrentBranch as Mock).mockReturnValue("fix");
 
@@ -276,8 +289,9 @@ describe("pr service", () => {
         "feature",
         false,
       );
+
       expect(logger.success).toHaveBeenCalledWith(
-        "Pushed to owner/repo:feature.",
+        'Pushed "fix" to owner/repo:feature.',
       );
     });
 
@@ -295,7 +309,8 @@ describe("pr service", () => {
         "fork-owner-repo",
         "https://github.com/owner/repo",
       );
-      expect(logger.info).toHaveBeenCalledWith(
+
+      expect(logger.start).toHaveBeenCalledWith(
         "Adding remote fork-owner-repo.",
       );
     });

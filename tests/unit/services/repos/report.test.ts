@@ -30,6 +30,7 @@ vi.mock("@/services/repos", () => ({
     runBulk: vi.fn(),
     parsePeriod: vi.fn(),
     resolveTargets: vi.fn(),
+    renderBulkResults: vi.fn(),
   },
 }));
 

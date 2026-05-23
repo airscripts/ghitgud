@@ -1,5 +1,6 @@
 import { Command } from "commander";
 
+import prompt from "@/core/prompt";
 import command from "@/core/command";
 import labelService from "@/services/repos/label";
 import governService from "@/services/repos/govern";
@@ -39,10 +40,21 @@ Examples:
   addTargetOptions(
     repos.command("govern").description("Apply repository rulesets."),
   )
-    .requiredOption("--ruleset <path>", "Ruleset JSON file")
+    .option("--ruleset <path>", "Ruleset JSON file")
     .option("--dry-run", "Preview changes without mutating", false)
     .option("--yes", "Apply changes", false)
-    .action((options) => void command.run(() => governService.govern(options)));
+    .action(async (options) => {
+      let ruleset = options.ruleset;
+
+      if (!ruleset) {
+        ruleset = await prompt.text(
+          "Enter the path to your ruleset JSON file:",
+          { placeholder: "./ruleset.json" },
+        );
+      }
+
+      void command.run(() => governService.govern({ ...options, ruleset }));
+    });
 
   addTargetOptions(
     repos.command("label").description("Sync labels across repositories."),

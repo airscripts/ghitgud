@@ -15,6 +15,7 @@ vi.mock("@/services/repos", () => ({
   default: {
     runBulk: vi.fn(),
     resolveTargets: vi.fn(),
+    renderBulkResults: vi.fn(),
   },
 }));
 

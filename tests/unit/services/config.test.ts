@@ -1,4 +1,5 @@
 import config from "@/core/config";
+import output from "@/core/output";
 import logger from "@/core/logger";
 import { ConfigError } from "@/core/errors";
 import configService from "@/services/config";
@@ -9,13 +10,20 @@ vi.mock("@/core/config", () => ({
   default: {
     write: vi.fn(),
     read: vi.fn(),
+    unset: vi.fn(),
+  },
+}));
+
+vi.mock("@/core/output", () => ({
+  default: {
+    renderSummary: vi.fn(),
   },
 }));
 
 describe("config service", () => {
   beforeEach(() => {
+    vi.spyOn(logger, "start").mockImplementation(() => {});
     vi.spyOn(logger, "success").mockImplementation(() => {});
-    vi.spyOn(logger, "info").mockImplementation(() => {});
   });
 
   afterEach(() => {
@@ -57,18 +65,42 @@ describe("config service", () => {
         value: "my-token",
       });
 
-      expect(logger.info).toHaveBeenCalledWith("token: my-token.");
+      expect(output.renderSummary).toHaveBeenCalledWith("Configuration", [
+        ["token", "my-token"],
+      ]);
     });
 
     it("should return null for missing value", () => {
       (config.read as ReturnType<typeof vi.fn>).mockReturnValue(null);
       const result = configService.get("token");
       expect(result).toEqual({ success: true, key: "token", value: null });
-      expect(logger.info).toHaveBeenCalledWith("token: (not set).");
+
+      expect(output.renderSummary).toHaveBeenCalledWith("Configuration", [
+        ["token", "(not set)"],
+      ]);
     });
 
     it("should throw ConfigError for unsupported key", () => {
       expect(() => configService.get("invalid")).toThrow(ConfigError);
+    });
+  });
+
+  describe("unset", () => {
+    it("should unset a config key", () => {
+      (config.read as ReturnType<typeof vi.fn>).mockReturnValue("my-token");
+      const result = configService.unset("token");
+
+      expect(result).toEqual({ success: true });
+      expect(config.unset).toHaveBeenCalledWith("token");
+
+      expect(logger.success).toHaveBeenCalledWith(
+        'Config "token" unset successfully.',
+      );
+    });
+
+    it("should throw ConfigError for non-set key", () => {
+      (config.read as ReturnType<typeof vi.fn>).mockReturnValue(null);
+      expect(() => configService.unset("token")).toThrow(ConfigError);
     });
   });
 });

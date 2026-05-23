@@ -83,7 +83,7 @@ function handleRateLimit(response: Response): never {
   }
 
   const message = hasToken
-    ? `${ERROR_RATE_LIMIT_AUTHENTICATED}. Resets at ${rateLimit.resetAt.toLocaleTimeString()}.`
+    ? ERROR_RATE_LIMIT_AUTHENTICATED
     : ERROR_RATE_LIMIT_UNAUTHENTICATED;
 
   throw new RateLimitError(

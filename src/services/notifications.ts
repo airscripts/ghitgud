@@ -1,13 +1,14 @@
-import api from "@/api/notifications";
 import output from "@/core/output";
 import logger from "@/core/logger";
+import api from "@/api/notifications";
 import { INFO_NO_NOTIFICATIONS } from "@/core/constants";
+
 import {
+  ListOptions,
   Notification,
   ActivityResult,
-  ListOptions,
-  normalizeThread,
   normalizeIssue,
+  normalizeThread,
   normalizeSearchItem,
 } from "@/types/notifications";
 
@@ -24,7 +25,7 @@ const formatTable = (notifications: Notification[]) => {
 };
 
 const list = async (options: ListOptions = {}) => {
-  logger.info("Fetching notifications.");
+  logger.start("Loading notifications.");
 
   const response = await api.fetch({
     all: options.all,
@@ -40,25 +41,31 @@ const list = async (options: ListOptions = {}) => {
   }
 
   formatTable(notifications);
+  logger.success(
+    notifications.length
+      ? `Loaded ${notifications.length} notification(s).`
+      : "Notifications checked.",
+  );
+
   return { success: true, metadata: notifications };
 };
 
 const markRead = async (id: string) => {
-  logger.info(`Marking notification ${id} as read.`);
+  logger.start(`Marking notification ${id} as read.`);
   await api.markRead(id);
   logger.success("Notification marked as read.");
   return { success: true };
 };
 
 const markDone = async (id: string) => {
-  logger.info(`Marking notification ${id} as done.`);
+  logger.start(`Marking notification ${id} as done.`);
   await api.markDone(id);
   logger.success("Notification marked as done.");
   return { success: true };
 };
 
 const activity = async () => {
-  logger.info("Fetching activity.");
+  logger.start("Loading your GitHub activity.");
 
   const [issuesRes, reviewsRes, mentionsRes] = await Promise.all([
     api.assignedIssues(),
@@ -80,24 +87,30 @@ const activity = async () => {
     recentMentions: (mentionData.items ?? []).map(normalizeSearchItem),
   };
 
-  output.renderSection("Activity");
-  output.renderKeyValues([
+  output.renderSummary("Activity", [
     ["Assigned Issues", result.assignedIssues.length],
     ["Review Requests", result.reviewRequests.length],
     ["Recent Mentions", result.recentMentions.length],
   ]);
 
+  logger.success("Activity loaded.");
   return { success: true, metadata: result };
 };
 
 const mentions = async () => {
-  logger.info("Fetching mentions.");
+  logger.start("Loading recent mentions.");
 
   const response = await api.mentions("@me");
   const data = (await response.json()) as { items?: unknown[] };
   const notifications = (data.items ?? []).map(normalizeSearchItem);
 
   formatTable(notifications);
+  logger.success(
+    notifications.length
+      ? `Loaded ${notifications.length} mention(s).`
+      : "Mentions checked.",
+  );
+
   return { success: true, metadata: notifications };
 };
 

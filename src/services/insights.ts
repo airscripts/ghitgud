@@ -1,6 +1,9 @@
+import pc from "picocolors";
+
 import api from "@/api/insights";
-import logger from "@/core/logger";
+import dates from "@/core/dates";
 import output from "@/core/output";
+import spinner from "@/core/spinner";
 
 interface TrafficSummary {
   views: { count: number; uniques: number };
@@ -38,68 +41,86 @@ interface PathSummary {
 }
 
 const traffic = async (repo: string): Promise<TrafficSummary> => {
-  logger.info(`Fetching traffic data for ${repo}.`);
+  return spinner.withSpinner(
+    `Fetching traffic data for ${pc.cyan(repo)}...`,
+    async () => {
+      const [views, clones] = await Promise.all([
+        api.getTrafficViews(repo),
+        api.getTrafficClones(repo),
+      ]);
 
-  const [views, clones] = await Promise.all([
-    api.getTrafficViews(repo),
-    api.getTrafficClones(repo),
-  ]);
-
-  return {
-    views: { count: views.count, uniques: views.uniques },
-    clones: { count: clones.count, uniques: clones.uniques },
-  };
+      return {
+        views: { count: views.count, uniques: views.uniques },
+        clones: { count: clones.count, uniques: clones.uniques },
+      };
+    },
+    "Traffic data fetched.",
+  );
 };
 
 const contributors = async (repo: string): Promise<ContributorSummary[]> => {
-  logger.info(`Fetching contributors for ${repo}.`);
+  return spinner.withSpinner(
+    `Fetching contributors for ${pc.cyan(repo)}...`,
+    async () => {
+      const data = await api.getContributors(repo);
 
-  const data = await api.getContributors(repo);
-  return data.map((c) => ({
-    login: c.login,
-    contributions: c.contributions,
-  }));
+      return data.map((c) => ({
+        login: c.login,
+        contributions: c.contributions,
+      }));
+    },
+    "Contributors fetched.",
+  );
 };
 
 const commits = async (repo: string): Promise<CommitSummary> => {
-  logger.info(`Fetching commit activity for ${repo}.`);
+  return spinner.withSpinner(
+    `Fetching commit activity for ${pc.cyan(repo)}...`,
+    async () => {
+      const data = await api.getCommitActivity(repo);
+      if (!data.length) {
+        return { totalWeeks: 0, averagePerWeek: 0, mostActiveWeek: null };
+      }
 
-  const data = await api.getCommitActivity(repo);
-  if (!data.length) {
-    return { totalWeeks: 0, averagePerWeek: 0, mostActiveWeek: null };
-  }
+      const totalCommits = data.reduce((sum, week) => sum + week.total, 0);
+      const mostActive = data.reduce((max, week) =>
+        week.total > max.total ? week : max,
+      );
 
-  const totalCommits = data.reduce((sum, week) => sum + week.total, 0);
-  const mostActive = data.reduce((max, week) =>
-    week.total > max.total ? week : max,
-  );
-
-  return {
-    totalWeeks: data.length,
-    averagePerWeek: Math.round(totalCommits / data.length),
-    mostActiveWeek: {
-      commits: mostActive.total,
-      week: new Date(mostActive.week * 1000).toISOString().split("T")[0],
+      return {
+        totalWeeks: data.length,
+        averagePerWeek: Math.round(totalCommits / data.length),
+        mostActiveWeek: {
+          commits: mostActive.total,
+          week: new Date(mostActive.week * 1000).toISOString().split("T")[0],
+        },
+      };
     },
-  };
+    "Commit activity fetched.",
+  );
 };
 
 const codeFrequency = async (repo: string): Promise<CodeFrequencySummary> => {
-  logger.info(`Fetching code frequency for ${repo}.`);
-  const data = await api.getCodeFrequency(repo);
+  return spinner.withSpinner(
+    `Fetching code frequency for ${pc.cyan(repo)}...`,
+    async () => {
+      const data = await api.getCodeFrequency(repo);
 
-  if (!data.length) {
-    return { additions: 0, deletions: 0, net: 0 };
-  }
+      if (!data.length) {
+        return { additions: 0, deletions: 0, net: 0 };
+      }
 
-  const additions = data.reduce((sum, [, add]) => sum + add, 0);
-  const deletions = data.reduce((sum, [, , del]) => sum + Math.abs(del), 0);
+      const additions = data.reduce((sum, [, add]) => sum + add, 0);
+      const deletions = data.reduce((sum, [, , del]) => sum + Math.abs(del), 0);
 
-  return {
-    additions,
-    deletions,
-    net: additions - deletions,
-  };
+      return {
+        additions,
+        deletions,
+        net: additions - deletions,
+      };
+    },
+    "Code frequency fetched.",
+  );
 };
 
 const popularity = async (
@@ -108,27 +129,30 @@ const popularity = async (
   referrers: ReferrerSummary[];
   paths: PathSummary[];
 }> => {
-  logger.info(`Fetching popularity metrics for ${repo}.`);
+  return spinner.withSpinner(
+    `Fetching popularity metrics for ${pc.cyan(repo)}...`,
+    async () => {
+      const [referrers, paths] = await Promise.all([
+        api.getReferrers(repo),
+        api.getPopularPaths(repo),
+      ]);
 
-  const [referrers, paths] = await Promise.all([
-    api.getReferrers(repo),
-    api.getPopularPaths(repo),
-  ]);
-
-  return {
-    referrers: referrers.map((r) => ({
-      referrer: r.referrer,
-      count: r.count,
-      uniques: r.uniques,
-    })),
-
-    paths: paths.map((p) => ({
-      path: p.path,
-      title: p.title,
-      count: p.count,
-      uniques: p.uniques,
-    })),
-  };
+      return {
+        referrers: referrers.map((r) => ({
+          referrer: r.referrer,
+          count: r.count,
+          uniques: r.uniques,
+        })),
+        paths: paths.map((p) => ({
+          path: p.path,
+          title: p.title,
+          count: p.count,
+          uniques: p.uniques,
+        })),
+      };
+    },
+    "Popularity metrics fetched.",
+  );
 };
 
 const participation = async (
@@ -137,26 +161,32 @@ const participation = async (
   allTime: number[];
   ownerTime: number[];
 }> => {
-  logger.info(`Fetching participation stats for ${repo}.`);
-
-  const data = await api.getParticipation(repo);
-  return {
-    allTime: data.all,
-    ownerTime: data.owner,
-  };
+  return spinner.withSpinner(
+    `Fetching participation stats for ${pc.cyan(repo)}...`,
+    async () => {
+      const data = await api.getParticipation(repo);
+      return {
+        allTime: data.all,
+        ownerTime: data.owner,
+      };
+    },
+    "Participation stats fetched.",
+  );
 };
 
 const formatTraffic = (data: TrafficSummary) => {
   output.renderSection("Traffic (Last 14 days)");
-  output.renderKeyValues([
-    [
-      "Views",
-      `${data.views.count.toLocaleString()} total (${data.views.uniques.toLocaleString()} unique)`,
-    ],
-    [
-      "Clones",
-      `${data.clones.count.toLocaleString()} total (${data.clones.uniques.toLocaleString()} unique)`,
-    ],
+  output.renderTable([
+    {
+      Metric: "Views",
+      Total: pc.yellow(data.views.count.toLocaleString()),
+      Unique: pc.dim(data.views.uniques.toLocaleString()),
+    },
+    {
+      Metric: "Clones",
+      Total: pc.yellow(data.clones.count.toLocaleString()),
+      Unique: pc.dim(data.clones.uniques.toLocaleString()),
+    },
   ]);
 };
 
@@ -164,34 +194,51 @@ const formatContributors = (data: ContributorSummary[]) => {
   output.renderSection("Top Contributors");
   output.renderTable(
     data.slice(0, 10).map((c) => ({
-      Login: c.login,
-      Contributions: c.contributions.toLocaleString(),
+      Login: pc.cyan(c.login),
+      Contributions: pc.yellow(c.contributions.toLocaleString()),
     })),
   );
 };
 
 const formatCommits = (data: CommitSummary) => {
   output.renderSection("Commit Activity");
-  output.renderKeyValues(
-    output.buildKeyValues({
-      "Total Weeks": data.totalWeeks,
-      "Average/Week": data.averagePerWeek,
-      "Most Active Week": data.mostActiveWeek
-        ? `${data.mostActiveWeek.week} (${data.mostActiveWeek.commits} commits)`
-        : "n/a",
-    }),
-  );
+  output.renderTable([
+    {
+      Metric: "Total Weeks",
+      Value: pc.yellow(data.totalWeeks.toString()),
+    },
+    {
+      Metric: "Average/Week",
+      Value: pc.yellow(data.averagePerWeek.toString()),
+    },
+    {
+      Metric: "Most Active Week",
+      Value: data.mostActiveWeek
+        ? `${pc.cyan(dates.formatRelative(data.mostActiveWeek.week))} (${pc.yellow(data.mostActiveWeek.commits)} commits)`
+        : pc.dim("n/a"),
+    },
+  ]);
 };
 
 const formatCodeFrequency = (data: CodeFrequencySummary) => {
   output.renderSection("Code Frequency");
-  output.renderKeyValues(
-    output.buildKeyValues({
-      Additions: `+${data.additions.toLocaleString()}`,
-      Deletions: `-${data.deletions.toLocaleString()}`,
-      Net: `${data.net > 0 ? "+" : ""}${data.net.toLocaleString()}`,
-    }),
-  );
+  output.renderTable([
+    {
+      Metric: "Additions",
+      Value: pc.green(`+${data.additions.toLocaleString()}`),
+    },
+    {
+      Metric: "Deletions",
+      Value: pc.red(`-${data.deletions.toLocaleString()}`),
+    },
+    {
+      Metric: "Net",
+      Value:
+        data.net >= 0
+          ? pc.green(`+${data.net.toLocaleString()}`)
+          : pc.red(data.net.toLocaleString()),
+    },
+  ]);
 };
 
 const formatPopularity = (data: {
@@ -200,22 +247,24 @@ const formatPopularity = (data: {
 }) => {
   if (data.referrers.length > 0) {
     output.renderSection("Top Referrers");
+
     output.renderTable(
       data.referrers.slice(0, 5).map((r) => ({
-        Referrer: r.referrer,
-        Views: r.count.toLocaleString(),
-        Unique: r.uniques.toLocaleString(),
+        Referrer: pc.cyan(r.referrer),
+        Views: pc.yellow(r.count.toLocaleString()),
+        Unique: pc.dim(r.uniques.toLocaleString()),
       })),
     );
   }
 
   if (data.paths.length > 0) {
     output.renderSection("Popular Paths");
+
     output.renderTable(
       data.paths.slice(0, 5).map((p) => ({
-        Path: p.path,
-        Views: p.count.toLocaleString(),
-        Unique: p.uniques.toLocaleString(),
+        Path: pc.cyan(p.path),
+        Views: pc.yellow(p.count.toLocaleString()),
+        Unique: pc.dim(p.uniques.toLocaleString()),
       })),
     );
   }

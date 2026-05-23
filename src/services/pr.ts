@@ -1,5 +1,6 @@
 import api from "@/api/pr";
 import git from "@/core/git";
+import output from "@/core/output";
 import logger from "@/core/logger";
 import { PullRequest } from "@/api/pr";
 
@@ -26,17 +27,22 @@ async function isSquashOrRebaseMerge(pr: PullRequest): Promise<boolean> {
 }
 
 const cleanup = async (options: { dryRun: boolean; force: boolean }) => {
-  logger.info("Fetching merged pull requests.");
+  logger.start(
+    options.dryRun
+      ? "Scanning merged pull requests in dry-run mode."
+      : "Scanning merged pull requests for cleanup.",
+  );
+
   const response = await api.fetchMerged();
   const prs: PullRequest[] = await response.json();
   const mergedPrs = prs.filter((p) => p.merged);
 
   if (mergedPrs.length === 0) {
-    logger.info("No merged pull requests found.");
+    logger.success("No merged pull requests found.");
     return { success: true, results: [] };
   }
 
-  logger.info(`Found ${mergedPrs.length} merged pull request(s).`);
+  console.log(`Found ${mergedPrs.length} merged pull request(s) to evaluate.`);
 
   const currentBranch = git.getCurrentBranch();
   const defaultBranch = git.getDefaultBranch();
@@ -85,7 +91,7 @@ const cleanup = async (options: { dryRun: boolean; force: boolean }) => {
 
     if (localExists) {
       if (currentBranch === branch && !options.dryRun) {
-        logger.info(`Checking out ${defaultBranch} to delete ${branch}.`);
+        console.log(`Checking out ${defaultBranch} to delete ${branch}.`);
         git.checkoutBranch(defaultBranch);
       }
 
@@ -108,22 +114,33 @@ const cleanup = async (options: { dryRun: boolean; force: boolean }) => {
   const skippedCount = results.filter((r) => r.skipped).length;
 
   if (deletedCount > 0) {
-    logger.success(`Cleaned up ${deletedCount} branch(es).`);
+    logger.success(
+      options.dryRun
+        ? `${deletedCount} branch(es) would be cleaned up.`
+        : `Cleaned up ${deletedCount} branch(es).`,
+    );
   }
 
   if (skippedCount > 0) {
-    logger.info(`Skipped ${skippedCount} branch(es).`);
+    logger.warn(`Skipped ${skippedCount} branch(es).`);
   }
 
   if (!ffSuccess) {
     logger.warn(`Could not fast-forward ${defaultBranch}.`);
   }
 
+  output.renderSummary("Cleanup Summary", [
+    ["Candidates", mergedPrs.length],
+    ["Affected", deletedCount],
+    ["Skipped", skippedCount],
+    ["Fast-forward", ffSuccess ? "yes" : "no"],
+  ]);
+
   return { success: true, results, fastForward: ffSuccess };
 };
 
 const push = async (prNumber: number, force: boolean) => {
-  logger.info(`Fetching PR #${prNumber}.`);
+  logger.start(`Loading PR #${prNumber}.`);
   const pr = await api.fetch(prNumber);
 
   if (!pr.head.repo) {
@@ -139,14 +156,14 @@ const push = async (prNumber: number, force: boolean) => {
 
   const currentBranch = git.getCurrentBranch();
 
-  logger.info(
+  logger.start(
     `Pushing branch "${currentBranch}" to ${forkRepo}:${forkBranch}.`,
   );
 
   const remoteName = `fork-${forkRepo.replace(/\//g, "-")}`;
 
   if (!git.remoteExists(remoteName)) {
-    logger.info(`Adding remote ${remoteName}.`);
+    logger.start(`Adding remote ${remoteName}.`);
     git.addRemote(remoteName, forkUrl);
   }
 
@@ -170,7 +187,9 @@ const push = async (prNumber: number, force: boolean) => {
   }
 
   git.pushToRemote(remoteName, forkBranch, force);
-  logger.success(`Pushed to ${forkRepo}:${forkBranch}.`);
+  logger.success(
+    `Pushed "${currentBranch}" to ${forkRepo}:${forkBranch}${force ? " with --force" : ""}.`,
+  );
 };
 
 export default {

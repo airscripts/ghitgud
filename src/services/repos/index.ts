@@ -1,6 +1,9 @@
 import fs from "fs";
 import api from "@/api/repos";
 import config from "@/core/config";
+import output from "@/core/output";
+import logger from "@/core/logger";
+import progress from "@/core/progress";
 import { GhitgudError } from "@/core/errors";
 
 import {
@@ -164,54 +167,90 @@ const getInactiveMonths = (pushedAt: string | null): number => {
   return Math.floor(diff / (1000 * 60 * 60 * 24 * 30));
 };
 
-const getErrorMessage = (reason: unknown): string => {
-  return reason instanceof Error ? reason.message : String(reason);
-};
-
 const runBulk = async <T>(
   repos: RepoSummary[],
   handler: (repo: RepoSummary) => Promise<T>,
 ): Promise<{ success: boolean; metadata: BulkRepoMetadata<T> }> => {
-  const settled = await Promise.allSettled(
-    repos.map(async (repo) => {
+  const { results, errors } = await progress.withProgress(
+    repos,
+    "Processing repositories",
+    async (repo) => {
       const metadata = await handler(repo);
-
       return {
-        repo: repo.fullName,
-        success: true,
         metadata,
+        success: true,
+        repo: repo.fullName,
       } as BulkRepoResult<T>;
-    }),
+    },
   );
 
-  const results = settled.map((result, index) => {
-    if (result.status === "fulfilled") return result.value;
-
-    return {
-      repo: repos[index].fullName,
-      success: false,
-      error: getErrorMessage(result.reason),
-    } as BulkRepoResult<T>;
+  const mappedResults: BulkRepoResult<T>[] = [];
+  results.forEach((result, index) => {
+    if (result) {
+      mappedResults.push(result);
+    } else if (errors[index]) {
+      mappedResults.push({
+        success: false,
+        error: errors[index].error,
+        repo: repos[index].fullName,
+      } as BulkRepoResult<T>);
+    }
   });
 
-  const failed = results.filter((result) => !result.success).length;
-  const completed = results.length - failed;
+  const failed = mappedResults.filter((result) => !result.success).length;
+  const completed = mappedResults.length - failed;
 
   return {
     success: failed === 0,
     metadata: {
-      completed,
       failed,
-      results,
+      completed,
+      results: mappedResults,
     },
   };
 };
 
+const renderBulkResults = <T>(
+  title: string,
+  result: { success: boolean; metadata: BulkRepoMetadata<T> },
+  mapSuccess: (repo: string, metadata: T) => Record<string, unknown>,
+) => {
+  const rows = result.metadata.results.map((item) => {
+    if (!item.success) {
+      return {
+        repo: item.repo,
+        status: "failed",
+        error: item.error ?? "Unknown error",
+      };
+    }
+
+    return {
+      repo: item.repo,
+      status: "ok",
+      ...mapSuccess(item.repo, item.metadata as T),
+    };
+  });
+
+  output.renderTable(rows);
+  output.renderSummary(title, [
+    ["Completed", result.metadata.completed],
+    ["Failed", result.metadata.failed],
+    ["Total", result.metadata.results.length],
+  ]);
+
+  if (result.metadata.failed > 0) {
+    logger.warn(`${result.metadata.failed} repository operation(s) failed.`);
+  } else {
+    logger.success("All repository operations completed successfully.");
+  }
+};
+
 export default {
-  getInactiveMonths,
+  runBulk,
   parseMonths,
   parsePeriod,
-  requireMutationConfirmation,
   resolveTargets,
-  runBulk,
+  renderBulkResults,
+  getInactiveMonths,
+  requireMutationConfirmation,
 };

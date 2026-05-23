@@ -20,7 +20,11 @@ interface LabelResult {
 }
 
 const label = async (options: LabelOptions) => {
-  logger.info("Syncing labels across repositories.");
+  logger.start(
+    options.dryRun
+      ? "Previewing label sync across repositories."
+      : "Syncing labels across repositories.",
+  );
   service.requireMutationConfirmation(options.dryRun, options.yes);
 
   let labels;
@@ -38,7 +42,7 @@ const label = async (options: LabelOptions) => {
 
   const repos = await service.resolveTargets(options);
 
-  return service.runBulk<LabelResult>(repos, async (repo) => {
+  const result = await service.runBulk<LabelResult>(repos, async (repo) => {
     const result = await labelsService.upsertLabels(labels, repo.fullName, {
       dryRun: options.dryRun,
     });
@@ -48,6 +52,19 @@ const label = async (options: LabelOptions) => {
       dryRun: !!options.dryRun,
     };
   });
+
+  service.renderBulkResults(
+    "Label Sync Summary",
+    result,
+    (_repo, metadata) => ({
+      created: metadata.created.length,
+      updated: metadata.updated.length,
+      unchanged: metadata.unchanged.length,
+      mode: metadata.dryRun ? "dry-run" : "apply",
+    }),
+  );
+
+  return result;
 };
 
 export default { label };

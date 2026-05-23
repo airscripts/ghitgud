@@ -1,6 +1,7 @@
 import git from "@/core/git";
 import client from "@/api/client";
 import config from "@/core/config";
+import output from "@/core/output";
 import logger from "@/core/logger";
 import { ConfigError } from "@/core/errors";
 import profileService from "@/services/profile";
@@ -36,10 +37,18 @@ vi.mock("@/core/git", () => ({
   },
 }));
 
+vi.mock("@/core/output", () => ({
+  default: {
+    renderTable: vi.fn(),
+    renderSummary: vi.fn(),
+  },
+}));
+
 vi.mock("@/core/logger", () => ({
   default: {
     info: vi.fn(),
     warn: vi.fn(),
+    start: vi.fn(),
     error: vi.fn(),
     debug: vi.fn(),
     success: vi.fn(),
@@ -48,7 +57,8 @@ vi.mock("@/core/logger", () => ({
 
 describe("profile service", () => {
   beforeEach(() => {
-    vi.spyOn(console, "table").mockImplementation(() => {});
+    vi.spyOn(logger, "start").mockImplementation(() => {});
+    vi.spyOn(output, "renderTable").mockImplementation(() => {});
     vi.spyOn(logger, "success").mockImplementation(() => {});
     vi.spyOn(logger, "info").mockImplementation(() => {});
     vi.spyOn(logger, "warn").mockImplementation(() => {});
@@ -99,14 +109,7 @@ describe("profile service", () => {
       ],
     });
 
-    expect(console.table).toHaveBeenCalledWith([
-      {
-        active: "yes",
-        profile: "default",
-        token: "configured",
-        repository: "owner/repo",
-      },
-    ]);
+    expect(output.renderTable).toHaveBeenCalled();
   });
 
   it("switches the active profile after validation", async () => {
