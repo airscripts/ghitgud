@@ -275,38 +275,54 @@ function write(key: string, value: string): void {
 }
 
 function getRepo(): string {
+  const repo = getRepoOptional();
+  if (repo) return repo;
+
+  throw new ConfigError(ERROR_NO_REPO);
+}
+
+function getRepoOptional(): string | null {
   const repo = process.env.GHITGUD_GITHUB_REPO;
   if (repo) return repo;
 
   const value = read("repo");
   if (value) return value;
 
-  throw new ConfigError(ERROR_NO_REPO);
+  return null;
 }
 
 function getToken(): string {
+  const token = getTokenOptional();
+  if (token) return token;
+
+  throw new ConfigError(ERROR_NO_TOKEN);
+}
+
+function getTokenOptional(): string | null {
   const token = process.env.GHITGUD_GITHUB_TOKEN;
   if (token) return token;
 
   const value = read("token");
   if (value) return value;
 
-  throw new ConfigError(ERROR_NO_TOKEN);
+  return null;
 }
 
 const config = {
-  addProfile,
-  findProfileByRepo,
-  getProfile,
-  getRepo,
-  getRepoLocalProfile,
-  getToken,
   has,
-  listProfiles,
   read,
-  setActiveProfile,
-  setRepoLocalProfile,
   write,
+  getRepo,
+  getToken,
+  getProfile,
+  addProfile,
+  listProfiles,
+  getRepoOptional,
+  getTokenOptional,
+  setActiveProfile,
+  findProfileByRepo,
+  getRepoLocalProfile,
+  setRepoLocalProfile,
 };
 
 export default config;

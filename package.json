@@ -1,7 +1,7 @@
 {
   "name": "@airscript/ghitgud",
   "version": "2.4.0",
-  "description": "A better alternative to the official gh CLI, also known as bgh.",
+  "description": "A better GitHub CLI that extends the official gh CLI.",
   "main": "dist/index.js",
   "files": [
     "dist",

@@ -9,6 +9,7 @@ vi.mock("@/core/config", () => ({
     write: vi.fn(),
     getRepo: vi.fn(() => "owner/repo"),
     getToken: vi.fn(() => "test-token"),
+    getTokenOptional: vi.fn(() => "test-token"),
   },
 }));
 
@@ -83,19 +84,19 @@ describe("client", () => {
     });
 
     it("should throw AuthError on 401", async () => {
-      mockFetch().mockResolvedValue({ status: 401 });
+      mockFetch().mockResolvedValue({ status: 401, headers: { get: vi.fn() } });
 
       await expect(client.get("/test")).rejects.toThrow("Unauthorized.");
     });
 
     it("should throw NotFoundError on 404", async () => {
-      mockFetch().mockResolvedValue({ status: 404 });
+      mockFetch().mockResolvedValue({ status: 404, headers: { get: vi.fn() } });
 
       await expect(client.get("/test")).rejects.toThrow("Resource not found.");
     });
 
     it("should throw UnprocessableError on 422", async () => {
-      mockFetch().mockResolvedValue({ status: 422 });
+      mockFetch().mockResolvedValue({ status: 422, headers: { get: vi.fn() } });
 
       await expect(client.get("/test")).rejects.toThrow(
         "Content is unprocessable.",
@@ -103,7 +104,7 @@ describe("client", () => {
     });
 
     it("should throw GhitgudError on unexpected status", async () => {
-      mockFetch().mockResolvedValue({ status: 500 });
+      mockFetch().mockResolvedValue({ status: 500, headers: { get: vi.fn() } });
 
       await expect(client.get("/test")).rejects.toThrow(
         "Unexpected status code.: 500",

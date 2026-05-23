@@ -32,3 +32,32 @@ export class UnprocessableError extends GhitgudError {
     this.name = "UnprocessableError";
   }
 }
+
+export class RateLimitError extends GhitgudError {
+  resetAt: Date;
+  remaining: number;
+  limit: number;
+
+  constructor(
+    message: string,
+    resetAt: Date,
+    remaining: number,
+    limit: number,
+  ) {
+    super(message);
+    this.name = "RateLimitError";
+    this.resetAt = resetAt;
+    this.remaining = remaining;
+    this.limit = limit;
+  }
+}
+
+export class TokenRequiredError extends GhitgudError {
+  scopes: string[];
+
+  constructor(message: string, scopes: string[] = []) {
+    super(message);
+    this.name = "TokenRequiredError";
+    this.scopes = scopes;
+  }
+}

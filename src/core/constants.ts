@@ -20,8 +20,13 @@ export const GITHUB_API_ACCEPT = "application/vnd.github+json";
 export const STATUS_OK_MIN = 200;
 export const STATUS_OK_MAX = 299;
 export const STATUS_UNAUTHORIZED = 401;
+export const STATUS_FORBIDDEN = 403;
 export const STATUS_NOT_FOUND = 404;
 export const STATUS_UNPROCESSABLE = 422;
+export const STATUS_RATE_LIMITED = 429;
+
+export const RATE_LIMIT_UNAUTHENTICATED = 60;
+export const RATE_LIMIT_AUTHENTICATED = 5000;
 
 export const ERROR_UNAUTHORIZED = "Unauthorized.";
 export const ERROR_NOT_FOUND = "Resource not found.";
@@ -40,6 +45,10 @@ export const ERROR_NO_REPO =
 
 export const ERROR_NO_TOKEN =
   "Token not configured. Set it with: ghitgud config set token <your-token>.";
+
+export const ERROR_RATE_LIMIT_UNAUTHENTICATED = `Rate limit reached (60/hour). Set token for 5000/hour: ghitgud config set token <your-token>.`;
+export const ERROR_RATE_LIMIT_AUTHENTICATED = "Rate limit reached.";
+export const ERROR_TOKEN_REQUIRED = "This operation requires a token.";
 
 export const ERROR_UNSUPPORTED_KEY = "Trying to set unsupported key.";
 export const ERROR_NO_METADATA = "No metadata file found.";
