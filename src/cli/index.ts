@@ -2,12 +2,13 @@ import process from "process";
 import { program } from "commander";
 
 import ascii from "./ascii";
-import logger from "@/core/logger";
+import output from "@/core/output";
 import ghCommand from "@/commands/gh";
 import prCommand from "@/commands/pr";
 import pingCommand from "@/commands/ping";
 import reposCommand from "@/commands/repos";
 import labelsCommand from "@/commands/labels";
+import outputState from "@/core/output-state";
 import configCommand from "@/commands/config";
 import profileCommand from "@/commands/profile";
 import insightsCommand from "@/commands/insights";
@@ -25,7 +26,15 @@ import {
 const NAME = "ghitgud";
 const DESCRIPTION = "A simple CLI to give superpowers to GitHub.";
 
-program.name(NAME).description(DESCRIPTION).version(__VERSION__);
+outputState.setJsonOutput(process.argv.includes("--json"));
+
+program
+  .name(NAME)
+  .description(DESCRIPTION)
+  .version(__VERSION__)
+  .option("--json", "Output structured JSON")
+  .showHelpAfterError()
+  .showSuggestionAfterError();
 
 ghCommand.register(program);
 notificationsCommand.register(program);
@@ -40,22 +49,38 @@ configCommand.register(program);
 prCommand.register(program);
 
 program.addHelpText("before", ascii);
+
+program.addHelpText(
+  "after",
+  `
+Examples:
+  ghitgud notifications list --limit 20
+  ghitgud pr cleanup --dry-run
+  ghitgud repos report --org airscripts --since 30d
+  ghitgud labels push -t conventional
+  ghitgud profile detect
+`,
+);
+
 program.exitOverride();
 
 function handleError(error: unknown): never {
   if (error instanceof TokenRequiredError) {
-    logger.error(error.message);
-    logger.info(ERROR_NO_TOKEN);
+    output.writeError(error.message, ERROR_NO_TOKEN);
     process.exit(1);
   }
 
   if (error instanceof RateLimitError) {
-    logger.error(error.message);
+    output.writeError(
+      error.message,
+      `Rate limit resets at ${error.resetAt.toISOString()}.`,
+    );
+
     process.exit(1);
   }
 
   if (error instanceof GhitgudError) {
-    logger.error(error.message);
+    output.writeError(error.message);
     process.exit(1);
   }
 
@@ -68,7 +93,7 @@ function handleError(error: unknown): never {
 }
 
 try {
-  program.parse(process.argv);
+  void program.parseAsync(process.argv).catch(handleError);
 } catch (error) {
   handleError(error);
 }

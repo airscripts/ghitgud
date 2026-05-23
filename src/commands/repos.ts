@@ -1,5 +1,6 @@
 import { Command } from "commander";
 
+import command from "@/core/command";
 import labelService from "@/services/repos/label";
 import governService from "@/services/repos/govern";
 import retireService from "@/services/repos/retire";
@@ -17,11 +18,23 @@ const addTargetOptions = (command: Command) => {
 const register = (program: Command) => {
   const repos = program.command("repos").description("Govern repositories.");
 
+  repos.addHelpText(
+    "after",
+    `
+Examples:
+  ghitgud repos inspect --org airscripts
+  ghitgud repos govern --org airscripts --ruleset ./ruleset.json --dry-run
+  ghitgud repos report --repos owner/one,owner/two
+`,
+  );
+
   addTargetOptions(
     repos
       .command("inspect")
       .description("Inspect repository governance files."),
-  ).action((options) => void inspectService.inspect(options));
+  ).action(
+    (options) => void command.run(() => inspectService.inspect(options)),
+  );
 
   addTargetOptions(
     repos.command("govern").description("Apply repository rulesets."),
@@ -29,7 +42,7 @@ const register = (program: Command) => {
     .requiredOption("--ruleset <path>", "Ruleset JSON file")
     .option("--dry-run", "Preview changes without mutating", false)
     .option("--yes", "Apply changes", false)
-    .action((options) => void governService.govern(options));
+    .action((options) => void command.run(() => governService.govern(options)));
 
   addTargetOptions(
     repos.command("label").description("Sync labels across repositories."),
@@ -38,7 +51,7 @@ const register = (program: Command) => {
     .option("--metadata <path>", "Label metadata JSON file")
     .option("--dry-run", "Preview changes without mutating", false)
     .option("--yes", "Apply changes", false)
-    .action((options) => void labelService.label(options));
+    .action((options) => void command.run(() => labelService.label(options)));
 
   addTargetOptions(
     repos
@@ -50,13 +63,13 @@ const register = (program: Command) => {
     .option("--include-private", "Include private repositories", false)
     .option("--dry-run", "Preview changes without mutating", false)
     .option("--yes", "Archive matching repositories", false)
-    .action((options) => void retireService.retire(options));
+    .action((options) => void command.run(() => retireService.retire(options)));
 
   addTargetOptions(
     repos.command("report").description("Report repository metrics."),
   )
     .option("--since <period>", "Reporting window, for example 30d")
-    .action((options) => void reportService.report(options));
+    .action((options) => void command.run(() => reportService.report(options)));
 };
 
 export default { register };

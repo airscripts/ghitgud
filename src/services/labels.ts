@@ -1,6 +1,7 @@
 import path from "path";
 import io from "@/core/io";
 import api from "@/api/labels";
+import output from "@/core/output";
 import logger from "@/core/logger";
 import { NotFoundError } from "@/core/errors";
 import { Label, normalizeLabel } from "@/types";
@@ -13,14 +14,13 @@ import {
 } from "@/core/constants";
 
 const formatLabels = (labels: Label[]) => {
-  const rows = labels.map((label) => ({
-    name: label.name,
-    color: label.color,
-    description: label.description,
-  }));
-
-  console.log();
-  console.table(rows);
+  output.renderTable(
+    labels.map((label) => ({
+      name: label.name,
+      color: label.color,
+      description: label.description,
+    })),
+  );
 };
 
 const getTemplatePath = (templateName: string, templatesDir: string) => {

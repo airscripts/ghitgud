@@ -1,6 +1,7 @@
 import git from "@/core/git";
 import client from "@/api/client";
 import config from "@/core/config";
+import output from "@/core/output";
 import logger from "@/core/logger";
 import { ConfigError } from "@/core/errors";
 
@@ -41,16 +42,15 @@ function add(name: string, options: AddProfileOptions) {
 function list() {
   const profiles = config.listProfiles();
 
-  if (!profiles.length) {
-    logger.info("No profiles configured.");
-  } else {
-    profiles.forEach((profile) => {
-      const marker = profile.active ? "*" : " ";
-      const repo = profile.repo ?? "(no repo)";
-      const token = profile.hasToken ? "token" : "no token";
-      logger.info(`${marker} ${profile.name} - ${repo} - ${token}`);
-    });
-  }
+  output.renderTable(
+    profiles.map((profile) => ({
+      profile: profile.name,
+      active: profile.active ? "yes" : "no",
+      repository: profile.repo ?? "(no repo)",
+      token: profile.hasToken ? "configured" : "missing",
+    })),
+    { emptyMessage: "No profiles configured." },
+  );
 
   return { success: true, profiles };
 }

@@ -1,4 +1,5 @@
 import api from "@/api/notifications";
+import output from "@/core/output";
 import logger from "@/core/logger";
 import { INFO_NO_NOTIFICATIONS } from "@/core/constants";
 import {
@@ -11,19 +12,14 @@ import {
 } from "@/types/notifications";
 
 const formatTable = (notifications: Notification[]) => {
-  if (notifications.length === 0) {
-    logger.info(INFO_NO_NOTIFICATIONS);
-    return;
-  }
-
-  console.log();
-  console.table(
+  output.renderTable(
     notifications.map((n) => ({
       repository: n.repository,
       subject: n.subjectTitle,
       type: n.subjectType,
       reason: n.reason,
     })),
+    { emptyMessage: INFO_NO_NOTIFICATIONS },
   );
 };
 
@@ -84,10 +80,12 @@ const activity = async () => {
     recentMentions: (mentionData.items ?? []).map(normalizeSearchItem),
   };
 
-  console.log();
-  console.log("Assigned Issues:", result.assignedIssues.length);
-  console.log("Review Requests:", result.reviewRequests.length);
-  console.log("Recent Mentions:", result.recentMentions.length);
+  output.renderSection("Activity");
+  output.renderKeyValues([
+    ["Assigned Issues", result.assignedIssues.length],
+    ["Review Requests", result.reviewRequests.length],
+    ["Recent Mentions", result.recentMentions.length],
+  ]);
 
   return { success: true, metadata: result };
 };

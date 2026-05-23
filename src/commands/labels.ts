@@ -1,16 +1,29 @@
 import { Command } from "commander";
-import labelsService from "@/services/labels";
+
+import command from "@/core/command";
 import { TEMPLATES_DIR } from "@/core/constants";
+
+import labelsService from "@/services/labels";
 
 const register = (program: Command) => {
   const labels = program
     .command("labels")
     .description("Manage labels for a repository.");
 
+  labels.addHelpText(
+    "after",
+    `
+Examples:
+  ghitgud labels list
+  ghitgud labels pull -t conventional
+  ghitgud labels push
+`,
+  );
+
   labels
     .command("list")
     .description("List all labels for a repository.")
-    .action(() => void labelsService.list());
+    .action(() => void command.run(() => labelsService.list()));
 
   labels
     .command("pull")
@@ -20,11 +33,13 @@ const register = (program: Command) => {
       "Pull from a built-in template instead of the remote repository",
     )
     .action(async (options) => {
-      if (options.template) {
-        await labelsService.pullTemplate(options.template, TEMPLATES_DIR);
-      } else {
-        await labelsService.pull();
-      }
+      await command.run(() => {
+        if (options.template) {
+          return labelsService.pullTemplate(options.template, TEMPLATES_DIR);
+        }
+
+        return labelsService.pull();
+      });
     });
 
   labels
@@ -35,17 +50,19 @@ const register = (program: Command) => {
       "Push from a built-in template instead of the local metadata file",
     )
     .action(async (options) => {
-      if (options.template) {
-        await labelsService.pushTemplate(options.template, TEMPLATES_DIR);
-      } else {
-        await labelsService.push();
-      }
+      await command.run(() => {
+        if (options.template) {
+          return labelsService.pushTemplate(options.template, TEMPLATES_DIR);
+        }
+
+        return labelsService.push();
+      });
     });
 
   labels
     .command("prune")
     .description("Prune all related labels for a repository.")
-    .action(() => void labelsService.prune());
+    .action(() => void command.run(() => labelsService.prune()));
 };
 
 export default { register };

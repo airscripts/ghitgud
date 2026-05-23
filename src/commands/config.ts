@@ -1,4 +1,6 @@
 import { Command } from "commander";
+
+import command from "@/core/command";
 import configService from "@/services/config";
 
 const register = (program: Command) => {
@@ -11,7 +13,7 @@ const register = (program: Command) => {
     .description("Set configuration.")
     .arguments("<key> <value>")
     .action((key: string, value: string) => {
-      configService.set(key, value);
+      void command.run(() => configService.set(key, value));
     });
 
   config
@@ -19,7 +21,7 @@ const register = (program: Command) => {
     .description("Get configuration value.")
     .arguments("<key>")
     .action((key: string) => {
-      configService.get(key);
+      void command.run(() => configService.get(key));
     });
 };
 

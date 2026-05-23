@@ -1,4 +1,6 @@
 import { Command } from "commander";
+
+import command from "@/core/command";
 import prService from "@/services/pr";
 import stackService from "@/services/stack";
 
@@ -6,6 +8,16 @@ const register = (program: Command) => {
   const pr = program
     .command("pr")
     .description("Manage pull requests for a repository.");
+
+  pr.addHelpText(
+    "after",
+    `
+Examples:
+  ghitgud pr cleanup --dry-run
+  ghitgud pr push 42
+  ghitgud pr stack create --base main
+`,
+  );
 
   pr.command("cleanup")
     .description(
@@ -18,17 +30,21 @@ const register = (program: Command) => {
     )
     .option("--force", "Skip confirmation prompts (commits ahead check)", false)
     .action(async (options) => {
-      await prService.cleanup({
-        dryRun: options.dryRun,
-        force: options.force,
-      });
+      await command.run(() =>
+        prService.cleanup({
+          dryRun: options.dryRun,
+          force: options.force,
+        }),
+      );
     });
 
   pr.command("push <pr-number>")
     .description("Push current local changes back to a contributor's fork.")
     .option("-f, --force", "Force push even if there are diverged commits")
     .action(async (prNumber: string, options) => {
-      await prService.push(parseInt(prNumber, 10), options.force);
+      await command.run(() =>
+        prService.push(parseInt(prNumber, 10), options.force),
+      );
     });
 
   pr.command("next")
@@ -36,10 +52,12 @@ const register = (program: Command) => {
     .option("--reverse", "Go to previous PR in chain instead of next")
     .option("--list", "Show all PRs in current stack without checking out")
     .action(async (options) => {
-      await stackService.next({
-        reverse: options.reverse,
-        list: options.list,
-      });
+      await command.run(() =>
+        stackService.next({
+          reverse: options.reverse,
+          list: options.list,
+        }),
+      );
     });
 
   const stack = pr
@@ -55,21 +73,21 @@ const register = (program: Command) => {
       "auto",
     )
     .action(async (options) => {
-      await stackService.create({ base: options.base });
+      await command.run(() => stackService.create({ base: options.base }));
     });
 
   stack
     .command("list")
     .description("Show current stack status.")
     .action(async () => {
-      await stackService.list();
+      await command.run(() => stackService.list());
     });
 
   stack
     .command("update")
     .description("Update existing stack after parent PR merges.")
     .action(async () => {
-      await stackService.update();
+      await command.run(() => stackService.update());
     });
 
   stack
@@ -83,10 +101,12 @@ const register = (program: Command) => {
     )
     .option("--draft", "Create PRs as drafts", false)
     .action(async (options) => {
-      await stackService.push({
-        title: options.title,
-        draft: options.draft,
-      });
+      await command.run(() =>
+        stackService.push({
+          title: options.title,
+          draft: options.draft,
+        }),
+      );
     });
 };
 

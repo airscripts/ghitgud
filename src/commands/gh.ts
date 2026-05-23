@@ -1,8 +1,8 @@
 import process from "process";
-import { spawn } from "child_process";
 import { Command } from "commander";
+import { spawn } from "child_process";
 
-import logger from "@/core/logger";
+import output from "@/core/output";
 
 const register = (program: Command) => {
   program
@@ -19,7 +19,7 @@ const register = (program: Command) => {
 
       child.on("error", (error: { code?: string }) => {
         if (error.code === "ENOENT") {
-          logger.error(
+          output.writeError(
             "gh CLI is not installed. " +
               "Install it from https://cli.github.com.",
           );
@@ -27,7 +27,7 @@ const register = (program: Command) => {
           process.exit(1);
         }
 
-        logger.error(String(error));
+        output.writeError(String(error));
         process.exit(1);
       });
 

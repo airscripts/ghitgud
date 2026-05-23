@@ -1,5 +1,6 @@
 import api from "@/api/insights";
 import logger from "@/core/logger";
+import output from "@/core/output";
 
 interface TrafficSummary {
   views: { count: number; uniques: number };
@@ -120,6 +121,7 @@ const popularity = async (
       count: r.count,
       uniques: r.uniques,
     })),
+
     paths: paths.map((p) => ({
       path: p.path,
       title: p.title,
@@ -145,25 +147,22 @@ const participation = async (
 };
 
 const formatTraffic = (data: TrafficSummary) => {
-  logger.info("");
-  logger.info("Traffic (Last 14 days)");
-  logger.info("=".repeat(50));
-
-  logger.info(
-    `Views:    ${data.views.count.toLocaleString()} total (${data.views.uniques.toLocaleString()} unique)`,
-  );
-
-  logger.info(
-    `Clones:   ${data.clones.count.toLocaleString()} total (${data.clones.uniques.toLocaleString()} unique)`,
-  );
+  output.renderSection("Traffic (Last 14 days)");
+  output.renderKeyValues([
+    [
+      "Views",
+      `${data.views.count.toLocaleString()} total (${data.views.uniques.toLocaleString()} unique)`,
+    ],
+    [
+      "Clones",
+      `${data.clones.count.toLocaleString()} total (${data.clones.uniques.toLocaleString()} unique)`,
+    ],
+  ]);
 };
 
 const formatContributors = (data: ContributorSummary[]) => {
-  logger.info("");
-  logger.info("Top Contributors");
-  logger.info("=".repeat(50));
-
-  console.table(
+  output.renderSection("Top Contributors");
+  output.renderTable(
     data.slice(0, 10).map((c) => ({
       Login: c.login,
       Contributions: c.contributions.toLocaleString(),
@@ -172,28 +171,26 @@ const formatContributors = (data: ContributorSummary[]) => {
 };
 
 const formatCommits = (data: CommitSummary) => {
-  logger.info("");
-  logger.info("Commit Activity");
-  logger.info("=".repeat(50));
-  logger.info(`Total Weeks:      ${data.totalWeeks}`);
-  logger.info(`Average/Week:     ${data.averagePerWeek}`);
-
-  if (data.mostActiveWeek) {
-    logger.info(
-      `Most Active Week: ${data.mostActiveWeek.week} (${data.mostActiveWeek.commits} commits)`,
-    );
-  }
+  output.renderSection("Commit Activity");
+  output.renderKeyValues(
+    output.buildKeyValues({
+      "Total Weeks": data.totalWeeks,
+      "Average/Week": data.averagePerWeek,
+      "Most Active Week": data.mostActiveWeek
+        ? `${data.mostActiveWeek.week} (${data.mostActiveWeek.commits} commits)`
+        : "n/a",
+    }),
+  );
 };
 
 const formatCodeFrequency = (data: CodeFrequencySummary) => {
-  logger.info("");
-  logger.info("Code Frequency");
-  logger.info("=".repeat(50));
-  logger.info(`Additions:  +${data.additions.toLocaleString()}`);
-  logger.info(`Deletions:  -${data.deletions.toLocaleString()}`);
-
-  logger.info(
-    `Net:        ${data.net > 0 ? "+" : ""}${data.net.toLocaleString()}`,
+  output.renderSection("Code Frequency");
+  output.renderKeyValues(
+    output.buildKeyValues({
+      Additions: `+${data.additions.toLocaleString()}`,
+      Deletions: `-${data.deletions.toLocaleString()}`,
+      Net: `${data.net > 0 ? "+" : ""}${data.net.toLocaleString()}`,
+    }),
   );
 };
 
@@ -202,11 +199,8 @@ const formatPopularity = (data: {
   paths: PathSummary[];
 }) => {
   if (data.referrers.length > 0) {
-    logger.info("");
-    logger.info("Top Referrers");
-    logger.info("=".repeat(50));
-
-    console.table(
+    output.renderSection("Top Referrers");
+    output.renderTable(
       data.referrers.slice(0, 5).map((r) => ({
         Referrer: r.referrer,
         Views: r.count.toLocaleString(),
@@ -216,11 +210,8 @@ const formatPopularity = (data: {
   }
 
   if (data.paths.length > 0) {
-    logger.info("");
-    logger.info("Popular Paths");
-    logger.info("=".repeat(50));
-
-    console.table(
+    output.renderSection("Popular Paths");
+    output.renderTable(
       data.paths.slice(0, 5).map((p) => ({
         Path: p.path,
         Views: p.count.toLocaleString(),

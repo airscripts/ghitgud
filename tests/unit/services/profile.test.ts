@@ -48,6 +48,7 @@ vi.mock("@/core/logger", () => ({
 
 describe("profile service", () => {
   beforeEach(() => {
+    vi.spyOn(console, "table").mockImplementation(() => {});
     vi.spyOn(logger, "success").mockImplementation(() => {});
     vi.spyOn(logger, "info").mockImplementation(() => {});
     vi.spyOn(logger, "warn").mockImplementation(() => {});
@@ -98,7 +99,14 @@ describe("profile service", () => {
       ],
     });
 
-    expect(logger.info).toHaveBeenCalledWith("* default - owner/repo - token");
+    expect(console.table).toHaveBeenCalledWith([
+      {
+        active: "yes",
+        profile: "default",
+        token: "configured",
+        repository: "owner/repo",
+      },
+    ]);
   });
 
   it("switches the active profile after validation", async () => {
