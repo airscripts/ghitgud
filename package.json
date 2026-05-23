@@ -9,7 +9,8 @@
     "VERSION"
   ],
   "bin": {
-    "ghitgud": "dist/index.js"
+    "ghitgud": "dist/index.js",
+    "bgh": "dist/index.js"
   },
   "engines": {
     "node": ">=24",
