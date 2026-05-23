@@ -1,7 +1,7 @@
 {
   "name": "@airscript/ghitgud",
   "version": "2.4.0",
-  "description": "A simple CLI to give superpowers to GitHub.",
+  "description": "A better alternative to the official gh CLI, also known as bgh.",
   "main": "dist/index.js",
   "files": [
     "dist",
