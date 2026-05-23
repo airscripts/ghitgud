@@ -5,6 +5,19 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.5.0] - 2026-05-24
+
+### Added
+
+- Repository Insights commands (traffic, contributors, commits, frequency, popularity, participation)
+- Interactive prompts via @clack/prompts for missing required arguments
+- Loading spinners for async operations with ora
+- Progress bars for bulk repository operations with cli-progress
+- Box-based output formatting with Unicode borders via boxen
+- Relative date formatting with date-fns
+- Theme detection (dark/light/auto) for terminal output
+- Config `unset` command to remove configuration values
+
 ## [2.4.0] - 2026-05-23
 
 ### Added

@@ -69,6 +69,7 @@ Every command reads from `src/core/config.ts`, which resolves values in this ord
 - **PR Lifecycle** — cleanup merged branches, push back to forks, manage stacked PR chains
 - **Multi-Account Profiles** — switch between GitHub accounts and tokens per repository
 - **Bulk Repository Governance** — inspect, govern, label, retire, and report across repo sets
+- **Repository Insights** — view traffic data, contributors, commit activity, code frequency, referrers, and participation metrics
 - **gh Passthrough** — proxy any unrecognized command directly to the `gh` CLI
 - **Structured JSON Output** — every command returns machine-parseable JSON
 
