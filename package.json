@@ -10,7 +10,7 @@
   ],
   "bin": {
     "ghitgud": "dist/index.js",
-    "bgh": "dist/index.js"
+    "ghg": "dist/index.js"
   },
   "engines": {
     "node": ">=24",
