@@ -1,23 +1,7 @@
 # Ghitgud Roadmap — Superset Features gh CLI Doesn't Have
 
 > Compiled from deep research of the `cli/cli` repository, community extensions, and top user requests.
-> Current ghitgud version: **2.3.0** (labels + config + templates + notifications + activity + mentions + gh passthrough + pr lifecycle)
-
----
-
-## v2.4.0 — Bulk Repository Governance
-
-**Why gh doesn't have it:** `gh` operates on single repos only. No bulk operations across organizations or repo lists. Enterprise users write custom scripts.
-
-**Commands:**
-
-- `ghitgud repos inspect` — find repos missing LICENSE, CODEOWNERS, README, SECURITY.md
-- `ghitgud repos govern` — apply branch protection/rulesets across multiple repos
-- `ghitgud repos label` — push label templates across a whole org
-- `ghitgud repos retire` — find repos with no commits in N months
-- `ghitgud repos report` — contributor metrics, PR velocity, issue aging per repo
-
-**Value:** Turn ghitgud into an enterprise governance tool. Open source maintainers and platform engineers need this weekly.
+> Current ghitgud version: **2.4.0** (labels + config + templates + notifications + activity + mentions + gh passthrough + pr lifecycle + bulk repo governance)
 
 ---
 
