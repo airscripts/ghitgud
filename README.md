@@ -36,7 +36,7 @@ A better GitHub CLI that extends the official gh CLI.
 
 ## What It Does
 
-ghitgud is not a replacement for `gh`. It is a companion that fills the gaps in the official GitHub CLI where GitHub has chosen not to ship features that power users need daily.
+ghg is not a replacement for `gh`. It is a companion that fills the gaps in the official GitHub CLI where GitHub has chosen not to ship features that power users need daily.
 
 The output is not a wrapper. It is a superset.
 
@@ -44,7 +44,7 @@ The output is not a wrapper. It is a superset.
 
 ## How It Works
 
-ghitgud layers its commands on top of the GitHub REST API and local Git operations. Each command is self-contained — it resolves configuration, validates inputs, makes the minimal necessary API calls, and returns structured JSON.
+ghg layers its commands on top of the GitHub REST API and local Git operations. Each command is self-contained — it resolves configuration, validates inputs, makes the minimal necessary API calls, and returns structured JSON.
 
 The architecture is flat and explicit:
 
@@ -89,10 +89,12 @@ Published package is available at:
 For local development:
 
 ```bash
-pnpm install            # install dependencies
-pnpm build              # build single CJS bundle with Vite
-pnpm start              # run the CLI locally
+pnpm install            # Install dependencies.
+pnpm build              # Build single CJS bundle with Vite.
+pnpm start              # Run the CLI locally.
 ```
+
+> The package installs both `ghitgud` and `ghg` commands. This documentation uses the compact `ghg` form.
 
 ---
 
@@ -101,15 +103,15 @@ pnpm start              # run the CLI locally
 Set a GitHub personal access token and repository (in `owner/repo` format):
 
 ```bash
-ghitgud config set token <your-token>
-ghitgud config set repo owner/repository
+ghg config set token <your-token>
+ghg config set repo owner/repository
 ```
 
 Retrieve a configured value:
 
 ```bash
-ghitgud config get token
-ghitgud config get repo
+ghg config get token
+ghg config get repo
 ```
 
 > Create a token at: https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens
@@ -120,20 +122,20 @@ Configuration is stored in `~/.config/ghitgud/credentials.json` and supports per
 
 ## Profile Management
 
-ghitgud introduces multi-account support through named profiles. Each profile stores its own token and optional repository association.
+ghg introduces multi-account support through named profiles. Each profile stores its own token and optional repository association.
 
 ```bash
-# Add or update a profile
-ghitgud profile add work --repo owner/repo --token ghp_xxx
+# Add or update a profile.
+ghg profile add work --repo owner/repo --token ghp_xxx
 
-# List all profiles
-ghitgud profile list
+# List all profiles.
+ghg profile list
 
-# Activate a profile for the current session
-ghitgud profile switch work
+# Activate a profile for the current session.
+ghg profile switch work
 
-# Auto-detect profile from current repository
-ghitgud profile detect
+# Auto-detect profile from current repository.
+ghg profile detect
 ```
 
 When a profile is active, all API calls use that profile's token. The `detect` command reads the current repository's remote URL and matches it against profile associations, including a per-repo `.ghitgudrc` file if present.
@@ -145,41 +147,32 @@ When a profile is active, all API calls use that profile's token. The `detect` c
 ### Notifications
 
 ```bash
-ghitgud notifications list          # List unread notifications
-ghitgud notifications list -a     # Include read notifications
-ghitgud notifications list -p     # Only participating
-ghitgud notifications list -r owner/repo  # Filter by repository
-ghitgud notifications list --limit 20     # Limit results
-ghitgud notifications read <id>     # Mark as read
-ghitgud notifications done <id>     # Mark as done
+ghg notifications list          # List unread notifications.
+ghg notifications read <id>     # Mark as read.
+ghg notifications done <id>     # Mark as done.
 ```
 
 ### Activity & Mentions
 
 ```bash
-ghitgud activity                    # Assigned issues, review requests, mentions
-ghitgud mentions                    # Recent @mentions of you
+ghg activity                    # Assigned issues, review requests, mentions.
+ghg mentions                    # Recent @mentions of you.
 ```
 
 ### Labels
 
 ```bash
-ghitgud labels list                 # List all labels
-ghitgud labels pull                 # Pull labels from repo to local config
-ghitgud labels pull -t <name>      # Pull from built-in template
-ghitgud labels push                 # Push local labels to repo
-ghitgud labels push -t <name>      # Push built-in template to repo
-ghitgud labels prune                # Delete all labels from repo
+ghg labels list                 # List all labels.
+ghg labels pull                 # Pull labels from repo to local config.
+ghg labels push                 # Push local labels to repo.
+ghg labels prune                # Delete all labels from repo.
 ```
 
 ### Repository Governance
 
 ```bash
-ghitgud repos inspect --org airscripts
-ghitgud repos govern --org airscripts --ruleset ./ruleset.json --dry-run
-ghitgud repos label --org airscripts --template conventional --dry-run
-ghitgud repos retire --org airscripts --months 12 --dry-run
-ghitgud repos report --org airscripts --since 30d
+ghg repos inspect --org airscripts
+ghg repos report --org airscripts --since 30d
 ```
 
 - `inspect` checks for README, LICENSE, SECURITY.md, and CODEOWNERS.
@@ -191,30 +184,29 @@ ghitgud repos report --org airscripts --since 30d
 ### Configuration
 
 ```bash
-ghitgud config set <key> <val>      # Set token or repo
-ghitgud config get <key>            # Get configured value
+ghg config set <key> <val>      # Set token or repo.
+ghg config get <key>            # Get configured value.
 ```
 
 ### Profile
 
 ```bash
-ghitgud profile add <name>          # Add or update profile
-ghitgud profile add <name> --repo <owner/repo> --token <token>
-ghitgud profile list                # List all profiles
-ghitgud profile switch <name>       # Activate profile
-ghitgud profile detect              # Detect profile for current repo
+ghg profile add <name>          # Add or update profile.
+ghg profile list                # List all profiles.
+ghg profile switch <name>       # Activate profile.
+ghg profile detect              # Detect profile for current repo.
 ```
 
 ### Passthrough
 
 ```bash
-ghitgud gh <args>                   # Proxy any args to the gh CLI
+ghg gh <args>                   # Proxy any args to the gh CLI.
 ```
 
 ### Utility
 
 ```bash
-ghitgud ping                        # Check if the CLI is working
+ghg ping                        # Check if the CLI is working.
 ```
 
 ---
@@ -224,31 +216,26 @@ ghitgud ping                        # Check if the CLI is working
 ### Clean up merged branches
 
 ```bash
-ghitgud pr cleanup --dry-run        # Preview what would be deleted
-ghitgud pr cleanup                  # Delete merged branches locally and remotely
-ghitgud pr cleanup --force         # Skip ahead-of-base safety checks
+ghg pr cleanup                  # Delete merged branches locally and remotely.
 ```
 
 ### Push back to contributor's fork
 
 ```bash
-ghitgud pr push <pr-number>         # Push local changes to contributor's fork
+ghg pr push <pr-number>         # Push local changes to contributor's fork.
 ```
 
 ### Manage stacked PRs
 
 ```bash
-ghitgud pr stack init --base main
-ghitgud pr stack add feature-part-2 --depends-on feature-part-1
-ghitgud pr stack status
-ghitgud pr stack sync
+ghg pr stack init --base main
+ghg pr stack add feature-part-2 --depends-on feature-part-1
 ```
 
 ### Navigate PR chain
 
 ```bash
-ghitgud pr next                     # Checkout next PR in chain
-ghitgud pr next --reverse          # Checkout previous PR in chain
+ghg pr next                     # Checkout next PR in chain.
 ```
 
 ---
@@ -264,8 +251,8 @@ Built-in label presets are available with the `--template` / `-t` flag:
 | `github`       | GitHub default labels        |
 
 ```bash
-ghitgud labels pull -t conventional
-ghitgud labels push -t conventional
+ghg labels pull -t conventional
+ghg labels push -t conventional
 ```
 
 ---
@@ -299,10 +286,10 @@ Error:
 Run the canonical local checks:
 
 ```bash
-pnpm typecheck          # type check without emitting
-pnpm lint               # ESLint flat config
-pnpm format             # Prettier format
-pnpm test -- --run      # single test run (no watch)
+pnpm typecheck          # Type check without emitting.
+pnpm lint               # ESLint flat config.
+pnpm format             # Prettier format.
+pnpm test -- --run      # Single test run (no watch).
 ```
 
 To verify formatting without rewriting files:
@@ -317,7 +304,7 @@ pnpm test -- --run
 Optional commit-time hooks are available if you want them locally:
 
 ```bash
-pnpm prepare            # install husky hooks
+pnpm prepare            # Install husky hooks.
 ```
 
 The pre-commit setup mirrors the lightweight formatting and lint passes. Full test runs remain part of normal local verification and CI.
@@ -329,45 +316,45 @@ The pre-commit setup mirrors the lightweight formatting and lint passes. Full te
 ```
 src/
   cli/
-    index.ts            # entry point — Commander program setup
-    ascii.ts            # figlet banner for help output
+    index.ts            # Entry point — Commander program setup.
+    ascii.ts            # Figlet banner for help output.
   commands/
-    ping.ts             # ghitgud ping
-    labels.ts           # ghitgud labels <list|pull|push|prune>
-    config.ts           # ghitgud config <get|set>
-    profile.ts          # ghitgud profile <add|list|switch|detect>
-    pr.ts               # ghitgud pr <cleanup|push|stack|next>
-    notifications.ts    # ghitgud notifications <list|read|done>
-    activity.ts         # ghitgud activity
-    mentions.ts         # ghitgud mentions
-    gh.ts               # ghitgud gh <passthrough>
+    ping.ts             # ghg ping.
+    labels.ts           # ghg labels <list|pull|push|prune>.
+    config.ts           # ghg config <get|set>.
+    profile.ts          # ghg profile <add|list|switch|detect>.
+    pr.ts               # ghg pr <cleanup|push|stack|next>.
+    notifications.ts    # ghg notifications <list|read|done>.
+    activity.ts         # ghg activity.
+    mentions.ts         # ghg mentions.
+    gh.ts               # ghg gh <passthrough>.
   services/
-    labels.ts           # label business logic
-    config.ts           # config business logic
-    profile.ts          # profile business logic
-    pr.ts               # PR lifecycle business logic
-    stack.ts            # stacked PR chain management
-    notifications.ts    # notifications business logic
+    labels.ts           # Label business logic.
+    config.ts           # Config business logic.
+    profile.ts          # Profile business logic.
+    pr.ts               # PR lifecycle business logic.
+    stack.ts            # Stacked PR chain management.
+    notifications.ts    # Notifications business logic.
   api/
-    client.ts           # base HTTP client
-    labels.ts           # GitHub Labels API methods
-    pr.ts               # GitHub PR API methods
-    notifications.ts    # GitHub Notifications API methods
+    client.ts           # Base HTTP client.
+    labels.ts           # GitHub Labels API methods.
+    pr.ts               # GitHub PR API methods.
+    notifications.ts    # GitHub Notifications API methods.
   core/
-    constants.ts        # shared constants, error messages, config keys
-    errors.ts           # custom error class hierarchy
-    config.ts           # config resolver — env vars, profiles, credentials file
-    git.ts              # Git operations (branch detection, remote tracking)
-    io.ts               # generic file helpers
-    logger.ts           # consola instance for rich CLI output
+    constants.ts        # Shared constants, error messages, config keys.
+    errors.ts           # Custom error class hierarchy.
+    config.ts           # Config resolver — env vars, profiles, credentials file.
+    git.ts              # Git operations (branch detection, remote tracking).
+    io.ts               # Generic file helpers.
+    logger.ts           # Consola instance for rich CLI output.
   types/
-    index.ts            # shared type definitions
+    index.ts            # shared type definitions.
 templates/
-  base.json             # minimal label template
-  conventional.json     # conventional-commits label template
-  github.json           # GitHub default label template
+  base.json             # Minimal label template.
+  conventional.json     # Conventional-commits label template.
+  github.json           # GitHub default label template.
 tests/
-  unit/                 # unit tests mirroring src/ structure
+  unit/                 # Unit tests mirroring src/ structure.
 ```
 
 - New commands go in `src/commands/`. Each exports `{ register }` — a function that takes the Commander `program` and wires up subcommands.

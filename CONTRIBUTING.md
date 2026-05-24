@@ -5,16 +5,16 @@ When contributing to this repository, please first discuss the change you wish t
 ## Development Setup
 
 ```bash
-pnpm install            # install dependencies
-pnpm build              # build with Vite (single CJS bundle)
-pnpm start              # run the CLI locally
-pnpm test               # run tests (watch mode)
-pnpm test -- --run      # single test run
-pnpm test:coverage      # run tests with coverage report
-pnpm typecheck          # type check without emitting
-pnpm lint               # type check (alias for typecheck)
-pnpm clean              # remove dist/ and coverage/
-bash scripts/clean.sh   # remove local config directory (~/.config/ghitgud)
+pnpm install            # Install dependencies.
+pnpm build              # Build with Vite (single CJS bundle).
+pnpm start              # Run the CLI locally.
+pnpm test               # Run tests (watch mode).
+pnpm test -- --run      # Single test run.
+pnpm test:coverage      # Run tests with coverage report.
+pnpm typecheck          # Type check without emitting.
+pnpm lint               # Type check (alias for typecheck).
+pnpm clean              # Remove dist/ and coverage/.
+bash scripts/clean.sh   # Remove local config directory (~/.config/ghitgud).
 ```
 
 ## Commit Convention

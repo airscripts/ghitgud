@@ -14,9 +14,9 @@ const register = (program: Command) => {
     "after",
     `
 Examples:
-  ghitgud pr cleanup --dry-run
-  ghitgud pr push 42
-  ghitgud pr stack create --base main
+  ghg pr cleanup --dry-run
+  ghg pr push 42
+  ghg pr stack create --base main
 `,
   );
 

@@ -13,9 +13,8 @@ const register = (program: Command) => {
     "after",
     `
 Examples:
-  ghitgud notifications list --participating
-  ghitgud notifications list --repo owner/repo --limit 10
-  ghitgud notifications read 12345
+  ghg notifications list
+  ghg notifications read 12345
 `,
   );
 

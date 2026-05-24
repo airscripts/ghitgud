@@ -7,7 +7,7 @@ import output from "@/core/output";
 const register = (program: Command) => {
   program
     .command("gh")
-    .description("Pass through to the gh CLI. Usage: ghitgud gh <args>")
+    .description("Pass through to the gh CLI. Usage: ghg gh <args>")
     .allowUnknownOption()
     .action((_opts, command) => {
       const args = command.args;
