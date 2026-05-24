@@ -348,7 +348,7 @@ src/
     io.ts               # Generic file helpers.
     logger.ts           # Consola instance for rich CLI output.
   types/
-    index.ts            # shared type definitions.
+    index.ts            # Shared type definitions.
 templates/
   base.json             # Minimal label template.
   conventional.json     # Conventional-commits label template.
