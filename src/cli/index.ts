@@ -6,14 +6,17 @@ import dates from "@/core/dates";
 import output from "@/core/output";
 import ghCommand from "@/commands/gh";
 import prCommand from "@/commands/pr";
+import runCommand from "@/commands/run";
 import pingCommand from "@/commands/ping";
 import reposCommand from "@/commands/repos";
+import cacheCommand from "@/commands/cache";
 import labelsCommand from "@/commands/labels";
 import outputState from "@/core/output-state";
 import configCommand from "@/commands/config";
 import profileCommand from "@/commands/profile";
 import insightsCommand from "@/commands/insights";
 import mentionsCommand from "@/commands/mentions";
+import workflowCommand from "@/commands/workflow";
 import { ERROR_NO_TOKEN } from "@/core/constants";
 import activityCommand from "@/commands/activity";
 import { setTheme, initializeTheme } from "@/core/theme";
@@ -59,6 +62,9 @@ labelsCommand.register(program);
 profileCommand.register(program);
 configCommand.register(program);
 prCommand.register(program);
+workflowCommand.register(program);
+cacheCommand.register(program);
+runCommand.register(program);
 
 program
   .command("version")
@@ -79,6 +85,8 @@ Examples:
   ghg repos report --org airscripts
   ghg labels push
   ghg profile detect
+  ghg workflow validate
+  ghg run debug 123456
 `,
 );
 
