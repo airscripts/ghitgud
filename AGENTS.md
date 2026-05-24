@@ -2,7 +2,7 @@
 
 ## 1. Overview
 
-`ghitgud` is a TypeScript CLI for GitHub workflow automation. It extends day-to-day GitHub work with notification triage, pull request helpers, profile/config management, label syncing, repository governance, and repository insights. The runtime is Node.js, the CLI layer is Commander, and the codebase uses a layered structure:
+`ghg` is a TypeScript CLI for GitHub workflow automation. It extends day-to-day GitHub work with notification triage, pull request helpers, profile/config management, label syncing, repository governance, and repository insights. The runtime is Node.js, the CLI layer is Commander, and the codebase uses a layered structure:
 
 CLI entrypoint -> command modules -> services -> API/core helpers -> shared types
 
@@ -135,19 +135,19 @@ bash scripts/clean.sh
 
 Current command families:
 
-- `ghitgud notifications ...`
-- `ghitgud activity`
-- `ghitgud mentions`
-- `ghitgud labels ...`
-- `ghitgud repos ...`
-- `ghitgud insights ...`
-- `ghitgud pr ...`
-- `ghitgud profile ...`
-- `ghitgud config ...`
-- `ghitgud gh ...`
-- `ghitgud ping`
+- `ghg notifications ...`
+- `ghg activity`
+- `ghg mentions`
+- `ghg labels ...`
+- `ghg repos ...`
+- `ghg insights ...`
+- `ghg pr ...`
+- `ghg profile ...`
+- `ghg config ...`
+- `ghg gh ...`
+- `ghg ping`
 
-Repository governance lives under `ghitgud repos`:
+Repository governance lives under `ghg repos`:
 
 - `inspect`
 - `govern`

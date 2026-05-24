@@ -14,9 +14,9 @@ const register = (program: Command) => {
     "after",
     `
 Examples:
-  ghitgud labels list
-  ghitgud labels pull -t conventional
-  ghitgud labels push
+  ghg labels list
+  ghg labels pull -t conventional
+  ghg labels push
 `,
   );
 

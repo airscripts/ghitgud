@@ -25,7 +25,7 @@ import {
   TokenRequiredError,
 } from "@/core/errors";
 
-const NAME = "ghitgud";
+const NAME = "ghg";
 const DESCRIPTION = "A simple CLI to give superpowers to GitHub.";
 
 outputState.setJsonOutput(process.argv.includes("--json"));
@@ -74,11 +74,11 @@ program.addHelpText(
   "after",
   `
 Examples:
-  ghitgud notifications list --limit 20
-  ghitgud pr cleanup --dry-run
-  ghitgud repos report --org airscripts --since 30d
-  ghitgud labels push -t conventional
-  ghitgud profile detect
+  ghg notifications list
+  ghg pr cleanup
+  ghg repos report --org airscripts
+  ghg labels push
+  ghg profile detect
 `,
 );
 

@@ -8,11 +8,11 @@
 
 **Commands:**
 
-- `ghitgud workflow validate` — lint workflow YAML against GitHub's schema before pushing
-- `ghitgud workflow dry-run` — preview job matrix, runner selection, execution path
-- `ghitgud cache download <key>` — download Actions cache artifact for local debugging
-- `ghitgud cache inspect <key>` — list contents of a cache without downloading
-- `ghitgud run debug <run-id>` — fetch logs + annotations + failed step artifacts in one command
+- `ghg workflow validate` — lint workflow YAML against GitHub's schema before pushing
+- `ghg workflow dry-run` — preview job matrix, runner selection, execution path
+- `ghg cache download <key>` — download Actions cache artifact for local debugging
+- `ghg cache inspect <key>` — list contents of a cache without downloading
+- `ghg run debug <run-id>` — fetch logs + annotations + failed step artifacts in one command
 
 **Value:** Cuts CI debugging time dramatically. The validation and dry-run features prevent "push and pray" workflows.
 
@@ -24,11 +24,11 @@
 
 **Commands:**
 
-- `ghitgud review comment --file <path> --line <num> --body <text> --pr <num>`
-- `ghitgud review threads <pr>` — list all review threads with resolution status
-- `ghitgud review resolve <thread-id>` — mark a thread as resolved
-- `ghitgud review suggest --file <path> --line <num> --replace <text>` — create a suggestion
-- `ghitgud review apply-suggestions <pr>` — batch-apply all suggestions from a review
+- `ghg review comment --file <path> --line <num> --body <text> --pr <num>`
+- `ghg review threads <pr>` — list all review threads with resolution status
+- `ghg review resolve <thread-id>` — mark a thread as resolved
+- `ghg review suggest --file <path> --line <num> --replace <text>` — create a suggestion
+- `ghg review apply-suggestions <pr>` — batch-apply all suggestions from a review
 
 **Value:** Maintainers can do meaningful code review entirely from the terminal. This is the biggest missing piece of `gh`'s PR workflow.
 
@@ -40,7 +40,7 @@
 
 **Commands:**
 
-- `ghitgud tui` — launch full-screen terminal UI
+- `ghg tui` — launch full-screen terminal UI
 - Browse PRs/issues with keyboard navigation (vim bindings)
 - View diffs with syntax highlighting in-terminal
 - Inline comment and approve without leaving TUI
@@ -57,15 +57,15 @@
 
 **Commands:**
 
-- `ghitgud milestone create --title <name> --due-date <date>`
-- `ghitgud milestone list --status open|closed`
-- `ghitgud milestone close <name>`
-- `ghitgud milestone progress <name>` — completion percentage
-- `ghitgud project board <project-id>` — ASCII kanban view in terminal
-- `ghitgud issue subtasks <issue>` — list/create/link sub-tasks
-- `ghitgud issue set-parent <child> --parent <parent>`
+- `ghg milestone create --title <name> --due-date <date>`
+- `ghg milestone list --status open|closed`
+- `ghg milestone close <name>`
+- `ghg milestone progress <name>` — completion percentage
+- `ghg project board <project-id>` — ASCII kanban view in terminal
+- `ghg issue subtasks <issue>` — list/create/link sub-tasks
+- `ghg issue set-parent <child> --parent <parent>`
 
-**Value:** Makes ghitgud useful for project leads and Scrum masters who track sprint progress. The ASCII kanban board is a killer demo feature.
+**Value:** Makes ghg useful for project leads and Scrum masters who track sprint progress. The ASCII kanban board is a killer demo feature.
 
 ---
 
@@ -75,11 +75,11 @@
 
 **Commands:**
 
-- `ghitgud release changelog` — generate changelog from conventional commits since last tag
-- `ghitgud release bump` — auto-detect next semver from commit types (feat → minor, fix → patch, BREAKING → major)
-- `ghitgud release verify` — check attestation, signatures, and artifact integrity
-- `ghitgud release notes --template <file>` — custom release notes template with Go-template style variables
-- `ghitgud release draft --bump minor` — create draft release with auto-generated notes
+- `ghg release changelog` — generate changelog from conventional commits since last tag
+- `ghg release bump` — auto-detect next semver from commit types (feat → minor, fix → patch, BREAKING → major)
+- `ghg release verify` — check attestation, signatures, and artifact integrity
+- `ghg release notes --template <file>` — custom release notes template with Go-template style variables
+- `ghg release draft --bump minor` — create draft release with auto-generated notes
 
 **Value:** Fully automated release pipeline from terminal. Connects commits to changelog to release in one command chain.
 
@@ -91,11 +91,11 @@
 
 **Commands:**
 
-- `ghitgud audit-log` — query enterprise audit events with filters (actor, action, repo, date range)
-- `ghitgud secrets scan` — scan repo history for leaked secrets (integrate with GitHub secret scanning API)
-- `ghitgud secrets alerts` — list secret scanning alerts per repo
-- `ghitgud dependabot list` — list Dependabot alerts with severity
-- `ghitgud dependabot dismiss <alert-id> --reason <reason>`
-- `ghitgud compliance check` — repo health score (license, README, CODEOWNERS, 2FA required, branch protection)
+- `ghg audit-log` — query enterprise audit events with filters (actor, action, repo, date range)
+- `ghg secrets scan` — scan repo history for leaked secrets (integrate with GitHub secret scanning API)
+- `ghg secrets alerts` — list secret scanning alerts per repo
+- `ghg dependabot list` — list Dependabot alerts with severity
+- `ghg dependabot dismiss <alert-id> --reason <reason>`
+- `ghg compliance check` — repo health score (license, README, CODEOWNERS, 2FA required, branch protection)
 
-**Value:** Turns ghitgud into a security and compliance Swiss army knife for platform teams. This is where enterprise budget lives.
+**Value:** Turns ghg into a security and compliance Swiss army knife for platform teams. This is where enterprise budget lives.

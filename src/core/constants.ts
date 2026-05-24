@@ -41,12 +41,12 @@ export const ERROR_NO_GIT_ROOT = "Git repository root not found.";
 export const ERROR_NO_REMOTE_URL = "Unable to detect repository remote.";
 
 export const ERROR_NO_REPO =
-  "Repository not configured. Set it with: ghitgud config set repo owner/repo.";
+  "Repository not configured. Set it with: ghg config set repo owner/repo.";
 
 export const ERROR_NO_TOKEN =
-  "Token not configured. Set it with: ghitgud config set token <your-token>.";
+  "Token not configured. Set it with: ghg config set token <your-token>.";
 
-export const ERROR_RATE_LIMIT_UNAUTHENTICATED = `Rate limit reached (60/hour). Set token for 5000/hour: ghitgud config set token <your-token>.`;
+export const ERROR_RATE_LIMIT_UNAUTHENTICATED = `Rate limit reached (60/hour). Set token for 5000/hour: ghg config set token <your-token>.`;
 export const ERROR_RATE_LIMIT_AUTHENTICATED = "Rate limit reached.";
 export const ERROR_TOKEN_REQUIRED = "This operation requires a token.";
 

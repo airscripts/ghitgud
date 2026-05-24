@@ -23,9 +23,8 @@ const register = (program: Command) => {
     "after",
     `
 Examples:
-  ghitgud repos inspect --org airscripts
-  ghitgud repos govern --org airscripts --ruleset ./ruleset.json --dry-run
-  ghitgud repos report --repos owner/one,owner/two
+  ghg repos inspect --org airscripts
+  ghg repos report --repos owner/one,owner/two
 `,
   );
 

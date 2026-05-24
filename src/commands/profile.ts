@@ -14,9 +14,9 @@ const register = (program: Command) => {
     "after",
     `
 Examples:
-  ghitgud profile add work --repo owner/repo --token ghp_xxx
-  ghitgud profile list
-  ghitgud profile detect
+  ghg profile add work
+  ghg profile list
+  ghg profile detect
 `,
   );
 
@@ -58,7 +58,7 @@ Examples:
 
         if (profiles.length === 0) {
           console.log(
-            "No profiles configured. Create one with: ghitgud profile add <name>",
+            "No profiles configured. Create one with: ghg profile add <name>",
           );
 
           process.exit(1);

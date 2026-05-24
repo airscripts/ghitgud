@@ -2,7 +2,7 @@ import { createConsola } from "consola";
 
 import outputState from "@/core/output-state";
 
-const baseLogger = createConsola({ defaults: { tag: "ghitgud" } });
+const baseLogger = createConsola({ defaults: { tag: "ghg" } });
 
 const callIfHuman =
   (method: (message: unknown, ...args: unknown[]) => unknown) =>

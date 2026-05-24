@@ -18,9 +18,9 @@ const register = (program: Command) => {
     "after",
     `
 Examples:
-  ghitgud insights traffic --repo owner/repo
-  ghitgud insights contributors
-  ghitgud insights popularity
+  ghg insights traffic --repo owner/repo
+  ghg insights contributors
+  ghg insights popularity
 `,
   );
 
