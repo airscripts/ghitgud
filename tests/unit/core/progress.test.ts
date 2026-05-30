@@ -16,6 +16,7 @@ vi.mock("cli-progress", () => ({
 
 vi.mock("@/core/output-state", () => ({
   default: {
+    isHumanOutput: vi.fn(),
     isJsonOutput: vi.fn(),
   },
 }));
@@ -26,6 +27,7 @@ import outputState from "@/core/output-state";
 describe("progress", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    vi.mocked(outputState.isHumanOutput).mockReturnValue(true);
     vi.mocked(outputState.isJsonOutput).mockReturnValue(false);
   });
 
@@ -36,6 +38,7 @@ describe("progress", () => {
     });
 
     it("should return null in JSON mode", () => {
+      vi.mocked(outputState.isHumanOutput).mockReturnValue(false);
       vi.mocked(outputState.isJsonOutput).mockReturnValue(true);
       const bar = progress.createProgressBar({ name: "Test", total: 10 });
       expect(bar).toBeNull();
@@ -89,6 +92,7 @@ describe("progress", () => {
     });
 
     it("should work without progress bar in JSON mode", async () => {
+      vi.mocked(outputState.isHumanOutput).mockReturnValue(false);
       vi.mocked(outputState.isJsonOutput).mockReturnValue(true);
       const items = [1, 2];
       const handler = vi.fn().mockResolvedValue(42);

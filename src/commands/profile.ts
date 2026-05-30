@@ -1,6 +1,7 @@
 import { Command } from "commander";
 
 import config from "@/core/config";
+import output from "@/core/output";
 import prompt from "@/core/prompt";
 import command from "@/core/command";
 import profileService from "@/services/profile";
@@ -57,7 +58,7 @@ Examples:
         const profiles = config.listProfiles();
 
         if (profiles.length === 0) {
-          console.log(
+          output.log(
             "No profiles configured. Create one with: ghg profile add <name>",
           );
 

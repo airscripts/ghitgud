@@ -77,6 +77,7 @@ Every command reads from `src/core/config.ts`, which resolves values in this ord
 - **Proxy Passthrough** — pass any unrecognized command directly to the `gh` CLI
 - **Structured JSON Output** — every command supports machine-parseable JSON via `--json`
 - **Terminal Themes** — built-in dark, light, and auto color themes via `--theme`
+- **Full Terminal UI** — browse and run the full `ghg` workflow surface from `ghg tui`
 
 ---
 
@@ -152,6 +153,7 @@ When a profile is active, all API calls use that profile's token. The `detect` c
 ### Notifications
 
 ```bash
+ghg tui                         # Launch full-screen terminal UI.
 ghg notifications list          # List unread notifications.
 ghg notifications read <id>     # Mark as read.
 ghg notifications done <id>     # Mark as done.
@@ -255,6 +257,7 @@ ghg proxy <args>                # Pass any args to the gh CLI.
 ### Utility
 
 ```bash
+ghg tui                         # Launch full-screen terminal UI.
 ghg ping                        # Check if the CLI is working.
 ghg version                     # Show version number.
 ```

@@ -20,28 +20,28 @@ type JsonValue = CommandResult | Record<string, unknown>;
 
 const BOX_STYLES: Record<BoxStyle, BoxenOptions> = {
   info: {
-    borderColor: "blue",
     padding: 1,
-    margin: { top: 0, bottom: 1 },
+    borderColor: "blue",
     borderStyle: "round",
+    margin: { top: 0, bottom: 1 },
   },
   success: {
-    borderColor: "green",
     padding: 1,
-    margin: { top: 0, bottom: 1 },
+    borderColor: "green",
     borderStyle: "round",
+    margin: { top: 0, bottom: 1 },
   },
   error: {
-    borderColor: "red",
     padding: 1,
-    margin: { top: 0, bottom: 1 },
+    borderColor: "red",
     borderStyle: "round",
+    margin: { top: 0, bottom: 1 },
   },
   warning: {
-    borderColor: "yellow",
     padding: 1,
-    margin: { top: 0, bottom: 1 },
     borderStyle: "round",
+    borderColor: "yellow",
+    margin: { top: 0, bottom: 1 },
   },
 };
 
@@ -60,6 +60,8 @@ const writeResult = (result: unknown) => {
 };
 
 const writeError = (message: string, hint?: string) => {
+  if (outputState.isSilentOutput()) return;
+
   if (outputState.isJsonOutput()) {
     writeJson(
       {
@@ -81,7 +83,7 @@ const writeError = (message: string, hint?: string) => {
 };
 
 const renderBox = (content: string, style: BoxStyle = "info") => {
-  if (outputState.isJsonOutput()) return;
+  if (!outputState.isHumanOutput()) return;
   console.log(boxen(content, BOX_STYLES[style]));
 };
 
@@ -101,7 +103,7 @@ const renderTable = (
   rows: Array<Record<string, unknown>>,
   options: TableOptions = {},
 ) => {
-  if (outputState.isJsonOutput()) return;
+  if (!outputState.isHumanOutput()) return;
 
   if (!rows.length) {
     if (options.emptyMessage) {
@@ -180,7 +182,7 @@ const renderTable = (
 };
 
 const renderSection = (title: string) => {
-  if (outputState.isJsonOutput()) return;
+  if (!outputState.isHumanOutput()) return;
 
   console.log();
   console.log(pc.cyan(pc.bold(title)));
@@ -188,12 +190,12 @@ const renderSection = (title: string) => {
 };
 
 const log = (message: string) => {
-  if (outputState.isJsonOutput()) return;
+  if (!outputState.isHumanOutput()) return;
   console.log(message);
 };
 
 const renderKeyValues = (entries: Array<[string, string | number]>) => {
-  if (outputState.isJsonOutput()) return;
+  if (!outputState.isHumanOutput()) return;
 
   entries.forEach(([label, value]) => {
     const coloredLabel = pc.gray(`${label.padEnd(16)}`);
@@ -205,7 +207,7 @@ const renderSummary = (
   title: string,
   entries: Array<[string, string | number]>,
 ) => {
-  if (outputState.isJsonOutput()) return;
+  if (!outputState.isHumanOutput()) return;
   renderSection(title);
   renderKeyValues(entries);
 };
@@ -217,7 +219,7 @@ const buildKeyValues = (
 };
 
 const renderList = (items: string[], emptyMessage?: string) => {
-  if (outputState.isJsonOutput()) return;
+  if (!outputState.isHumanOutput()) return;
 
   if (!items.length) {
     if (emptyMessage) {

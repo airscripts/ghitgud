@@ -84,5 +84,5 @@ const register = (program: Command) => {
     .action((args: string[]) => runProxy(args));
 };
 
-export default { register, runProxyFromArgv };
-export { runProxyFromArgv };
+export default { register, runProxy, runProxyFromArgv };
+export { runProxy, runProxyFromArgv };

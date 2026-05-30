@@ -42,7 +42,7 @@ const cleanup = async (options: { dryRun: boolean; force: boolean }) => {
     return { success: true, results: [] };
   }
 
-  console.log(`Found ${mergedPrs.length} merged pull request(s) to evaluate.`);
+  output.log(`Found ${mergedPrs.length} merged pull request(s) to evaluate.`);
 
   const currentBranch = git.getCurrentBranch();
   const defaultBranch = git.getDefaultBranch();
@@ -91,7 +91,7 @@ const cleanup = async (options: { dryRun: boolean; force: boolean }) => {
 
     if (localExists) {
       if (currentBranch === branch && !options.dryRun) {
-        console.log(`Checking out ${defaultBranch} to delete ${branch}.`);
+        output.log(`Checking out ${defaultBranch} to delete ${branch}.`);
         git.checkoutBranch(defaultBranch);
       }
 

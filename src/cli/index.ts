@@ -5,6 +5,7 @@ import ascii from "./ascii";
 import dates from "@/core/dates";
 import output from "@/core/output";
 import prCommand from "@/commands/pr";
+import tuiCommand from "@/commands/tui";
 import runCommand from "@/commands/run";
 import pingCommand from "@/commands/ping";
 import proxyCommand from "@/commands/proxy";
@@ -64,6 +65,7 @@ if (!proxyCommand.runProxyFromArgv()) {
   profileCommand.register(program);
   configCommand.register(program);
   prCommand.register(program);
+  tuiCommand.register(program);
   reviewCommand.register(program);
   workflowCommand.register(program);
   cacheCommand.register(program);
@@ -90,6 +92,7 @@ Examples:
   ghg proxy pr checkout 17
   ghg profile detect
   ghg review threads 42
+  ghg tui
   ghg workflow validate
   ghg workflow preview
   ghg run debug 123456

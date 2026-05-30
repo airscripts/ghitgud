@@ -26,7 +26,7 @@ interface ProgressBarOptions {
 }
 
 const createProgressBar = (options: ProgressBarOptions): SingleBar | null => {
-  if (outputState.isJsonOutput()) {
+  if (!outputState.isHumanOutput()) {
     return null;
   }
 

@@ -17,7 +17,7 @@ const noopSpinner: Spinner = {
 };
 
 const createSpinner = (text: string): Spinner => {
-  if (outputState.isJsonOutput()) {
+  if (!outputState.isHumanOutput()) {
     return noopSpinner;
   }
 
@@ -33,7 +33,7 @@ const withSpinner = async <T>(
   fn: () => Promise<T>,
   successText?: string,
 ): Promise<T> => {
-  if (outputState.isJsonOutput()) {
+  if (!outputState.isHumanOutput()) {
     return await fn();
   }
 
