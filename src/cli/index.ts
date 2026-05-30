@@ -87,7 +87,6 @@ Examples:
   ghg repos report --org airscripts
   ghg labels push
   ghg profile detect
-  ghg review comment --pr 42 --file src/main.ts --line 10 --body "LGTM"
   ghg review threads 42
   ghg workflow validate
   ghg workflow preview
