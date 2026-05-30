@@ -1,6 +1,7 @@
+import { describe, it, expect } from "vitest";
+
 import { Command } from "commander";
 import reviewCommand from "@/commands/review";
-import { describe, it, expect } from "vitest";
 
 describe("review command", () => {
   it("should register review command with subcommands", () => {
@@ -12,8 +13,8 @@ describe("review command", () => {
     );
 
     expect(review).toBeDefined();
-
     const subcommands = review!.commands.map((command) => command.name());
+
     expect(subcommands).toContain("comment");
     expect(subcommands).toContain("threads");
     expect(subcommands).toContain("resolve");

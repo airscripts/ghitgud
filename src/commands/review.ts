@@ -4,6 +4,68 @@ import prompt from "@/core/prompt";
 import command from "@/core/command";
 import reviewService from "@/services/review";
 
+type ReviewSide = "LEFT" | "RIGHT";
+
+interface ReviewOptions {
+  repo?: string;
+}
+
+interface LineReviewOptions extends ReviewOptions {
+  file?: string;
+  line?: string;
+}
+
+interface CommentOptions extends LineReviewOptions {
+  body?: string;
+  side?: string;
+}
+
+interface SuggestOptions extends LineReviewOptions {
+  replace?: string;
+}
+
+interface ApplyOptions extends ReviewOptions {
+  push?: boolean;
+}
+
+interface PromptOptions {
+  placeholder: string;
+}
+
+const promptValue = async (
+  value: string | undefined,
+  message: string,
+  options: PromptOptions,
+): Promise<string> => value || prompt.text(message, options);
+
+const promptNumber = async (
+  value: string | undefined,
+  message: string,
+  options: PromptOptions,
+): Promise<number> => parseInt(await promptValue(value, message, options), 10);
+
+const promptPr = (value: string | undefined): Promise<number> =>
+  promptNumber(value, "Enter the PR number:", { placeholder: "42" });
+
+const promptThreadId = (value: string | undefined): Promise<number> =>
+  promptNumber(value, "Enter the thread ID:", { placeholder: "123456" });
+
+const promptFile = (value: string | undefined): Promise<string> =>
+  promptValue(value, "Enter the file path:", { placeholder: "src/main.ts" });
+
+const promptLine = (value: string | undefined): Promise<number> =>
+  promptNumber(value, "Enter the line number:", { placeholder: "10" });
+
+const promptCommentBody = (value: string | undefined): Promise<string> =>
+  promptValue(value, "Enter the comment body:", {
+    placeholder: "Consider using a constant here.",
+  });
+
+const promptReplacement = (value: string | undefined): Promise<string> =>
+  promptValue(value, "Enter the replacement text:", {
+    placeholder: "const x = 1;",
+  });
+
 const register = (program: Command) => {
   const review = program
     .command("review")
@@ -18,84 +80,31 @@ const register = (program: Command) => {
     .option("--body <text>", "Comment body")
     .option("--side <side>", "Side of diff (LEFT or RIGHT)", "RIGHT")
     .option("--repo <repo>", "Repository (owner/repo)")
-    .action(
-      async (
-        prArg: string | undefined,
-        options: {
-          file?: string;
-          line?: string;
-          body?: string;
-          side?: string;
-          repo?: string;
-        },
-      ) => {
-        let pr: number;
-        if (prArg) {
-          pr = parseInt(prArg, 10);
-        } else {
-          const input = await prompt.text("Enter the PR number:", {
-            placeholder: "42",
-          });
-          pr = parseInt(input, 10);
-        }
+    .action(async (prArg: string | undefined, options: CommentOptions) => {
+      const pr = await promptPr(prArg);
+      const file = await promptFile(options.file);
+      const line = await promptLine(options.line);
+      const body = await promptCommentBody(options.body);
 
-        let file: string;
-        if (options.file) {
-          file = options.file;
-        } else {
-          file = await prompt.text("Enter the file path:", {
-            placeholder: "src/main.ts",
-          });
-        }
-
-        let line: number;
-        if (options.line) {
-          line = parseInt(options.line, 10);
-        } else {
-          const input = await prompt.text("Enter the line number:", {
-            placeholder: "10",
-          });
-          line = parseInt(input, 10);
-        }
-
-        let body: string;
-        if (options.body) {
-          body = options.body;
-        } else {
-          body = await prompt.text("Enter the comment body:", {
-            placeholder: "Consider using a constant here.",
-          });
-        }
-
-        await command.run(() =>
-          reviewService.comment({
-            pr,
-            file,
-            line,
-            body,
-            side: options.side as "LEFT" | "RIGHT",
-            repo: options.repo,
-          }),
-        );
-      },
-    );
+      await command.run(() =>
+        reviewService.comment({
+          pr,
+          file,
+          line,
+          body,
+          side: options.side as ReviewSide,
+          repo: options.repo,
+        }),
+      );
+    });
 
   review
     .command("threads")
     .description("List all review threads on a pull request.")
     .argument("[pr]", "Pull request number")
     .option("--repo <repo>", "Repository (owner/repo)")
-    .action(async (prArg: string | undefined, options: { repo?: string }) => {
-      let pr: number;
-      if (prArg) {
-        pr = parseInt(prArg, 10);
-      } else {
-        const input = await prompt.text("Enter the PR number:", {
-          placeholder: "42",
-        });
-        pr = parseInt(input, 10);
-      }
-
+    .action(async (prArg: string | undefined, options: ReviewOptions) => {
+      const pr = await promptPr(prArg);
       await command.run(() => reviewService.threads(pr, options.repo));
     });
 
@@ -109,27 +118,10 @@ const register = (program: Command) => {
       async (
         threadIdArg: string | undefined,
         prArg: string | undefined,
-        options: { repo?: string },
+        options: ReviewOptions,
       ) => {
-        let threadId: number;
-        if (threadIdArg) {
-          threadId = parseInt(threadIdArg, 10);
-        } else {
-          const input = await prompt.text("Enter the thread ID:", {
-            placeholder: "123456",
-          });
-          threadId = parseInt(input, 10);
-        }
-
-        let pr: number;
-        if (prArg) {
-          pr = parseInt(prArg, 10);
-        } else {
-          const input = await prompt.text("Enter the PR number:", {
-            placeholder: "42",
-          });
-          pr = parseInt(input, 10);
-        }
+        const threadId = await promptThreadId(threadIdArg);
+        const pr = await promptPr(prArg);
 
         await command.run(() =>
           reviewService.resolve(threadId, options.repo, pr),
@@ -145,65 +137,22 @@ const register = (program: Command) => {
     .option("--line <number>", "Line number")
     .option("--replace <text>", "Replacement text")
     .option("--repo <repo>", "Repository (owner/repo)")
-    .action(
-      async (
-        prArg: string | undefined,
-        options: {
-          file?: string;
-          line?: string;
-          replace?: string;
-          repo?: string;
-        },
-      ) => {
-        let pr: number;
-        if (prArg) {
-          pr = parseInt(prArg, 10);
-        } else {
-          const input = await prompt.text("Enter the PR number:", {
-            placeholder: "42",
-          });
-          pr = parseInt(input, 10);
-        }
+    .action(async (prArg: string | undefined, options: SuggestOptions) => {
+      const pr = await promptPr(prArg);
+      const file = await promptFile(options.file);
+      const line = await promptLine(options.line);
+      const replace = await promptReplacement(options.replace);
 
-        let file: string;
-        if (options.file) {
-          file = options.file;
-        } else {
-          file = await prompt.text("Enter the file path:", {
-            placeholder: "src/main.ts",
-          });
-        }
-
-        let line: number;
-        if (options.line) {
-          line = parseInt(options.line, 10);
-        } else {
-          const input = await prompt.text("Enter the line number:", {
-            placeholder: "10",
-          });
-          line = parseInt(input, 10);
-        }
-
-        let replace: string;
-        if (options.replace) {
-          replace = options.replace;
-        } else {
-          replace = await prompt.text("Enter the replacement text:", {
-            placeholder: "const x = 1;",
-          });
-        }
-
-        await command.run(() =>
-          reviewService.suggest({
-            pr,
-            file,
-            line,
-            replace,
-            repo: options.repo,
-          }),
-        );
-      },
-    );
+      await command.run(() =>
+        reviewService.suggest({
+          pr,
+          file,
+          line,
+          replace,
+          repo: options.repo,
+        }),
+      );
+    });
 
   review
     .command("apply")
@@ -211,26 +160,13 @@ const register = (program: Command) => {
     .argument("[pr]", "Pull request number")
     .option("--repo <repo>", "Repository (owner/repo)")
     .option("--push", "Push after applying", false)
-    .action(
-      async (
-        prArg: string | undefined,
-        options: { repo?: string; push?: boolean },
-      ) => {
-        let pr: number;
-        if (prArg) {
-          pr = parseInt(prArg, 10);
-        } else {
-          const input = await prompt.text("Enter the PR number:", {
-            placeholder: "42",
-          });
-          pr = parseInt(input, 10);
-        }
+    .action(async (prArg: string | undefined, options: ApplyOptions) => {
+      const pr = await promptPr(prArg);
 
-        await command.run(() =>
-          reviewService.apply(pr, options.repo, options.push),
-        );
-      },
-    );
+      await command.run(() =>
+        reviewService.apply(pr, options.repo, options.push),
+      );
+    });
 };
 
 export default { register };

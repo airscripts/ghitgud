@@ -1,7 +1,8 @@
+import { describe, it, expect, vi, beforeEach } from "vitest";
+
 import git from "@/core/git";
 import api from "@/api/review";
 import service from "@/services/review";
-import { describe, it, expect, vi, beforeEach } from "vitest";
 
 vi.mock("@/api/review", () => ({
   default: {
@@ -94,7 +95,6 @@ describe("review service", () => {
     );
 
     const result = await service.threads(42);
-
     expect(result.success).toBe(true);
     expect(result.metadata).toHaveLength(1);
     expect(result.metadata[0].comments).toHaveLength(2);

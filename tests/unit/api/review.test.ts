@@ -18,6 +18,7 @@ describe("review api", () => {
 
     const result = await reviewApi.listComments("owner/repo", 42);
     expect(result).toBe(mockResponse);
+
     expect(client.getTokenRequired).toHaveBeenCalledWith(
       "/repos/owner/repo/pulls/42/comments",
     );
@@ -28,14 +29,15 @@ describe("review api", () => {
     vi.mocked(client.postTokenRequired).mockResolvedValue(mockResponse);
 
     const body = {
-      body: "test comment",
-      path: "src/main.ts",
       line: 10,
       commit_id: "abc123",
+      path: "src/main.ts",
+      body: "test comment",
     };
 
     const result = await reviewApi.createComment("owner/repo", 42, body);
     expect(result).toBe(mockResponse);
+
     expect(client.postTokenRequired).toHaveBeenCalledWith(
       "/repos/owner/repo/pulls/42/comments",
       body,
@@ -49,6 +51,7 @@ describe("review api", () => {
     const result = await reviewApi.updateComment("owner/repo", 123, {
       body: "updated",
     });
+
     expect(result).toBe(mockResponse);
     expect(client.patchTokenRequired).toHaveBeenCalledWith(
       "/repos/owner/repo/pulls/comments/123",
@@ -62,6 +65,7 @@ describe("review api", () => {
 
     const result = await reviewApi.listFiles("owner/repo", 42);
     expect(result).toBe(mockResponse);
+
     expect(client.getTokenRequired).toHaveBeenCalledWith(
       "/repos/owner/repo/pulls/42/files",
     );
@@ -71,10 +75,11 @@ describe("review api", () => {
     const mockResponse = new Response(
       JSON.stringify({ head: { ref: "main" } }),
     );
-    vi.mocked(client.getTokenRequired).mockResolvedValue(mockResponse);
 
+    vi.mocked(client.getTokenRequired).mockResolvedValue(mockResponse);
     const result = await reviewApi.getPrDetails("owner/repo", 42);
     expect(result).toBe(mockResponse);
+
     expect(client.getTokenRequired).toHaveBeenCalledWith(
       "/repos/owner/repo/pulls/42",
     );

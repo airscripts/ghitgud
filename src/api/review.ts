@@ -5,13 +5,13 @@ interface CreateCommentBody {
   path: string;
   line: number;
   commit_id: string;
-  side?: "LEFT" | "RIGHT";
   in_reply_to?: number;
+  side?: "LEFT" | "RIGHT";
 }
 
 interface PrFile {
-  filename: string;
   sha: string;
+  filename: string;
 }
 
 const listComments = async (repo: string, pr: number): Promise<Response> => {
@@ -46,10 +46,11 @@ const getPrDetails = async (repo: string, pr: number): Promise<Response> => {
 };
 
 export default {
+  listFiles,
   listComments,
+  getPrDetails,
   createComment,
   updateComment,
-  listFiles,
-  getPrDetails,
 };
+
 export type { CreateCommentBody, PrFile };

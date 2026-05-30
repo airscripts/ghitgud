@@ -185,6 +185,7 @@ function listBranches(): string[] {
   const output = execSync("git branch --format='%(refname:short)'", {
     encoding: "utf8",
   });
+
   return output.trim().split("\n").filter(Boolean);
 }
 
@@ -203,6 +204,7 @@ function getAheadCount(branch: string, baseBranch: string): number {
       `git log --oneline ${baseBranch}..${branch} | wc -l`,
       { encoding: "utf8" },
     );
+
     return parseInt(output.trim(), 10);
   } catch {
     return 0;
@@ -231,29 +233,29 @@ function commitChanges(message: string): void {
 }
 
 export default {
-  getCurrentBranch,
-  branchExistsLocally,
-  branchExistsRemotely,
-  getDefaultBranch,
-  getRepoRoot,
-  getRemoteNames,
-  getRemoteUrl,
-  parseRepoFromRemoteUrl,
-  deleteLocalBranch,
-  deleteRemoteBranch,
-  fastForwardBase,
-  checkoutBranch,
-  remoteExists,
   addRemote,
-  pushToRemote,
-  branchExistsOnRemote,
+  stageFiles,
+  pushBranch,
+  getRepoRoot,
   hasDiverged,
+  fetchBranch,
+  getRemoteUrl,
+  remoteExists,
+  pushToRemote,
   listBranches,
   rebaseBranch,
-  pushBranch,
-  getAheadCount,
   isInsideRepo,
-  fetchBranch,
-  stageFiles,
+  getAheadCount,
   commitChanges,
+  checkoutBranch,
+  getRemoteNames,
+  fastForwardBase,
+  getCurrentBranch,
+  getDefaultBranch,
+  deleteLocalBranch,
+  deleteRemoteBranch,
+  branchExistsLocally,
+  branchExistsRemotely,
+  branchExistsOnRemote,
+  parseRepoFromRemoteUrl,
 };
