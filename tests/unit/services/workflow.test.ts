@@ -47,8 +47,8 @@ describe("workflow service", () => {
     expect(result.metadata[0].valid).toBe(true);
   });
 
-  it("builds dry-run output", async () => {
-    const result = await service.dryRun();
+  it("builds preview output", async () => {
+    const result = await service.preview();
     expect(result.success).toBe(true);
     expect(result.metadata[0].jobs).toHaveLength(1);
     expect(result.metadata[0].jobs[0].id).toBe("test");

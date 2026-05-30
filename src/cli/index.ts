@@ -86,6 +86,7 @@ Examples:
   ghg labels push
   ghg profile detect
   ghg workflow validate
+  ghg workflow preview
   ghg run debug 123456
 `,
 );

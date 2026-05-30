@@ -17,11 +17,11 @@ const register = (program: Command) => {
     });
 
   workflow
-    .command("dry-run")
+    .command("preview")
     .description("Preview workflow job graph, runners, and matrix.")
     .argument("[path]", "Optional workflow file path")
     .action(async (targetPath?: string) => {
-      await command.run(() => workflowService.dryRun(targetPath));
+      await command.run(() => workflowService.preview(targetPath));
     });
 };
 

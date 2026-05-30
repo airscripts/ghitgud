@@ -269,8 +269,8 @@ const validate = async (targetPath?: string) => {
   return { success: true, metadata: results };
 };
 
-const dryRun = async (targetPath?: string) => {
-  logger.start("Building workflow dry-run preview.");
+const preview = async (targetPath?: string) => {
+  logger.start("Building workflow preview.");
   const files = getWorkflowFiles(targetPath);
 
   const results: WorkflowDryRunResult[] = files.map((file) => {
@@ -278,7 +278,7 @@ const dryRun = async (targetPath?: string) => {
     return parseDryRun(content, file);
   });
 
-  output.renderSummary("Workflow Dry Run", [
+  output.renderSummary("Workflow Preview", [
     ["Files", results.length],
     ["Jobs", results.reduce((sum, file) => sum + file.jobs.length, 0)],
     [
@@ -305,11 +305,11 @@ const dryRun = async (targetPath?: string) => {
     );
   }
 
-  logger.success("Workflow dry-run preview complete.");
+  logger.success("Workflow preview complete.");
   return { success: true, metadata: results };
 };
 
 export default {
   validate,
-  dryRun,
+  preview,
 };
