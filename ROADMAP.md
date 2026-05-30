@@ -2,38 +2,6 @@
 
 ---
 
-## v2.6.0 — CI/CD Developer Experience
-
-**Why gh doesn't have it:** Issue #9125 (cache download, May 2024) and no workflow validation and dryrun support. Debugging CI failures requires browser navigation and guesswork.
-
-**Commands:**
-
-- `ghg workflow validate` — lint workflow YAML against GitHub's schema before pushing
-- `ghg workflow preview` — preview job matrix, runner selection, execution path
-- `ghg cache download <key>` — download Actions cache artifact for local debugging
-- `ghg cache inspect <key>` — list contents of a cache without downloading
-- `ghg run debug <run>` — fetch logs + annotations + failed step artifacts in one command
-
-**Value:** Cuts CI debugging time dramatically. The validation and dryrun features prevent "push and pray" workflows.
-
----
-
-## v2.7.0 — Advanced Code Review
-
-**Why gh doesn't have it:** Issue #359 (fine grained review, Feb 2020) — `gh pr review` only supports approve/request changes/comment. No line specific comments, no thread management.
-
-**Commands:**
-
-- `ghg review comment --file <path> --line <num> --body <text> --pr <num>`
-- `ghg review threads <pr>` — list all review threads with resolution status
-- `ghg review resolve <thread>` — mark a thread as resolved
-- `ghg review suggest --file <path> --line <num> --replace <text>` — create a suggestion
-- `ghg review apply <pr>` — batch apply all suggestions from a review
-
-**Value:** Maintainers can do meaningful code review entirely from the terminal. This is the biggest missing piece of `gh`'s PR workflow.
-
----
-
 ## v2.8.0 — Interactive TUI Mode
 
 **Why gh doesn't have it:** `gh` outputs flat text only. Extension `ghdash` (very popular) proves massive demand for a rich terminal UI, but it's external and limited.
