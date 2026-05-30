@@ -44,7 +44,7 @@ The output is not a wrapper. It is a superset.
 
 ## How It Works
 
-ghg layers its commands on top of the GitHub REST API and local Git operations. Each command is self-contained — it resolves configuration, validates inputs, makes the minimal necessary API calls, and returns structured JSON.
+ghg layers its commands on top of the GitHub REST API and local Git operations. Each command is self-contained — it resolves configuration, validates inputs, makes the minimal necessary API calls, and returns results in human-readable form or structured JSON.
 
 The architecture is flat and explicit:
 
@@ -70,8 +70,13 @@ Every command reads from `src/core/config.ts`, which resolves values in this ord
 - **Multi-Account Profiles** — switch between GitHub accounts and tokens per repository
 - **Bulk Repository Governance** — inspect, govern, label, retire, and report across repo sets
 - **Repository Insights** — view traffic data, contributors, commit activity, code frequency, referrers, and participation metrics
-- **gh Passthrough** — proxy any unrecognized command directly to the `gh` CLI
-- **Structured JSON Output** — every command returns machine-parseable JSON
+- **Code Review** — comment on lines, list threads, resolve threads, suggest changes, and apply suggestions
+- **Workflow Utilities** — validate and preview GitHub Actions workflows before pushing
+- **Cache Inspection** — inspect and download GitHub Actions cache metadata
+- **Run Debugging** — fetch logs, artifacts, and annotations for workflow runs
+- **Proxy Passthrough** — pass any unrecognized command directly to the `gh` CLI
+- **Structured JSON Output** — every command supports machine-parseable JSON via `--json`
+- **Terminal Themes** — built-in dark, light, and auto color themes via `--theme`
 
 ---
 
@@ -172,6 +177,9 @@ ghg labels prune                # Delete all labels from repo.
 
 ```bash
 ghg repos inspect --org airscripts
+ghg repos govern --org airscripts --ruleset ./ruleset.json
+ghg repos label --org airscripts -t conventional
+ghg repos retire --org airscripts --months 12
 ghg repos report --org airscripts --since 30d
 ```
 
@@ -180,6 +188,47 @@ ghg repos report --org airscripts --since 30d
 - `label` syncs label templates or metadata across many repositories.
 - `retire` finds and optionally archives inactive repositories.
 - `report` summarizes repository health and velocity.
+
+### Insights
+
+```bash
+ghg insights traffic --repo owner/repo
+ghg insights contributors --repo owner/repo
+ghg insights commits --repo owner/repo
+ghg insights frequency --repo owner/repo
+ghg insights popularity --repo owner/repo
+ghg insights participation --repo owner/repo
+```
+
+### Review
+
+```bash
+ghg review comment <pr> --file src/main.ts --line 10 --body "Consider a constant here."
+ghg review threads <pr>
+ghg review resolve <thread-id> <pr>
+ghg review suggest <pr> --file src/main.ts --line 10 --replace "const x = 1;"
+ghg review apply <pr> --push
+```
+
+### Cache
+
+```bash
+ghg cache inspect <key> --repo owner/repo
+ghg cache download <key> --repo owner/repo --output-dir ./cache-debug
+```
+
+### Run
+
+```bash
+ghg run debug <run-id> --repo owner/repo --output-dir ./run-debug
+```
+
+### Workflow
+
+```bash
+ghg workflow validate [path]
+ghg workflow preview [path]
+```
 
 ### Configuration
 
@@ -200,13 +249,14 @@ ghg profile detect              # Detect profile for current repo.
 ### Passthrough
 
 ```bash
-ghg gh <args>                   # Proxy any args to the gh CLI.
+ghg proxy <args>                # Pass any args to the gh CLI.
 ```
 
 ### Utility
 
 ```bash
 ghg ping                        # Check if the CLI is working.
+ghg version                     # Show version number.
 ```
 
 ---
@@ -219,20 +269,22 @@ ghg ping                        # Check if the CLI is working.
 ghg pr cleanup                  # Delete merged branches locally and remotely.
 ```
 
-### Push back to contributor's fork
+### Push Back To Contributor's Fork
 
 ```bash
 ghg pr push <pr-number>         # Push local changes to contributor's fork.
 ```
 
-### Manage stacked PRs
+### Manage Stacked PRs
 
 ```bash
-ghg pr stack init --base main
-ghg pr stack add feature-part-2 --depends-on feature-part-1
+ghg pr stack create --base main
+ghg pr stack list
+ghg pr stack update
+ghg pr stack push --title "feat: {branch}" --draft
 ```
 
-### Navigate PR chain
+### Navigate PR Chain
 
 ```bash
 ghg pr next                     # Checkout next PR in chain.
@@ -259,7 +311,22 @@ ghg labels push -t conventional
 
 ## Output Format
 
-All commands output JSON to stdout on success and JSON to stderr on failure.
+By default, all commands produce human-readable terminal output. For machine-parseable results, use the `--json` flag.
+
+```bash
+ghg notifications list --json
+ghg repos inspect --org airscripts --json
+```
+
+You can also control the color theme with `--theme`:
+
+```bash
+ghg ping --theme dark
+ghg ping --theme light
+ghg ping --theme auto
+```
+
+When `--json` is used, success responses are written to stdout and errors to stderr as structured JSON.
 
 Success:
 
@@ -289,7 +356,7 @@ Run the canonical local checks:
 pnpm typecheck          # Type check without emitting.
 pnpm lint               # ESLint flat config.
 pnpm format             # Prettier format.
-pnpm test -- --run      # Single test run (no watch).
+pnpm test               # Single test run (no watch).
 ```
 
 To verify formatting without rewriting files:
@@ -298,7 +365,7 @@ To verify formatting without rewriting files:
 pnpm typecheck
 pnpm lint
 pnpm format:check
-pnpm test -- --run
+pnpm test
 ```
 
 Optional commit-time hooks are available if you want them locally:
@@ -319,15 +386,21 @@ src/
     index.ts            # Entry point — Commander program setup.
     ascii.ts            # Figlet banner for help output.
   commands/
-    ping.ts             # ghg ping.
-    labels.ts           # ghg labels <list|pull|push|prune>.
-    config.ts           # ghg config <get|set>.
-    profile.ts          # ghg profile <add|list|switch|detect>.
-    pr.ts               # ghg pr <cleanup|push|stack|next>.
-    notifications.ts    # ghg notifications <list|read|done>.
     activity.ts         # ghg activity.
+    cache.ts            # ghg cache <inspect|download>.
+    config.ts           # ghg config <get|set>.
+    insights.ts         # ghg insights <traffic|contributors|commits|frequency|popularity|participation>.
+    labels.ts           # ghg labels <list|pull|push|prune>.
     mentions.ts         # ghg mentions.
-    gh.ts               # ghg gh <passthrough>.
+    notifications.ts    # ghg notifications <list|read|done>.
+    ping.ts             # ghg ping.
+    pr.ts               # ghg pr <cleanup|push|next|stack>.
+    profile.ts          # ghg profile <add|list|switch|detect>.
+    proxy.ts            # ghg proxy <passthrough>.
+    repos.ts            # ghg repos <inspect|govern|label|retire|report>.
+    review.ts           # ghg review <comment|threads|resolve|suggest|apply>.
+    run.ts              # ghg run <debug>.
+    workflow.ts         # ghg workflow <validate|preview>.
   services/
     labels.ts           # Label business logic.
     config.ts           # Config business logic.
@@ -335,20 +408,48 @@ src/
     pr.ts               # PR lifecycle business logic.
     stack.ts            # Stacked PR chain management.
     notifications.ts    # Notifications business logic.
+    insights.ts         # Repository insights business logic.
+    review.ts           # Code review business logic.
+    cache.ts            # Cache inspection business logic.
+    run.ts              # Workflow run debugging business logic.
+    workflow.ts         # Workflow validation and preview business logic.
+    repos/
+      govern.ts         # Repository rulesets.
+      index.ts          # Repos services index.
+      inspect.ts        # Repository governance checks.
+      label.ts          # Bulk label sync.
+      report.ts         # Repository health reports.
+      retire.ts         # Inactive repository archival.
   api/
     client.ts           # Base HTTP client.
+    commits.ts          # Commits API.
+    contents.ts         # Contents API.
+    insights.ts         # Insights API.
+    issues.ts           # Issues API.
     labels.ts           # GitHub Labels API methods.
-    pr.ts               # GitHub PR API methods.
     notifications.ts    # GitHub Notifications API methods.
+    pr.ts               # GitHub PR API methods.
+    pulls.ts            # Pulls API.
+    repos.ts            # Repositories API.
+    rulesets.ts         # Rulesets API.
   core/
-    constants.ts        # Shared constants, error messages, config keys.
-    errors.ts           # Custom error class hierarchy.
+    command.ts          # Shared command runner.
     config.ts           # Config resolver — env vars, profiles, credentials file.
+    constants.ts        # Shared constants, error messages, config keys.
+    dates.ts            # Date formatting helpers.
+    errors.ts           # Custom error class hierarchy.
     git.ts              # Git operations (branch detection, remote tracking).
     io.ts               # Generic file helpers.
     logger.ts           # Consola instance for rich CLI output.
+    output.ts           # Terminal rendering (tables, sections, lists, key-values).
+    output-state.ts     # Global output state (JSON mode tracking).
+    progress.ts         # Bulk progress bars.
+    prompt.ts           # Interactive prompts.
+    spinner.ts          # Async loading spinners.
+    theme.ts            # Color theme management.
   types/
     index.ts            # Shared type definitions.
+    notifications.ts    # Notification-specific types.
 templates/
   base.json             # Minimal label template.
   conventional.json     # Conventional-commits label template.
