@@ -66,6 +66,75 @@ interface ProfileRcFile {
   profile?: string;
 }
 
+interface WorkflowValidationIssue {
+  file: string;
+  rule: string;
+  line?: number;
+  message: string;
+  level: "error" | "warning";
+}
+
+interface WorkflowValidateResult {
+  file: string;
+  valid: boolean;
+  issues: WorkflowValidationIssue[];
+}
+
+interface WorkflowDryRunJob {
+  id: string;
+  needs: string[];
+  matrix: string[];
+  runsOn: string | null;
+}
+
+interface WorkflowDryRunResult {
+  file: string;
+  triggers: string[];
+  jobs: WorkflowDryRunJob[];
+  workflowName: string | null;
+  unresolvedExpressions: string[];
+}
+
+interface ActionsCacheEntry {
+  id: number;
+  key: string;
+  ref: string;
+  version: string;
+  createdAt: string;
+  sizeInBytes: number;
+  lastAccessedAt: string;
+}
+
+interface RunDebugJob {
+  id: number;
+  name: string;
+  status: string;
+  conclusion: string | null;
+  checkRunUrl: string | null;
+}
+
+interface RunDebugArtifact {
+  id: number;
+  name: string;
+  sizeInBytes: number;
+  archiveDownloadUrl: string;
+}
+
+interface RunDebugResult {
+  runId: number;
+  repo: string;
+  status: string;
+  outputDir: string;
+  jobs: RunDebugJob[];
+  conclusion: string | null;
+  artifacts: RunDebugArtifact[];
+  annotations: Array<{ path: string; message: string; level: string }>;
+  files: {
+    artifacts: string[];
+    logsZip: string | null;
+  };
+}
+
 const normalizeLabel = (label: Label) => ({
   name: label.name,
   color: label.color,
@@ -82,4 +151,12 @@ export type { RepoInspectResult };
 export type { BulkRepoResult };
 export type { BulkRepoMetadata };
 export type { RulesetInput };
+export type { WorkflowValidationIssue };
+export type { WorkflowValidateResult };
+export type { WorkflowDryRunJob };
+export type { WorkflowDryRunResult };
+export type { ActionsCacheEntry };
+export type { RunDebugJob };
+export type { RunDebugArtifact };
+export type { RunDebugResult };
 export { normalizeLabel };

@@ -63,6 +63,21 @@ export const ERROR_LABEL_SOURCE_REQUIRED =
   "Either --template or --metadata must be provided.";
 
 export const INFO_NO_NOTIFICATIONS = "No notifications found.";
+export const DEFAULT_OUTPUT_DIR = ".ghitgud/actions";
+export const WORKFLOW_DEFAULT_DIR = ".github/workflows";
+export const WORKFLOW_FILE_EXTENSIONS = [".yml", ".yaml"] as const;
+
+export const ERROR_WORKFLOW_NOT_FOUND =
+  "No workflow files were found in .github/workflows.";
+
+export const ERROR_WORKFLOW_INVALID_YAML =
+  "Workflow file contains invalid YAML.";
+
+export const ERROR_RUN_ID_REQUIRED = "Run id is required.";
+export const ERROR_CACHE_KEY_REQUIRED = "Cache key is required.";
+
+export const INFO_CACHE_METADATA_ONLY =
+  "Cache metadata found, but cache byte download is not available through the official API.";
 
 export const PING_RESPONSE = "pong";
 export const DEFAULT_REPOS_RETIRE_MONTHS = 12;

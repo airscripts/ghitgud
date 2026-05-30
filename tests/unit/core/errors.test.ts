@@ -5,7 +5,9 @@ import {
   AuthError,
   ConfigError,
   NotFoundError,
+  RateLimitError,
   UnprocessableError,
+  TokenRequiredError,
 } from "@/core/errors";
 
 describe("errors", () => {
@@ -42,5 +44,31 @@ describe("errors", () => {
     expect(error.name).toBe("UnprocessableError");
     expect(error.message).toBe("unprocessable");
     expect(error).toBeInstanceOf(GhitgudError);
+  });
+
+  it("RateLimitError should extend GhitgudError with rate limit info", () => {
+    const resetAt = new Date("2024-01-15T12:00:00Z");
+    const error = new RateLimitError("rate limited", resetAt, 10, 5000);
+
+    expect(error.name).toBe("RateLimitError");
+    expect(error.message).toBe("rate limited");
+    expect(error).toBeInstanceOf(GhitgudError);
+    expect(error.resetAt).toBe(resetAt);
+    expect(error.remaining).toBe(10);
+    expect(error.limit).toBe(5000);
+  });
+
+  it("TokenRequiredError should extend GhitgudError with scopes", () => {
+    const error = new TokenRequiredError("token required", ["repo", "user"]);
+
+    expect(error.name).toBe("TokenRequiredError");
+    expect(error.message).toBe("token required");
+    expect(error).toBeInstanceOf(GhitgudError);
+    expect(error.scopes).toEqual(["repo", "user"]);
+  });
+
+  it("TokenRequiredError should default to empty scopes", () => {
+    const error = new TokenRequiredError("token required");
+    expect(error.scopes).toEqual([]);
   });
 });
