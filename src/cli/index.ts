@@ -4,10 +4,10 @@ import { program } from "commander";
 import ascii from "./ascii";
 import dates from "@/core/dates";
 import output from "@/core/output";
-import ghCommand from "@/commands/gh";
 import prCommand from "@/commands/pr";
 import runCommand from "@/commands/run";
 import pingCommand from "@/commands/ping";
+import proxyCommand from "@/commands/proxy";
 import reposCommand from "@/commands/repos";
 import cacheCommand from "@/commands/cache";
 import labelsCommand from "@/commands/labels";
@@ -32,119 +32,122 @@ import {
 const NAME = "ghg";
 const DESCRIPTION = "A simple CLI to give superpowers to GitHub.";
 
-outputState.setJsonOutput(process.argv.includes("--json"));
+if (!proxyCommand.runProxyFromArgv()) {
+  outputState.setJsonOutput(process.argv.includes("--json"));
 
-if (process.argv.includes("--theme=dark")) {
-  setTheme("dark");
-} else if (process.argv.includes("--theme=light")) {
-  setTheme("light");
-} else if (process.argv.includes("--theme=auto")) {
-  setTheme("auto");
-} else {
-  initializeTheme();
-}
+  if (process.argv.includes("--theme=dark")) {
+    setTheme("dark");
+  } else if (process.argv.includes("--theme=light")) {
+    setTheme("light");
+  } else if (process.argv.includes("--theme=auto")) {
+    setTheme("auto");
+  } else {
+    initializeTheme();
+  }
 
-program
-  .name(NAME)
-  .description(DESCRIPTION)
-  .version(__VERSION__)
-  .option("--json", "Output structured JSON")
-  .option("--theme <theme>", "Color theme (dark, light, auto)", "auto")
-  .showSuggestionAfterError();
+  program
+    .name(NAME)
+    .description(DESCRIPTION)
+    .version(__VERSION__)
+    .option("--json", "Output structured JSON")
+    .option("--theme <theme>", "Color theme (dark, light, auto)", "auto")
+    .showSuggestionAfterError();
 
-ghCommand.register(program);
-notificationsCommand.register(program);
-activityCommand.register(program);
-mentionsCommand.register(program);
-reposCommand.register(program);
-insightsCommand.register(program);
-pingCommand.register(program);
-labelsCommand.register(program);
-profileCommand.register(program);
-configCommand.register(program);
-prCommand.register(program);
-reviewCommand.register(program);
-workflowCommand.register(program);
-cacheCommand.register(program);
-runCommand.register(program);
+  proxyCommand.register(program);
+  notificationsCommand.register(program);
+  activityCommand.register(program);
+  mentionsCommand.register(program);
+  reposCommand.register(program);
+  insightsCommand.register(program);
+  pingCommand.register(program);
+  labelsCommand.register(program);
+  profileCommand.register(program);
+  configCommand.register(program);
+  prCommand.register(program);
+  reviewCommand.register(program);
+  workflowCommand.register(program);
+  cacheCommand.register(program);
+  runCommand.register(program);
 
-program
-  .command("version")
-  .description("Show version number.")
-  .action(() => {
-    console.log(__VERSION__);
-    process.exit(0);
-  });
+  program
+    .command("version")
+    .description("Show version number.")
+    .action(() => {
+      console.log(__VERSION__);
+      process.exit(0);
+    });
 
-program.addHelpText("before", ascii);
+  program.addHelpText("before", ascii);
 
-program.addHelpText(
-  "after",
-  `
+  program.addHelpText(
+    "after",
+    `
 Examples:
   ghg notifications list
   ghg pr cleanup
   ghg repos report --org airscripts
   ghg labels push
+  ghg proxy pr checkout 17
   ghg profile detect
   ghg review threads 42
   ghg workflow validate
   ghg workflow preview
   ghg run debug 123456
 `,
-);
+  );
 
-program.exitOverride();
+  program.exitOverride();
 
-function handleError(error: unknown): never {
-  if (error instanceof TokenRequiredError) {
-    output.writeError(error.message, ERROR_NO_TOKEN);
-    process.exit(1);
+  function handleError(error: unknown): never {
+    if (error instanceof TokenRequiredError) {
+      output.writeError(error.message, ERROR_NO_TOKEN);
+      process.exit(1);
+    }
+
+    if (error instanceof RateLimitError) {
+      output.writeError(
+        error.message,
+        `Rate limit resets ${dates.formatRelative(error.resetAt)} (${dates.formatDateShort(error.resetAt)}).`,
+      );
+
+      process.exit(1);
+    }
+
+    if (error instanceof GhitgudError) {
+      output.writeError(error.message);
+      process.exit(1);
+    }
+
+    const commanderError = error as {
+      code?: string;
+      message?: string;
+      exitCode?: number;
+    };
+
+    if (commanderError.exitCode === 0) {
+      process.exit(0);
+    }
+
+    if (commanderError.code === "commander.unknownCommand") {
+      console.log();
+      console.log(program.helpInformation());
+      process.exit(1);
+    }
+
+    if (commanderError.code === "commander.help") {
+      process.exit(1);
+    }
+
+    throw error;
   }
 
-  if (error instanceof RateLimitError) {
-    output.writeError(
-      error.message,
-      `Rate limit resets ${dates.formatRelative(error.resetAt)} (${dates.formatDateShort(error.resetAt)}).`,
-    );
-
-    process.exit(1);
+  try {
+    void program.parseAsync(process.argv).catch(handleError);
+  } catch (error) {
+    handleError(error);
   }
 
-  if (error instanceof GhitgudError) {
-    output.writeError(error.message);
-    process.exit(1);
-  }
-
-  const commanderError = error as {
-    code?: string;
-    message?: string;
-    exitCode?: number;
-  };
-
-  if (commanderError.exitCode === 0) {
-    process.exit(0);
-  }
-
-  if (commanderError.code === "commander.unknownCommand") {
-    console.log();
-    console.log(program.helpInformation());
-    process.exit(1);
-  }
-
-  if (commanderError.code === "commander.help") {
-    process.exit(1);
-  }
-
-  throw error;
+  process.on("unhandledRejection", (error: unknown) => {
+    handleError(error);
+  });
 }
-
-try {
-  void program.parseAsync(process.argv).catch(handleError);
-} catch (error) {
-  handleError(error);
-}
-
-process.on("unhandledRejection", (error: unknown) => {
-  handleError(error);
-});
