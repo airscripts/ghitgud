@@ -1,31 +1,31 @@
-import api from "@/api/review";
 import fs from "fs";
+
+import git from "@/core/git";
+import api from "@/api/review";
 import output from "@/core/output";
 import logger from "@/core/logger";
 import config from "@/core/config";
-import git from "@/core/git";
 
 import {
-  ReviewComment,
   ReviewThread,
+  ReviewComment,
   ReviewSuggestion,
   ReviewApplyResult,
 } from "@/types";
 
 import {
   ERROR_NO_REPO,
+  ERROR_REVIEW_NO_THREADS,
   ERROR_REVIEW_PR_REQUIRED,
   ERROR_REVIEW_FILE_REQUIRED,
   ERROR_REVIEW_LINE_REQUIRED,
   ERROR_REVIEW_BODY_REQUIRED,
-  ERROR_REVIEW_NO_THREADS,
   ERROR_REVIEW_NO_SUGGESTIONS,
   ERROR_REVIEW_THREAD_NOT_FOUND,
   ERROR_REVIEW_COMMIT_SHA_REQUIRED,
 } from "@/core/constants";
 
 import { ConfigError, GhitgudError } from "@/core/errors";
-import type { PrFile } from "@/api/review";
 
 function resolveRepo(repo?: string): string {
   const resolved = repo || config.getRepoOptional();
@@ -33,41 +33,142 @@ function resolveRepo(repo?: string): string {
   return resolved;
 }
 
-async function getCommitShaForFile(
-  repo: string,
-  pr: number,
-  filePath: string,
-): Promise<string> {
-  const response = await api.listFiles(repo, pr);
-  const files = (await response.json()) as PrFile[];
-  const match = files.find((f) => f.filename === filePath);
+async function getPrHeadSha(repo: string, pr: number): Promise<string> {
+  const response = await api.getPrDetails(repo, pr);
+  const data = (await response.json()) as { head?: { sha?: string } };
+  const sha = data.head?.sha;
 
-  if (!match) throw new GhitgudError(ERROR_REVIEW_COMMIT_SHA_REQUIRED);
-  return match.sha;
+  if (!sha) throw new GhitgudError(ERROR_REVIEW_COMMIT_SHA_REQUIRED);
+  return sha;
 }
 
-function parseSuggestionBody(
-  body: string,
-): { original: string; suggested: string } | null {
+type GitHubReviewComment = ReviewComment & {
+  diff_hunk?: string;
+  created_at?: string;
+  in_reply_to_id?: number;
+};
+
+function normalizeComment(comment: GitHubReviewComment): ReviewComment {
+  return {
+    ...comment,
+    diffHunk: comment.diffHunk ?? comment.diff_hunk,
+    createdAt: comment.createdAt ?? comment.created_at ?? "",
+    inReplyToId: comment.inReplyToId ?? comment.in_reply_to_id,
+  };
+}
+
+function parseSuggestionBody(body: string): string | null {
   const match = body.match(/```suggestion\n([\s\S]*?)\n```/);
 
   if (!match) {
     return null;
   }
 
-  const lines = body.split("\n");
-  const originalLine = lines.find((line) => line.startsWith("```suggestion"));
+  return match[1];
+}
 
-  if (!originalLine) {
+function parseDiffHunkStart(header: string): { left: number; right: number } {
+  const match = header.match(/^@@ -(\d+)(?:,\d+)? \+(\d+)(?:,\d+)? @@/);
+
+  if (!match) {
+    return { left: 0, right: 0 };
+  }
+
+  return {
+    left: Number(match[1]),
+    right: Number(match[2]),
+  };
+}
+
+type DiffSide = "LEFT" | "RIGHT";
+
+interface DiffCursor {
+  left: number;
+  right: number;
+}
+
+interface DiffLinePosition {
+  text: string;
+  left?: number;
+  right?: number;
+}
+
+function getDiffLinePosition(
+  hunkLine: string,
+  cursor: DiffCursor,
+): DiffLinePosition | null {
+  const marker = hunkLine[0];
+  const text = hunkLine.slice(1).trim();
+
+  if (marker === "-") {
+    return { left: cursor.left, text };
+  }
+
+  if (marker === "+") {
+    return { right: cursor.right, text };
+  }
+
+  if (marker === " ") {
+    return { left: cursor.left, right: cursor.right, text };
+  }
+
+  return null;
+}
+
+function positionMatchesSide(
+  position: DiffLinePosition,
+  side: DiffSide,
+  targetLine: number,
+): boolean {
+  return side === "LEFT"
+    ? position.left === targetLine
+    : position.right === targetLine;
+}
+
+function advanceDiffCursor(hunkLine: string, cursor: DiffCursor): DiffCursor {
+  const marker = hunkLine[0];
+
+  if (marker === "-") {
+    return { ...cursor, left: cursor.left + 1 };
+  }
+
+  if (marker === "+") {
+    return { ...cursor, right: cursor.right + 1 };
+  }
+
+  if (marker === " ") {
+    return {
+      left: cursor.left + 1,
+      right: cursor.right + 1,
+    };
+  }
+
+  return cursor;
+}
+
+function getOriginalLineFromDiffHunk(
+  diffHunk: string | undefined,
+  targetLine: number,
+  side: DiffSide,
+): string | null {
+  if (!diffHunk) {
     return null;
   }
 
-  const idx = lines.indexOf(originalLine);
-  const previousLine = lines[idx - 1];
-  const original = previousLine ? previousLine.trim() : "";
-  const suggested = match[1];
+  const [header, ...hunkLines] = diffHunk.split("\n");
+  let cursor = parseDiffHunkStart(header);
 
-  return { original, suggested };
+  for (const hunkLine of hunkLines) {
+    const position = getDiffLinePosition(hunkLine, cursor);
+
+    if (position && positionMatchesSide(position, side, targetLine)) {
+      return position.text;
+    }
+
+    cursor = advanceDiffCursor(hunkLine, cursor);
+  }
+
+  return null;
 }
 
 function groupCommentsIntoThreads(comments: ReviewComment[]): ReviewThread[] {
@@ -104,8 +205,7 @@ const comment = async (options: CommentOptions) => {
   const repo = resolveRepo(options.repo);
   logger.start(`Creating review comment on PR #${options.pr}.`);
 
-  const commitId = await getCommitShaForFile(repo, options.pr, options.file);
-
+  const commitId = await getPrHeadSha(repo, options.pr);
   const response = await api.createComment(repo, options.pr, {
     body: options.body,
     path: options.file,
@@ -127,7 +227,9 @@ const threads = async (pr: number, repo?: string) => {
   logger.start(`Fetching review threads for PR #${pr}.`);
 
   const response = await api.listComments(targetRepo, pr);
-  const comments = (await response.json()) as ReviewComment[];
+  const comments = ((await response.json()) as GitHubReviewComment[]).map(
+    normalizeComment,
+  );
 
   if (!comments.length) {
     throw new GhitgudError(ERROR_REVIEW_NO_THREADS);
@@ -173,9 +275,11 @@ const resolve = async (threadId: number, repo?: string, pr?: number) => {
   }
 
   const response = await api.listComments(targetRepo, pr);
-  const comments = (await response.json()) as ReviewComment[];
-  const target = comments.find((c) => c.id === threadId);
+  const comments = ((await response.json()) as GitHubReviewComment[]).map(
+    normalizeComment,
+  );
 
+  const target = comments.find((c) => c.id === threadId);
   if (!target) throw new GhitgudError(ERROR_REVIEW_THREAD_NOT_FOUND);
 
   let resolvedBody: string;
@@ -208,7 +312,7 @@ const suggest = async (options: SuggestOptions) => {
   const repo = resolveRepo(options.repo);
   logger.start(`Creating suggestion on PR #${options.pr}.`);
 
-  const commitId = await getCommitShaForFile(repo, options.pr, options.file);
+  const commitId = await getPrHeadSha(repo, options.pr);
   const suggestionBody = `\`\`\`suggestion\n${options.replace}\n\`\`\``;
 
   const response = await api.createComment(repo, options.pr, {
@@ -232,18 +336,26 @@ const apply = async (pr: number, repo?: string, pushFlag = false) => {
   logger.start(`Fetching suggestions for PR #${pr}.`);
 
   const response = await api.listComments(targetRepo, pr);
-  const comments = (await response.json()) as ReviewComment[];
+  const comments = ((await response.json()) as GitHubReviewComment[]).map(
+    normalizeComment,
+  );
 
   const suggestions: ReviewSuggestion[] = [];
   for (const comment of comments) {
-    const parsed = parseSuggestionBody(comment.body);
-    if (parsed) {
+    const suggestedText = parseSuggestionBody(comment.body);
+    const originalText = getOriginalLineFromDiffHunk(
+      comment.diffHunk,
+      comment.line,
+      comment.side,
+    );
+
+    if (suggestedText && originalText !== null) {
       suggestions.push({
+        originalText,
+        suggestedText,
         id: comment.id,
         path: comment.path,
         line: comment.line,
-        originalText: parsed.original,
-        suggestedText: parsed.suggested,
       });
     }
   }

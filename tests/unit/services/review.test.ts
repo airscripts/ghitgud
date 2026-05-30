@@ -1,30 +1,29 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
-
-import api from "@/api/review";
 import git from "@/core/git";
+import api from "@/api/review";
 import service from "@/services/review";
+import { describe, it, expect, vi, beforeEach } from "vitest";
 
 vi.mock("@/api/review", () => ({
   default: {
+    listFiles: vi.fn(),
+    getPrDetails: vi.fn(),
     listComments: vi.fn(),
     createComment: vi.fn(),
     updateComment: vi.fn(),
-    listFiles: vi.fn(),
-    getPrDetails: vi.fn(),
   },
 }));
 
 vi.mock("@/core/git", () => ({
   default: {
-    getCurrentBranch: vi.fn(),
-    checkoutBranch: vi.fn(),
-    branchExistsLocally: vi.fn(),
-    fetchBranch: vi.fn(),
     stageFiles: vi.fn(),
-    commitChanges: vi.fn(),
+    getRepoRoot: vi.fn(),
+    fetchBranch: vi.fn(),
     pushToRemote: vi.fn(),
     isInsideRepo: vi.fn(),
-    getRepoRoot: vi.fn(),
+    commitChanges: vi.fn(),
+    checkoutBranch: vi.fn(),
+    getCurrentBranch: vi.fn(),
+    branchExistsLocally: vi.fn(),
   },
 }));
 
@@ -40,46 +39,53 @@ describe("review service", () => {
   });
 
   it("creates a comment", async () => {
-    vi.mocked(api.listFiles).mockResolvedValue(
-      new Response(
-        JSON.stringify([{ filename: "src/main.ts", sha: "abc123" }]),
-      ),
+    vi.mocked(api.getPrDetails).mockResolvedValue(
+      new Response(JSON.stringify({ head: { sha: "head123" } })),
     );
+
     vi.mocked(api.createComment).mockResolvedValue(
       new Response(JSON.stringify({ id: 1 })),
     );
 
     const result = await service.comment({
       pr: 42,
-      file: "src/main.ts",
       line: 10,
       body: "LGTM",
+      file: "src/main.ts",
     });
 
     expect(result.success).toBe(true);
     expect(result.commentId).toBe(1);
+
+    expect(api.createComment).toHaveBeenCalledWith("owner/repo", 42, {
+      line: 10,
+      body: "LGTM",
+      side: "RIGHT",
+      path: "src/main.ts",
+      commit_id: "head123",
+    });
   });
 
   it("lists threads", async () => {
     const comments = [
       {
         id: 1,
-        body: "first",
-        path: "src/main.ts",
         line: 5,
         side: "RIGHT",
-        user: { login: "alice" },
+        body: "first",
+        path: "src/main.ts",
         createdAt: "2026-05-30",
+        user: { login: "alice" },
       },
       {
         id: 2,
-        body: "reply",
-        path: "src/main.ts",
         line: 5,
+        body: "reply",
         side: "RIGHT",
-        inReplyToId: 1,
+        in_reply_to_id: 1,
+        path: "src/main.ts",
         user: { login: "bob" },
-        createdAt: "2026-05-30",
+        created_at: "2026-05-30",
       },
     ];
 
@@ -98,65 +104,74 @@ describe("review service", () => {
     const comments = [
       {
         id: 1,
-        body: "issue here",
-        path: "src/main.ts",
         line: 5,
         side: "RIGHT",
-        user: { login: "alice" },
+        body: "issue here",
+        path: "src/main.ts",
         createdAt: "2026-05-30",
+        user: { login: "alice" },
       },
     ];
 
     vi.mocked(api.listComments).mockResolvedValue(
       new Response(JSON.stringify(comments)),
     );
+
     vi.mocked(api.updateComment).mockResolvedValue(
       new Response(JSON.stringify({ id: 1 })),
     );
 
     const result = await service.resolve(1, "owner/repo", 42);
-
     expect(result.success).toBe(true);
     expect(result.threadId).toBe(1);
   });
 
   it("creates a suggestion", async () => {
-    vi.mocked(api.listFiles).mockResolvedValue(
-      new Response(
-        JSON.stringify([{ filename: "src/main.ts", sha: "abc123" }]),
-      ),
+    vi.mocked(api.getPrDetails).mockResolvedValue(
+      new Response(JSON.stringify({ head: { sha: "head123" } })),
     );
+
     vi.mocked(api.createComment).mockResolvedValue(
       new Response(JSON.stringify({ id: 1 })),
     );
 
     const result = await service.suggest({
       pr: 42,
-      file: "src/main.ts",
       line: 10,
+      file: "src/main.ts",
       replace: "const x = 1;",
     });
 
     expect(result.success).toBe(true);
     expect(result.commentId).toBe(1);
+
+    expect(api.createComment).toHaveBeenCalledWith("owner/repo", 42, {
+      line: 10,
+      side: "RIGHT",
+      path: "src/main.ts",
+      commit_id: "head123",
+      body: "```suggestion\nconst x = 1;\n```",
+    });
   });
 
   it("applies suggestions", async () => {
     const comments = [
       {
         id: 1,
-        body: "```suggestion\nconst x = 2;\n```",
-        path: "src/main.ts",
         line: 10,
         side: "RIGHT",
-        user: { login: "alice" },
+        path: "src/main.ts",
         createdAt: "2026-05-30",
+        user: { login: "alice" },
+        body: "```suggestion\nconst x = 2;\n```",
+        diff_hunk: "@@ -10 +10 @@\n-const x = 1;\n+const x = 1;",
       },
     ];
 
     vi.mocked(api.listComments).mockResolvedValue(
       new Response(JSON.stringify(comments)),
     );
+
     vi.mocked(api.getPrDetails).mockResolvedValue(
       new Response(JSON.stringify({ head: { ref: "feature" } })),
     );
@@ -167,7 +182,6 @@ describe("review service", () => {
     vi.mocked(git.getRepoRoot).mockReturnValue("/tmp/repo");
 
     const result = await service.apply(42, "owner/repo", false);
-
     expect(result.success).toBe(true);
     expect(result.metadata.branch).toBe("feature");
   });

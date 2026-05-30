@@ -121,8 +121,8 @@ interface RunDebugArtifact {
 }
 
 interface RunDebugResult {
-  runId: number;
   repo: string;
+  runId: number;
   status: string;
   outputDir: string;
   jobs: RunDebugJob[];
@@ -140,18 +140,19 @@ interface ReviewComment {
   body: string;
   path: string;
   line: number;
-  side: "LEFT" | "RIGHT";
-  inReplyToId?: number;
-  user: { login: string };
+  diffHunk?: string;
   createdAt: string;
+  inReplyToId?: number;
+  side: "LEFT" | "RIGHT";
+  user: { login: string };
 }
 
 interface ReviewThread {
   id: number;
   path: string;
   line: number;
-  comments: ReviewComment[];
   resolved: boolean;
+  comments: ReviewComment[];
 }
 
 interface ReviewSuggestion {
@@ -163,9 +164,9 @@ interface ReviewSuggestion {
 }
 
 interface ReviewApplyResult {
+  branch: string;
   applied: number;
   skipped: number;
-  branch: string;
 }
 
 const normalizeLabel = (label: Label) => ({
