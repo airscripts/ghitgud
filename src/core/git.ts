@@ -209,6 +209,27 @@ function getAheadCount(branch: string, baseBranch: string): number {
   }
 }
 
+function isInsideRepo(): boolean {
+  try {
+    execSync("git rev-parse --is-inside-work-tree", { encoding: "utf8" });
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+function fetchBranch(remote: string, branch: string): void {
+  execSync(`git fetch ${remote} ${branch}`);
+}
+
+function stageFiles(): void {
+  execSync("git add -A");
+}
+
+function commitChanges(message: string): void {
+  execSync(`git commit -m "${message}"`);
+}
+
 export default {
   getCurrentBranch,
   branchExistsLocally,
@@ -231,4 +252,8 @@ export default {
   rebaseBranch,
   pushBranch,
   getAheadCount,
+  isInsideRepo,
+  fetchBranch,
+  stageFiles,
+  commitChanges,
 };

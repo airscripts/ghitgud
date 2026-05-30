@@ -98,3 +98,15 @@ export const GOVERNANCE_CHECK_COUNT = 4;
 
 export const SUPPORTED_CONFIG_KEYS = ["token", "repo"] as const;
 export type SupportedKey = (typeof SUPPORTED_CONFIG_KEYS)[number];
+
+export const ERROR_REVIEW_PR_REQUIRED = "PR number is required.";
+export const ERROR_REVIEW_FILE_REQUIRED =
+  "File path is required for review comments.";
+export const ERROR_REVIEW_LINE_REQUIRED =
+  "Line number is required for review comments.";
+export const ERROR_REVIEW_BODY_REQUIRED = "Comment body is required.";
+export const ERROR_REVIEW_NO_THREADS = "No review threads found on this PR.";
+export const ERROR_REVIEW_NO_SUGGESTIONS = "No suggestions found to apply.";
+export const ERROR_REVIEW_THREAD_NOT_FOUND = "Review thread not found.";
+export const ERROR_REVIEW_COMMIT_SHA_REQUIRED =
+  "Unable to determine commit SHA for comment.";

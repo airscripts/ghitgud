@@ -13,6 +13,7 @@ import cacheCommand from "@/commands/cache";
 import labelsCommand from "@/commands/labels";
 import outputState from "@/core/output-state";
 import configCommand from "@/commands/config";
+import reviewCommand from "@/commands/review";
 import profileCommand from "@/commands/profile";
 import insightsCommand from "@/commands/insights";
 import mentionsCommand from "@/commands/mentions";
@@ -62,6 +63,7 @@ labelsCommand.register(program);
 profileCommand.register(program);
 configCommand.register(program);
 prCommand.register(program);
+reviewCommand.register(program);
 workflowCommand.register(program);
 cacheCommand.register(program);
 runCommand.register(program);
@@ -85,6 +87,8 @@ Examples:
   ghg repos report --org airscripts
   ghg labels push
   ghg profile detect
+  ghg review comment --pr 42 --file src/main.ts --line 10 --body "LGTM"
+  ghg review threads 42
   ghg workflow validate
   ghg workflow preview
   ghg run debug 123456

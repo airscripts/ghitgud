@@ -135,6 +135,39 @@ interface RunDebugResult {
   };
 }
 
+interface ReviewComment {
+  id: number;
+  body: string;
+  path: string;
+  line: number;
+  side: "LEFT" | "RIGHT";
+  inReplyToId?: number;
+  user: { login: string };
+  createdAt: string;
+}
+
+interface ReviewThread {
+  id: number;
+  path: string;
+  line: number;
+  comments: ReviewComment[];
+  resolved: boolean;
+}
+
+interface ReviewSuggestion {
+  id: number;
+  path: string;
+  line: number;
+  originalText: string;
+  suggestedText: string;
+}
+
+interface ReviewApplyResult {
+  applied: number;
+  skipped: number;
+  branch: string;
+}
+
 const normalizeLabel = (label: Label) => ({
   name: label.name,
   color: label.color,
@@ -159,4 +192,8 @@ export type { ActionsCacheEntry };
 export type { RunDebugJob };
 export type { RunDebugArtifact };
 export type { RunDebugResult };
+export type { ReviewComment };
+export type { ReviewThread };
+export type { ReviewSuggestion };
+export type { ReviewApplyResult };
 export { normalizeLabel };
