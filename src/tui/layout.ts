@@ -87,6 +87,15 @@ const getLayout = (
   };
 };
 
+const isValidSize = (
+  columns: number | undefined,
+  rows: number | undefined,
+): boolean => {
+  const minColumns = MIN_COLUMNS + 40;
+  const minRows = MIN_ROWS + 10;
+  return (columns ?? 0) >= minColumns && (rows ?? 0) >= minRows;
+};
+
 const getMaxScroll = (totalLines: number, height: number) => {
   return Math.max(0, totalLines - height);
 };
@@ -136,9 +145,10 @@ const scrollLine = (line: string, hScroll: number, width: number) => {
 export {
   scrollBy,
   getLayout,
-  clampScroll,
   scrollLine,
+  clampScroll,
   truncateEnd,
+  isValidSize,
   getMaxScroll,
   truncateMiddle,
   getVisibleLines,

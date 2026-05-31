@@ -651,6 +651,26 @@ const renderHelpModal = (ctx: RendererContext, layout: TuiLayout) => {
   );
 };
 
+const renderSizeWarning = (ctx: RendererContext, layout: TuiLayout) => {
+  const message = "Window too small, resize it.";
+
+  const padding = " ".repeat(
+    Math.max(0, Math.floor((layout.columns - message.length) / 2)),
+  );
+
+  return box(
+    ctx,
+    {
+      overflow: "hidden",
+      height: layout.rows,
+      width: layout.columns,
+      flexDirection: "column",
+      justifyContent: "center",
+    },
+    text(ctx, { bold: true, color: COLORS.warning }, padding + message),
+  );
+};
+
 const renderOverlay = (
   ctx: RendererContext,
   layout: TuiLayout,
@@ -766,6 +786,7 @@ interface AppRenderProps {
   showPalette: boolean;
   paletteQuery: string;
   paletteIndex: number;
+  isValidSize: boolean;
   values: TuiInputValues;
   contextHScroll: number;
   operation: TuiOperation;
@@ -841,11 +862,16 @@ const renderApp = (
     layout,
     showHelp,
     showPalette,
+    isValidSize,
     paletteQuery,
     paletteIndex,
     dashboardData,
     paletteOperations,
   } = props;
+
+  if (!isValidSize) {
+    return renderSizeWarning(ctx, layout);
+  }
 
   if (mode === "dashboard") {
     return box(

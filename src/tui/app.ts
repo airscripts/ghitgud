@@ -3,8 +3,15 @@ import { renderApp } from "./render";
 import { buildStatusItems } from "./status";
 import outputState from "@/core/output-state";
 import { parseMouseEvent, SCROLL_SENSITIVITY } from "./mouse";
-import { scrollBy, getLayout, clampScroll, getVisibleLines } from "./layout";
 import type { Mode, MouseEvent, TuiInputValues, TuiOperation } from "./types";
+
+import {
+  scrollBy,
+  getLayout,
+  clampScroll,
+  isValidSize,
+  getVisibleLines,
+} from "./layout";
 
 import {
   validate,
@@ -63,6 +70,18 @@ const createTuiApp = (runtime: Runtime) => {
     const app = useApp();
     const { stdout } = useStdout();
     const stdin = useStdin?.().stdin;
+    const [, setResizeTick] = React.useState(0);
+
+    React.useEffect(() => {
+      const stream = stdout as NodeJS.WriteStream;
+      const onResize = () => setResizeTick((t) => t + 1);
+      stream.on("resize", onResize);
+
+      return () => {
+        stream.off("resize", onResize);
+      };
+    }, [stdout]);
+
     const layout = getLayout(stdout.columns, stdout.rows);
     const [operationIndex, setOperationIndex] = React.useState(0);
     const [activeField, setActiveField] = React.useState(0);
@@ -553,6 +572,7 @@ const createTuiApp = (runtime: Runtime) => {
       visibleOutput,
       dashboardData,
       contextHScroll,
+      isValidSize: isValidSize(stdout.columns, stdout.rows),
       mode: displayMode,
       paletteOperations,
       confirming: mode === "confirm",
