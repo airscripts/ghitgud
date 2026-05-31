@@ -62,6 +62,46 @@ const runProxy = (args: string[], spawnCommand: SpawnGh = spawnGh): void => {
   });
 };
 
+type ProxyResult = { stdout: string; stderr: string; exitCode: number };
+
+const spawnGhCapture: SpawnGh = (args) =>
+  spawn("gh", args, {
+    shell: false,
+    stdio: "pipe",
+  });
+
+const runProxyCapture = (
+  args: string[],
+  spawnCommand: SpawnGh = spawnGhCapture,
+): Promise<ProxyResult> => {
+  return new Promise((resolve, reject) => {
+    const child = spawnCommand(args);
+
+    const stdoutChunks: Buffer[] = [];
+    const stderrChunks: Buffer[] = [];
+
+    child.stdout?.on("data", (chunk: Buffer) => stdoutChunks.push(chunk));
+    child.stderr?.on("data", (chunk: Buffer) => stderrChunks.push(chunk));
+
+    child.on("error", (error: { code?: string }) => {
+      if (error.code === "ENOENT") {
+        reject(new Error(GH_INSTALL_HINT));
+        return;
+      }
+
+      reject(new Error(String(error)));
+    });
+
+    child.on("close", (code) => {
+      resolve({
+        exitCode: code ?? 0,
+        stdout: Buffer.concat(stdoutChunks).toString(),
+        stderr: Buffer.concat(stderrChunks).toString(),
+      });
+    });
+  });
+};
+
 const runProxyFromArgv = (
   argv = process.argv,
   spawnCommand: SpawnGh = spawnGh,
@@ -84,5 +124,5 @@ const register = (program: Command) => {
     .action((args: string[]) => runProxy(args));
 };
 
-export default { register, runProxy, runProxyFromArgv };
-export { runProxy, runProxyFromArgv };
+export default { register, runProxy, runProxyCapture, runProxyFromArgv };
+export { runProxy, runProxyCapture, runProxyFromArgv };

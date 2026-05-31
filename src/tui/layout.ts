@@ -2,6 +2,7 @@ interface TuiLayout {
   rows: number;
   columns: number;
   bodyHeight: number;
+  contextWidth: number;
   commandWidth: number;
   contextHeight: number;
   categoryWidth: number;
@@ -48,14 +49,19 @@ const getLayout = (
   const safeColumns = Math.max(columns ?? 100, MIN_COLUMNS);
   const safeRows = Math.max(rows ?? 30, MIN_ROWS);
   const compact = safeColumns < 105;
-
   const categoryWidth = compact ? 18 : 22;
   const commandWidth = compact ? 28 : 34;
   const bodyHeight = Math.max(10, safeRows - FRAME_LINES);
   const contextHeight = Math.max(6, bodyHeight - PANEL_CHROME_LINES);
 
+  const contextWidth = Math.max(
+    20,
+    safeColumns - categoryWidth - commandWidth - 8,
+  );
+
   return {
     bodyHeight,
+    contextWidth,
     commandWidth,
     contextHeight,
     categoryWidth,
@@ -104,10 +110,17 @@ const formatScrollTitle = (title: string, visible: VisibleLines) => {
   return `${title} ${visible.start}-${visible.end}/${visible.total}`;
 };
 
+const scrollLine = (line: string, hScroll: number, width: number) => {
+  if (line.length <= width) return line;
+  const safeScroll = Math.max(0, Math.min(hScroll, line.length - width));
+  return line.slice(safeScroll, safeScroll + width);
+};
+
 export {
   scrollBy,
   getLayout,
   clampScroll,
+  scrollLine,
   truncateEnd,
   getMaxScroll,
   truncateMiddle,

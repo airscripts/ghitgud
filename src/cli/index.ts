@@ -31,7 +31,7 @@ import {
 } from "@/core/errors";
 
 const NAME = "ghg";
-const DESCRIPTION = "A simple CLI to give superpowers to GitHub.";
+const DESCRIPTION = "A better GitHub CLI that extends the official gh CLI.";
 
 if (!proxyCommand.runProxyFromArgv()) {
   outputState.setJsonOutput(process.argv.includes("--json"));

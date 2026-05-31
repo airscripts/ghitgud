@@ -90,7 +90,7 @@ const operations: TuiOperation[] = [
     command: "ghg tui",
     workspace: "Dashboard",
     id: "dashboard.overview",
-    title: "Dashboard overview",
+    title: "Dashboard Overview",
     description: "Show active profile, configured repo, and activity summary.",
 
     run: async () => ({
@@ -103,7 +103,7 @@ const operations: TuiOperation[] = [
   {
     id: "notifications.list",
     workspace: "Notifications",
-    title: "List notifications",
+    title: "List Notifications",
     command: "ghg notifications list",
     description: "List GitHub notifications.",
 
@@ -127,7 +127,7 @@ const operations: TuiOperation[] = [
     mutates: true,
     id: "notifications.read",
     workspace: "Notifications",
-    title: "Mark notification read",
+    title: "Mark Notification Read",
     command: "ghg notifications read <id>",
     description: "Mark a notification as read.",
 
@@ -143,7 +143,7 @@ const operations: TuiOperation[] = [
     mutates: true,
     id: "notifications.done",
     workspace: "Notifications",
-    title: "Mark notification done",
+    title: "Mark Notification Done",
     command: "ghg notifications done <id>",
     description: "Mark a notification as done.",
 
@@ -176,7 +176,7 @@ const operations: TuiOperation[] = [
   {
     id: "labels.list",
     workspace: "Labels",
-    title: "List labels",
+    title: "List Labels",
     command: "ghg labels list",
     description: "List repository labels.",
     run: () => labelsService.list(),
@@ -186,7 +186,7 @@ const operations: TuiOperation[] = [
     mutates: true,
     id: "labels.pull",
     workspace: "Labels",
-    title: "Pull labels",
+    title: "Pull Labels",
     command: "ghg labels pull",
     description: "Save repository labels to local metadata.",
     inputs: [{ key: "template", label: "Template", type: "string" }],
@@ -204,7 +204,7 @@ const operations: TuiOperation[] = [
     mutates: true,
     id: "labels.push",
     workspace: "Labels",
-    title: "Push labels",
+    title: "Push Labels",
     command: "ghg labels push",
     description: "Sync local or template labels to the repository.",
     inputs: [{ key: "template", label: "Template", type: "string" }],
@@ -222,7 +222,7 @@ const operations: TuiOperation[] = [
     mutates: true,
     id: "labels.prune",
     workspace: "Labels",
-    title: "Prune labels",
+    title: "Prune Labels",
     command: "ghg labels prune",
     description: "Delete labels listed in local metadata.",
     run: () => labelsService.prune(),
@@ -234,7 +234,7 @@ const operations: TuiOperation[] = [
     workspace: "PRs",
     dryRunDefault: true,
     command: "ghg pr cleanup",
-    title: "Clean merged PR branches",
+    title: "Clean Merged PR Branches",
     description: "Delete merged local/remote branches and fast-forward base.",
 
     inputs: [
@@ -253,7 +253,7 @@ const operations: TuiOperation[] = [
     id: "pr.push",
     mutates: true,
     workspace: "PRs",
-    title: "Push to PR fork",
+    title: "Push to PR Fork",
     command: "ghg pr push <number>",
     description: "Push current branch to a contributor fork.",
 
@@ -270,7 +270,7 @@ const operations: TuiOperation[] = [
     id: "pr.next",
     mutates: true,
     workspace: "PRs",
-    title: "Stack next",
+    title: "Stack Next",
     command: "ghg pr next",
     description: "Move through a tracked PR stack.",
 
@@ -290,7 +290,7 @@ const operations: TuiOperation[] = [
     mutates: true,
     workspace: "PRs",
     id: "pr.stack.create",
-    title: "Create stack",
+    title: "Create Stack",
     command: "ghg pr stack create",
     description: "Create a stack from the current branch.",
 
@@ -309,7 +309,7 @@ const operations: TuiOperation[] = [
   {
     workspace: "PRs",
     id: "pr.stack.list",
-    title: "List stack",
+    title: "List Stack",
     command: "ghg pr stack list",
     description: "Show current stack status.",
     run: () => stackService.list(),
@@ -319,7 +319,7 @@ const operations: TuiOperation[] = [
     mutates: true,
     workspace: "PRs",
     id: "pr.stack.update",
-    title: "Update stack",
+    title: "Update Stack",
     command: "ghg pr stack update",
     description: "Update an existing stack after parent PR merges.",
     run: () => stackService.update(),
@@ -329,7 +329,7 @@ const operations: TuiOperation[] = [
     mutates: true,
     workspace: "PRs",
     id: "pr.stack.push",
-    title: "Push stack",
+    title: "Push Stack",
     command: "ghg pr stack push",
     description: "Push a stack and create/update PRs.",
 
@@ -354,7 +354,7 @@ const operations: TuiOperation[] = [
     mutates: true,
     workspace: "Review",
     id: "review.comment",
-    title: "Review comment",
+    title: "Review Comment",
     command: "ghg review comment <pr>",
     description: "Create a line review comment.",
 
@@ -381,7 +381,7 @@ const operations: TuiOperation[] = [
   {
     workspace: "Review",
     id: "review.threads",
-    title: "Review threads",
+    title: "Review Threads",
     command: "ghg review threads <pr>",
     description: "List review threads for a PR.",
 
@@ -398,7 +398,7 @@ const operations: TuiOperation[] = [
     mutates: true,
     workspace: "Review",
     id: "review.resolve",
-    title: "Resolve review thread",
+    title: "Resolve Review Thread",
     command: "ghg review resolve <thread-id> <pr>",
     description: "Mark a review thread as resolved.",
 
@@ -420,7 +420,7 @@ const operations: TuiOperation[] = [
     mutates: true,
     workspace: "Review",
     id: "review.suggest",
-    title: "Review suggestion",
+    title: "Review Suggestion",
     command: "ghg review suggest <pr>",
     description: "Create a single-line suggestion.",
 
@@ -446,7 +446,7 @@ const operations: TuiOperation[] = [
     mutates: true,
     id: "review.apply",
     workspace: "Review",
-    title: "Apply suggestions",
+    title: "Apply Suggestions",
     command: "ghg review apply <pr>",
     description: "Apply review suggestions locally.",
 
@@ -469,7 +469,7 @@ const operations: TuiOperation[] = [
     inputs: targetInputs,
     workspace: "Repositories",
     command: "ghg repos inspect",
-    title: "Inspect repositories",
+    title: "Inspect Repositories",
     description: "Inspect repository governance files.",
     run: ({ values }) => reposInspectService.inspect(targetOptions(values)),
   },
@@ -480,7 +480,7 @@ const operations: TuiOperation[] = [
     dryRunDefault: true,
     workspace: "Repositories",
     command: "ghg repos govern",
-    title: "Govern repositories",
+    title: "Govern Repositories",
     description: "Apply repository rulesets.",
 
     inputs: [
@@ -505,7 +505,7 @@ const operations: TuiOperation[] = [
     dryRunDefault: true,
     workspace: "Repositories",
     command: "ghg repos label",
-    title: "Label repositories",
+    title: "Label Repositories",
     description: "Sync labels across repository targets.",
 
     inputs: [
@@ -532,7 +532,7 @@ const operations: TuiOperation[] = [
     dryRunDefault: true,
     workspace: "Repositories",
     command: "ghg repos retire",
-    title: "Retire repositories",
+    title: "Retire Repositories",
     description: "Find and optionally archive inactive repositories.",
 
     inputs: [
@@ -563,7 +563,7 @@ const operations: TuiOperation[] = [
   {
     id: "repos.report",
     workspace: "Repositories",
-    title: "Repository report",
+    title: "Repository Report",
     command: "ghg repos report",
     description: "Report repository health and velocity.",
     inputs: [...targetInputs, { key: "since", label: "Since", type: "string" }],
@@ -578,7 +578,7 @@ const operations: TuiOperation[] = [
   {
     workspace: "Insights",
     id: "insights.traffic",
-    title: "Traffic insights",
+    title: "Traffic Insights",
     command: "ghg insights traffic",
     description: "Show repository traffic.",
     inputs: [repoInput],
@@ -588,7 +588,7 @@ const operations: TuiOperation[] = [
   {
     workspace: "Insights",
     id: "insights.contributors",
-    title: "Contributor insights",
+    title: "Contributor Insights",
     command: "ghg insights contributors",
     description: "Show top contributors.",
     inputs: [repoInput],
@@ -598,7 +598,7 @@ const operations: TuiOperation[] = [
   {
     workspace: "Insights",
     id: "insights.commits",
-    title: "Commit insights",
+    title: "Commit Insights",
     command: "ghg insights commits",
     description: "Show commit activity.",
     inputs: [repoInput],
@@ -607,7 +607,7 @@ const operations: TuiOperation[] = [
 
   {
     workspace: "Insights",
-    title: "Code frequency",
+    title: "Code Frequency",
     id: "insights.frequency",
     command: "ghg insights frequency",
     description: "Show code frequency.",
@@ -618,7 +618,7 @@ const operations: TuiOperation[] = [
   {
     workspace: "Insights",
     id: "insights.popularity",
-    title: "Popularity insights",
+    title: "Popularity Insights",
     command: "ghg insights popularity",
     description: "Show referrers and popular paths.",
     inputs: [repoInput],
@@ -628,7 +628,7 @@ const operations: TuiOperation[] = [
   {
     workspace: "Insights",
     id: "insights.participation",
-    title: "Participation insights",
+    title: "Participation Insights",
     command: "ghg insights participation",
     description: "Show participation stats.",
     inputs: [repoInput],
@@ -638,7 +638,7 @@ const operations: TuiOperation[] = [
   {
     workspace: "Workflow",
     id: "workflow.validate",
-    title: "Validate workflows",
+    title: "Validate Workflows",
     command: "ghg workflow validate",
     description: "Validate GitHub Actions workflow files.",
     inputs: [{ key: "path", label: "Path", type: "string" }],
@@ -648,7 +648,7 @@ const operations: TuiOperation[] = [
   {
     workspace: "Workflow",
     id: "workflow.preview",
-    title: "Preview workflows",
+    title: "Preview Workflows",
     command: "ghg workflow preview",
     description: "Preview GitHub Actions workflow structure.",
     inputs: [{ key: "path", label: "Path", type: "string" }],
@@ -658,7 +658,7 @@ const operations: TuiOperation[] = [
   {
     workspace: "Cache",
     id: "cache.inspect",
-    title: "Inspect cache",
+    title: "Inspect Cache",
     command: "ghg cache inspect <key>",
     description: "Inspect GitHub Actions cache metadata.",
 
@@ -676,7 +676,7 @@ const operations: TuiOperation[] = [
     workspace: "Cache",
     id: "cache.download",
     command: "ghg cache download <key>",
-    title: "Download cache debug bundle",
+    title: "Download Cache Debug Bundle",
     description: "Download cache-related debug artifacts.",
 
     inputs: [
@@ -696,7 +696,7 @@ const operations: TuiOperation[] = [
     mutates: true,
     id: "run.debug",
     workspace: "Run",
-    title: "Debug workflow run",
+    title: "Debug Workflow Run",
     command: "ghg run debug <run-id>",
     description: "Fetch logs, artifacts, and annotations for a run.",
 
@@ -716,7 +716,7 @@ const operations: TuiOperation[] = [
   {
     mutates: true,
     id: "profile.add",
-    title: "Add profile",
+    title: "Add Profile",
     workspace: "Profile",
     command: "ghg profile add <name>",
     description: "Add or update a profile.",
@@ -743,7 +743,7 @@ const operations: TuiOperation[] = [
   {
     id: "profile.list",
     workspace: "Profile",
-    title: "List profiles",
+    title: "List Profiles",
     command: "ghg profile list",
     description: "List configured profiles.",
     run: () => profileService.list(),
@@ -753,7 +753,7 @@ const operations: TuiOperation[] = [
     mutates: true,
     id: "profile.switch",
     workspace: "Profile",
-    title: "Switch profile",
+    title: "Switch Profile",
     command: "ghg profile switch <name>",
     description: "Switch the active profile.",
     inputs: [{ key: "name", label: "Name", type: "string", required: true }],
@@ -764,7 +764,7 @@ const operations: TuiOperation[] = [
     mutates: true,
     id: "profile.detect",
     workspace: "Profile",
-    title: "Detect profile",
+    title: "Detect Profile",
     command: "ghg profile detect",
     description: "Detect profile for current repository.",
     run: () => profileService.detect(),
@@ -773,7 +773,7 @@ const operations: TuiOperation[] = [
   {
     mutates: true,
     id: "config.set",
-    title: "Set config",
+    title: "Set Config",
     workspace: "Config",
     description: "Set a config value.",
     command: "ghg config set <key> <value>",
@@ -798,7 +798,7 @@ const operations: TuiOperation[] = [
 
   {
     id: "config.get",
-    title: "Get config",
+    title: "Get Config",
     workspace: "Config",
     command: "ghg config get <key>",
     description: "Read a config value.",
@@ -810,7 +810,7 @@ const operations: TuiOperation[] = [
     mutates: true,
     id: "config.unset",
     workspace: "Config",
-    title: "Unset config",
+    title: "Unset Config",
     command: "ghg config unset <key>",
     description: "Remove a config value.",
     inputs: [{ key: "key", label: "Key", type: "string", required: true }],
@@ -844,9 +844,14 @@ const operations: TuiOperation[] = [
     description: "Pass arguments through to the GitHub CLI.",
     inputs: [{ key: "args", label: "gh args", type: "string", required: true }],
 
-    run: ({ values }) => {
-      proxy.runProxy(requiredText(values, "args").split(/\s+/).filter(Boolean));
-      return { success: true };
+    run: async ({ values }) => {
+      const result = await proxy.runProxyCapture(
+        requiredText(values, "args").split(/\s+/).filter(Boolean),
+      );
+
+      return (
+        result.stdout || result.stderr || `Exited with code ${result.exitCode}.`
+      );
     },
   },
 ];

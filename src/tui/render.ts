@@ -7,8 +7,10 @@ import { truncateEnd, truncateMiddle, formatScrollTitle } from "./layout";
 
 const COLORS = {
   danger: "red",
+  accent: "cyan",
   active: "blue",
   ready: "green",
+  brand: "magenta",
   inactive: "gray",
   selected: "cyan",
   success: "green",
@@ -21,21 +23,16 @@ const LABELS = {
   context: "Context",
   commands: "Commands",
   categories: "Categories",
+  tagline: "A simple CLI to give superpowers to GitHub.",
   searchHint: (query: string) => `Search: ${query || ""}`,
-  searchCommands: (query: string) => `Commands / ${query || "search"}`,
-
-  helpHint:
-    "q quit  / search  [ ] category  tab input  enter run  u/d scroll  ? help",
-
-  statusHint:
-    "  q quit  / search  [ ] category  tab input  enter run  u/d scroll",
+  searchCommands: (query: string) => `Commands / ${query || "Search"}`,
 } as const;
 
 const CONTEXT_LINE_PATTERNS = {
   selected: "> ",
   inputsLabel: "Inputs",
   resultLabel: "Result",
-  mutationLabel: "Mutation confirmation",
+  mutationLabel: "Mutation Confirmation",
 } as const;
 
 const TRUNCATE_PADDING = 6;
@@ -193,55 +190,215 @@ const isContextLineBold = (line: string, operation: TuiOperation): boolean =>
   line === CONTEXT_LINE_PATTERNS.resultLabel ||
   line === CONTEXT_LINE_PATTERNS.mutationLabel;
 
+interface Segment {
+  text: string;
+  color?: string;
+  bold?: boolean;
+}
+
+const segmentLine = (line: string, operation: TuiOperation): Segment[] => {
+  const baseColor = getContextLineColor(line);
+  const baseBold = isContextLineBold(line, operation);
+
+  if (baseColor || baseBold) {
+    return [{ text: line, color: baseColor, bold: baseBold }];
+  }
+
+  const jColor = jsonLineColor(line);
+  if (!jColor) {
+    return [{ text: line }];
+  }
+
+  const keyMatch = line.match(/^(\s*)("[^"]+":\s*)(.*)$/);
+  if (keyMatch) {
+    return [
+      { text: keyMatch[1], color: COLORS.inactive },
+      { text: keyMatch[2], color: COLORS.active },
+      { text: keyMatch[3], color: jColor },
+    ];
+  }
+
+  return [{ text: line, color: jColor }];
+};
+
+const sliceSegments = (
+  segments: Segment[],
+  hScroll: number,
+  width: number,
+): Segment[] => {
+  const result: Segment[] = [];
+  let cursor = 0;
+
+  for (const segment of segments) {
+    const segStart = cursor;
+    const segEnd = cursor + segment.text.length;
+
+    if (segEnd <= hScroll) {
+      cursor = segEnd;
+      continue;
+    }
+
+    if (segStart >= hScroll + width) {
+      break;
+    }
+
+    const start = Math.max(0, hScroll - segStart);
+    const end = Math.min(segment.text.length, hScroll + width - segStart);
+
+    const sliceText = segment.text.slice(start, end);
+
+    if (sliceText.length > 0) {
+      result.push({
+        text: sliceText,
+        bold: segment.bold,
+        color: segment.color,
+      });
+    }
+
+    cursor = segEnd;
+  }
+
+  return result.length > 0 ? result : [{ text: "" }];
+};
+
+const jsonLineColor = (line: string): string | undefined => {
+  const trimmed = line.trim();
+
+  if (trimmed.startsWith("{") || trimmed.startsWith("}")) {
+    return COLORS.inactive;
+  }
+
+  if (trimmed.startsWith("[") || trimmed.endsWith("]")) {
+    return COLORS.inactive;
+  }
+
+  const keyMatch = trimmed.match(/^\s*"([^"]+)":\s*(.*)$/);
+  if (keyMatch) {
+    const value = keyMatch[2].trim().replace(/,$/, "");
+
+    if (value === "true" || value === "false") {
+      return COLORS.running;
+    }
+
+    if (value === "null") {
+      return COLORS.inactive;
+    }
+
+    if (value === "[" || value === "{" || value === "}") {
+      return COLORS.inactive;
+    }
+
+    if (/^"/.test(value)) {
+      return COLORS.ready;
+    }
+
+    if (/^-?\d/.test(value)) {
+      return COLORS.selected;
+    }
+  }
+
+  return undefined;
+};
+
 const renderContextLine = (
   ctx: RendererContext,
-  line: string,
+  segments: Segment[],
   key: string,
-  operation: TuiOperation,
-) =>
-  text(
+) => {
+  return text(
     ctx,
-    {
-      key,
-      color: getContextLineColor(line),
-      bold: isContextLineBold(line, operation),
-      wrap: "truncate",
-    },
-    line,
+    { key },
+    ...segments.map((segment, index) =>
+      text(
+        ctx,
+        {
+          key: `${key}-${index}`,
+          color: segment.color,
+          bold: segment.bold,
+        },
+        segment.text,
+      ),
+    ),
   );
+};
 
 const renderContextLines = (
   ctx: RendererContext,
-  visibleContext: VisibleLines,
+  lines: string[],
   operation: TuiOperation,
+  hScroll: number,
+  width: number,
+  scroll: number,
 ) =>
-  visibleContext.lines.map((line, index) =>
-    renderContextLine(
-      ctx,
-      line,
-      `${visibleContext.scroll}-${index}`,
-      operation,
-    ),
-  );
+  lines.map((line, index) => {
+    const segments = segmentLine(line, operation);
+    const visibleSegments = sliceSegments(segments, hScroll, width);
+    return renderContextLine(ctx, visibleSegments, `${scroll}-${index}`);
+  });
 
-const renderHeader = (ctx: RendererContext, running: boolean, status: string) =>
-  box(
+const renderHeader = (
+  ctx: RendererContext,
+  running: boolean,
+  mode: string,
+  status: string,
+) => {
+  const modePrefix = mode === "insert" ? "[insert] " : "";
+
+  return box(
     ctx,
     { justifyContent: "space-between" },
-    boldText(ctx, LABELS.title, COLORS.active),
-    plainText(ctx, status, running ? COLORS.running : COLORS.ready),
+
+    text(
+      ctx,
+      {},
+      boldText(ctx, LABELS.title, COLORS.brand),
+      plainText(ctx, `  ${LABELS.tagline}`, COLORS.inactive),
+    ),
+
+    plainText(
+      ctx,
+      `${modePrefix}${status}`,
+      running ? COLORS.running : COLORS.ready,
+    ),
   );
+};
 
 const renderHintBar = (
   ctx: RendererContext,
   searching: boolean,
   query: string,
-) =>
-  plainText(
+) => {
+  if (searching) {
+    return plainText(ctx, LABELS.searchHint(query), COLORS.inactive);
+  }
+
+  return box(
     ctx,
-    searching ? LABELS.searchHint(query) : LABELS.helpHint,
-    COLORS.inactive,
+    { marginBottom: 1 },
+    text(
+      ctx,
+      { color: COLORS.inactive },
+      text(ctx, { color: COLORS.accent }, "q"),
+      " quit  ",
+      text(ctx, { color: COLORS.accent }, "/"),
+      " search  ",
+      text(ctx, { color: COLORS.accent }, "[ ]"),
+      " category  ",
+      text(ctx, { color: COLORS.accent }, "tab"),
+      " focus  ",
+      text(ctx, { color: COLORS.accent }, "i"),
+      " insert  ",
+      text(ctx, { color: COLORS.accent }, "enter"),
+      " run  ",
+      text(ctx, { color: COLORS.accent }, "u/d"),
+      " v-scroll  ",
+      text(ctx, { color: COLORS.accent }, "h/l"),
+      " h-scroll  ",
+      text(ctx, { color: COLORS.accent }, "?"),
+      " help",
+    ),
   );
+};
 
 const renderBody = (
   ctx: RendererContext,
@@ -252,6 +409,7 @@ const renderBody = (
   workspaces: string[],
   operation: TuiOperation,
   visibleContext: VisibleLines,
+  contextHScroll: number,
   operationRows: ReactNode[],
 ) => {
   const categoryRows = renderCategoryRows(
@@ -260,7 +418,14 @@ const renderBody = (
     workspaceIndex,
     layout,
   );
-  const contextLines = renderContextLines(ctx, visibleContext, operation);
+  const contextLines = renderContextLines(
+    ctx,
+    visibleContext.lines,
+    operation,
+    contextHScroll,
+    layout.contextWidth,
+    visibleContext.scroll,
+  );
 
   const commandsTitle = searching
     ? LABELS.searchCommands(query)
@@ -274,11 +439,13 @@ const renderBody = (
       height: layout.bodyHeight,
       width: layout.categoryWidth,
     }),
+
     renderPanel(ctx, commandsTitle, true, operationRows, {
       marginRight: 1,
       height: layout.bodyHeight,
       width: layout.commandWidth,
     }),
+
     renderPanel(
       ctx,
       formatScrollTitle(LABELS.context, visibleContext),
@@ -305,16 +472,17 @@ const renderFooter = (ctx: RendererContext, statusItems: StatusItem[]) =>
       borderColor: COLORS.inactive,
     },
     ...statusItems.map((item, index) => renderStatusPill(ctx, item, index)),
-    plainText(ctx, LABELS.statusHint, COLORS.inactive),
   );
 
 interface AppRenderProps {
+  mode: string;
   query: string;
   status: string;
   running: boolean;
   layout: TuiLayout;
   searching: boolean;
   workspaces: string[];
+  contextHScroll: number;
   workspaceIndex: number;
   operation: TuiOperation;
   statusItems: StatusItem[];
@@ -329,7 +497,9 @@ const renderApp = (
   props: AppRenderProps,
 ) => {
   const ctx = createContext(h, Box, Text);
+
   const {
+    mode,
     query,
     layout,
     status,
@@ -340,6 +510,7 @@ const renderApp = (
     statusItems,
     operationRows,
     visibleContext,
+    contextHScroll,
     workspaceIndex,
   } = props;
 
@@ -352,8 +523,10 @@ const renderApp = (
       width: layout.columns,
       flexDirection: "column",
     },
-    renderHeader(ctx, running, status),
+
+    renderHeader(ctx, running, mode, status),
     renderHintBar(ctx, searching, query),
+
     renderBody(
       ctx,
       layout,
@@ -363,8 +536,10 @@ const renderApp = (
       workspaces,
       operation,
       visibleContext,
+      contextHScroll,
       operationRows,
     ),
+
     renderFooter(ctx, statusItems),
   );
 };

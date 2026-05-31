@@ -13,6 +13,8 @@ import {
   buildContextLines,
 } from "./state";
 
+type Mode = "normal" | "insert" | "search" | "confirm";
+
 type Runtime = {
   React: typeof import("react");
   Box: unknown;
@@ -65,19 +67,19 @@ const createTuiApp = (runtime: Runtime) => {
     );
 
     const [result, setResult] = React.useState("Select an operation.");
-    const [status, setStatus] = React.useState("Ready");
+    const [status, setStatus] = React.useState("Ready.");
     const [running, setRunning] = React.useState(false);
-    const [confirming, setConfirming] = React.useState(false);
-    const [searching, setSearching] = React.useState(false);
+    const [mode, setMode] = React.useState<Mode>("normal");
     const [query, setQuery] = React.useState("");
     const [contextScroll, setContextScroll] = React.useState(0);
+    const [contextHScroll, setContextHScroll] = React.useState(0);
 
     const workspace = workspaces[workspaceIndex];
 
     const filteredOperations = React.useMemo(() => {
       return operations.filter((operation) => {
         const matchesWorkspace = operation.workspace === workspace;
-        if (!searching || !query) return matchesWorkspace;
+        if (mode !== "search" || !query) return matchesWorkspace;
 
         const haystack = [
           operation.id,
@@ -91,18 +93,22 @@ const createTuiApp = (runtime: Runtime) => {
 
         return haystack.includes(query.toLowerCase());
       });
-    }, [workspace, searching, query]);
+    }, [workspace, mode, query]);
 
     const operation =
       filteredOperations[
         Math.min(operationIndex, Math.max(0, filteredOperations.length - 1))
       ] ?? operations[0];
 
+    const inputs = operation.inputs ?? [];
+    const field = inputs[activeField];
+
     const resetForOperation = (nextOperation: TuiOperation) => {
       setValues(initialValues(nextOperation));
       setActiveField(0);
-      setConfirming(false);
-      setStatus("Ready");
+      setMode("normal");
+      setResult("Select an operation.");
+      setStatus("Ready.");
     };
 
     const chooseOperation = (index: number) => {
@@ -130,6 +136,7 @@ const createTuiApp = (runtime: Runtime) => {
 
     React.useEffect(() => {
       setContextScroll(0);
+      setContextHScroll(0);
     }, [operation.id, query, result, workspaceIndex]);
 
     const runOperation = async () => {
@@ -139,9 +146,9 @@ const createTuiApp = (runtime: Runtime) => {
         return;
       }
 
-      setConfirming(false);
+      setMode("normal");
       setRunning(true);
-      setStatus(`Running ${operation.command}`);
+      setStatus(`Running...`);
 
       const previousMode = outputState.getOutputMode();
       outputState.setSilentOutput(true);
@@ -149,10 +156,10 @@ const createTuiApp = (runtime: Runtime) => {
       try {
         const metadata = await operation.run({ values });
         setResult(stringifyResult(metadata));
-        setStatus(`Completed ${operation.title}`);
+        setStatus(`Success.`);
       } catch (error) {
         setResult(error instanceof Error ? error.message : String(error));
-        setStatus(`Failed ${operation.title}`);
+        setStatus(`Failed.`);
       } finally {
         outputState.setOutputMode(previousMode);
         setRunning(false);
@@ -168,13 +175,13 @@ const createTuiApp = (runtime: Runtime) => {
 
     const handleSearch = (input: string, key: Record<string, unknown>) => {
       if (key.escape) {
-        setSearching(false);
+        setMode("normal");
         setQuery("");
         return;
       }
 
       if (key.return) {
-        setSearching(false);
+        setMode("normal");
         chooseOperation(0);
         return;
       }
@@ -196,12 +203,15 @@ const createTuiApp = (runtime: Runtime) => {
       }
 
       if (input.toLowerCase() === "n" || key.escape) {
-        setConfirming(false);
+        setMode("normal");
         setStatus("Cancelled.");
       }
     };
 
-    const handleNavigation = (input: string, key: Record<string, unknown>) => {
+    const handleNormalNavigation = (
+      input: string,
+      key: Record<string, unknown>,
+    ) => {
       if (input === "q") {
         app.exit();
         return;
@@ -210,15 +220,18 @@ const createTuiApp = (runtime: Runtime) => {
       if (input === "?") {
         setResult(
           [
-            "Keys",
+            "keyboard shortcuts",
             "q quit",
             "/ search",
             "[ ] switch workspace",
             "j/k or arrows select operation",
-            "tab switch input",
+            "tab focus input",
+            "i enter insert mode",
+            "esc exit insert mode",
             "space toggle boolean",
             "enter run",
-            "u/d scroll context",
+            "u/d scroll context vertical",
+            "h/l scroll context horizontal",
             "g/G context top/bottom",
           ].join("\n"),
         );
@@ -227,7 +240,7 @@ const createTuiApp = (runtime: Runtime) => {
       }
 
       if (input === "/") {
-        setSearching(true);
+        setMode("search");
         setQuery("");
         return;
       }
@@ -253,19 +266,17 @@ const createTuiApp = (runtime: Runtime) => {
       }
     };
 
-    const handleScrollAndEdit = (
+    const handleNormalScroll = (
       input: string,
       key: Record<string, unknown>,
     ) => {
-      const inputs = operation.inputs ?? [];
-      const field = inputs[activeField];
-
       const contextLines = buildContextLines(
         operation,
         values,
         result,
-        confirming,
+        mode === "confirm",
         activeField,
+        mode === "insert",
       );
 
       if (input === "u" || key.pageUp) {
@@ -310,23 +321,57 @@ const createTuiApp = (runtime: Runtime) => {
 
         return;
       }
+    };
 
-      if (key.tab) {
-        setActiveField((current) =>
-          inputs.length ? (current + 1) % inputs.length : 0,
+    const handleNormalHScroll = (
+      input: string,
+      key: Record<string, unknown>,
+    ) => {
+      if (input === "h" || key.leftArrow) {
+        setContextHScroll((current) =>
+          Math.max(0, current - Math.ceil(layout.contextWidth / 2)),
         );
+
+        return;
+      }
+
+      if (input === "l" || key.rightArrow) {
+        setContextHScroll(
+          (current) => current + Math.ceil(layout.contextWidth / 2),
+        );
+
+        return;
+      }
+    };
+
+    const handleNormalAction = (
+      input: string,
+      key: Record<string, unknown>,
+    ) => {
+      if (key.tab) {
+        if (inputs.length) {
+          setActiveField((current) => (current + 1) % inputs.length);
+        }
 
         return;
       }
 
       if (key.return) {
         if (operation.mutates) {
-          setConfirming(true);
-          setStatus("Confirm mutation with y or cancel with n.");
+          setMode("confirm");
+          setStatus("Confirm mutation with Y or cancel with N.");
           return;
         }
 
         void runOperation();
+        return;
+      }
+
+      if (input === "i") {
+        if (field && field.type !== "boolean") {
+          setMode("insert");
+        }
+
         return;
       }
 
@@ -336,13 +381,22 @@ const createTuiApp = (runtime: Runtime) => {
         updateField(field.key, !(values[field.key] === true));
         return;
       }
+    };
 
-      if (field.type !== "boolean" && (key.backspace || key.delete)) {
+    const handleInsert = (input: string, key: Record<string, unknown>) => {
+      if (key.escape) {
+        setMode("normal");
+        return;
+      }
+
+      if (!field || field.type === "boolean") return;
+
+      if (key.backspace || key.delete) {
         updateField(field.key, asString(values[field.key]).slice(0, -1));
         return;
       }
 
-      if (field.type !== "boolean" && printable(input)) {
+      if (printable(input)) {
         updateField(field.key, `${asString(values[field.key])}${input}`);
       }
     };
@@ -355,26 +409,34 @@ const createTuiApp = (runtime: Runtime) => {
 
       if (running) return;
 
-      if (searching) {
+      if (mode === "search") {
         handleSearch(input, key as Record<string, unknown>);
         return;
       }
 
-      if (confirming) {
+      if (mode === "confirm") {
         handleConfirm(input, key as Record<string, unknown>);
         return;
       }
 
-      handleNavigation(input, key as Record<string, unknown>);
-      handleScrollAndEdit(input, key as Record<string, unknown>);
+      if (mode === "insert") {
+        handleInsert(input, key as Record<string, unknown>);
+        return;
+      }
+
+      handleNormalNavigation(input, key as Record<string, unknown>);
+      handleNormalScroll(input, key as Record<string, unknown>);
+      handleNormalHScroll(input, key as Record<string, unknown>);
+      handleNormalAction(input, key as Record<string, unknown>);
     });
 
     const contextLines = buildContextLines(
       operation,
       values,
       result,
-      confirming,
+      mode === "confirm",
       activeField,
+      mode === "insert",
     );
 
     const visibleContext = getVisibleLines(
@@ -385,7 +447,6 @@ const createTuiApp = (runtime: Runtime) => {
 
     const statusItems = buildStatusItems({
       workspace,
-      operationCount: filteredOperations.length,
     });
 
     const operationRows = renderOperationRows(
@@ -396,17 +457,19 @@ const createTuiApp = (runtime: Runtime) => {
     );
 
     return renderApp(h, Box, Text, {
+      mode,
       query,
       layout,
       status,
       running,
       operation,
-      searching,
       workspaces,
       statusItems,
       operationRows,
       visibleContext,
+      contextHScroll,
       workspaceIndex,
+      searching: mode === "search",
     });
   };
 };

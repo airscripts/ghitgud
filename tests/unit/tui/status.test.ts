@@ -1,11 +1,11 @@
 import { describe, it, expect } from "vitest";
 
-import { buildStatusItems, formatCwd, getActiveProfile } from "@/tui/status";
+import { buildStatusItems, getActiveProfile } from "@/tui/status";
 
 describe("tui status", () => {
   it("should show token set state", () => {
     const items = buildStatusItems(
-      { workspace: "Dashboard", operationCount: 4 },
+      { workspace: "Dashboard" },
 
       {
         cwd: "/repo",
@@ -22,9 +22,9 @@ describe("tui status", () => {
     });
   });
 
-  it("should show missing token and repo fallback", () => {
+  it("should show none for missing token and repo", () => {
     const items = buildStatusItems(
-      { workspace: "Dashboard", operationCount: 4 },
+      { workspace: "Dashboard" },
 
       {
         cwd: "/repo",
@@ -36,16 +36,15 @@ describe("tui status", () => {
 
     expect(items.find((item) => item.label === "token")).toMatchObject({
       tone: "danger",
-      value: "missing",
+      value: "none",
     });
 
     expect(items.find((item) => item.label === "repo")).toMatchObject({
-      tone: "warning",
-      value: "not set",
+      value: "none",
     });
   });
 
-  it("should use the active profile or default fallback", () => {
+  it("should use the active profile or none fallback", () => {
     expect(
       getActiveProfile([
         { name: "default", active: false },
@@ -53,25 +52,23 @@ describe("tui status", () => {
       ]),
     ).toBe("work");
 
-    expect(getActiveProfile([])).toBe("default");
+    expect(getActiveProfile([])).toBe(null);
   });
 
-  it("should include workspace and operation count", () => {
+  it("should include workspace", () => {
     const items = buildStatusItems(
-      { workspace: "Review", operationCount: 5 },
+      { workspace: "Review" },
       { cwd: "/repo", repo: "owner/repo", token: "token", profiles: [] },
     );
 
     expect(items.find((item) => item.label === "workspace")?.value).toBe(
       "Review",
     );
-
-    expect(items.find((item) => item.label === "commands")?.value).toBe("5");
   });
 
   it("should include branch only when available", () => {
     const withBranch = buildStatusItems(
-      { workspace: "Review", operationCount: 5 },
+      { workspace: "Review" },
 
       {
         cwd: "/repo",
@@ -83,7 +80,7 @@ describe("tui status", () => {
     );
 
     const withoutBranch = buildStatusItems(
-      { workspace: "Review", operationCount: 5 },
+      { workspace: "Review" },
       { cwd: "/repo", repo: "owner/repo", token: "token", profiles: [] },
     );
 
@@ -96,9 +93,12 @@ describe("tui status", () => {
     );
   });
 
-  it("should truncate long cwd values", () => {
-    const cwd = formatCwd("/very/long/path/to/a/repository/root", 14);
-    expect(cwd.length).toBeLessThanOrEqual(14);
-    expect(cwd).toContain("…");
+  it("should show folder name for cwd", () => {
+    const items = buildStatusItems(
+      { workspace: "Review" },
+      { cwd: "/very/long/path/to/a/repository/root" },
+    );
+
+    expect(items.find((item) => item.label === "cwd")?.value).toBe("root");
   });
 });

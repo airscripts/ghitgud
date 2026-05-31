@@ -13,7 +13,6 @@ interface StatusItem {
 
 interface StatusContext {
   workspace: string;
-  operationCount: number;
 }
 
 interface StatusDependencies {
@@ -27,16 +26,7 @@ interface StatusDependencies {
 const getActiveProfile = (
   profiles: Array<{ name: string; active: boolean }>,
 ) => {
-  return profiles.find((profile) => profile.active)?.name ?? "default";
-};
-
-const formatCwd = (cwd: string, width = 30) => {
-  const home = process.env.HOME;
-
-  const normalized =
-    home && cwd.startsWith(home) ? `~${cwd.slice(home.length)}` : cwd;
-
-  return truncateMiddle(normalized || path.sep, width);
+  return profiles.find((profile) => profile.active)?.name ?? null;
 };
 
 const getBranch = () => {
@@ -69,31 +59,29 @@ const buildStatusItems = (
   dependencies: StatusDependencies = resolveStatusDependencies(),
 ): StatusItem[] => {
   const tokenSet = !!dependencies.token;
-  const profiles = dependencies.profiles ?? [];
+  const profile = getActiveProfile(dependencies.profiles ?? []);
+  const folder = path.basename(dependencies.cwd ?? process.cwd());
 
   return [
     {
       label: "token",
-      value: tokenSet ? "set" : "missing",
+      value: tokenSet ? "set" : "none",
       tone: tokenSet ? "success" : "danger",
     },
-
     {
       label: "cwd",
-      value: formatCwd(dependencies.cwd ?? process.cwd()),
+      value: truncateMiddle(folder, 18),
     },
-
     {
       label: "profile",
-      value: getActiveProfile(profiles),
+      value: profile ?? "none",
+      tone: profile ? undefined : "warning",
     },
-
     {
       label: "repo",
-      value: dependencies.repo ?? "not set",
-      tone: dependencies.repo ? "default" : "warning",
+      value: dependencies.repo ?? "none",
+      tone: dependencies.repo ? undefined : "warning",
     },
-
     ...(dependencies.branch
       ? [
           {
@@ -102,18 +90,12 @@ const buildStatusItems = (
           },
         ]
       : []),
-
     {
       label: "workspace",
       value: context.workspace,
     },
-
-    {
-      label: "commands",
-      value: String(context.operationCount),
-    },
   ];
 };
 
-export { buildStatusItems, formatCwd, getActiveProfile };
+export { buildStatusItems, getActiveProfile };
 export type { StatusDependencies, StatusItem };

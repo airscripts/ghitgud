@@ -44,6 +44,7 @@ const maskValue = (
 
 const stringifyResult = (value: unknown) => {
   if (value === undefined) return "Done.";
+  if (typeof value === "string") return value;
 
   try {
     return JSON.stringify(value, null, 2);
@@ -62,37 +63,39 @@ const buildContextLines = (
   result: string,
   confirming: boolean,
   activeField: number,
+  insertMode: boolean,
 ) => {
   const lines = [
     operation.title,
     operation.command,
     operation.description,
-    "",
-    "Inputs",
+    " ",
   ];
 
+  lines.push("Inputs");
   const inputs = operation.inputs ?? [];
+
   if (inputs.length) {
     inputs.forEach((input, index) => {
       const value =
         maskValue(input, values[input.key]) || input.placeholder || "-";
 
+      const marker =
+        index === activeField ? (insertMode ? "[insert]" : ">") : " ";
+
       lines.push(
-        `${index === activeField ? ">" : " "} ${input.label}: ${value}${
-          input.required ? " *" : ""
-        }`,
+        `${marker} ${input.label}: ${value}${input.required ? " *" : ""}`,
       );
     });
   } else {
     lines.push("No inputs.");
   }
 
-  lines.push("");
-
+  lines.push(" ");
   if (confirming) {
-    lines.push("Mutation confirmation");
-    lines.push("This action mutates state. Press y to run or n to cancel.");
-    lines.push("");
+    lines.push("Mutation Confirmation");
+    lines.push("This action mutates state. Press y/Y to run or n/N to cancel.");
+    lines.push(" ");
   }
 
   lines.push("Result");
