@@ -2,30 +2,6 @@
 
 ---
 
-## v2.8.0 — Full Terminal UI
-
-**Why gh doesn't have it:** `gh` is command-first and outputs flat text. External tools like `ghdash` prove demand for rich terminal dashboards, but they cover only part of the GitHub workflow. `ghg` can make its whole feature set browsable, actionable, and keyboard-driven from one terminal-native interface.
-
-**Commands:**
-
-- `ghg tui` — launch the full-screen terminal UI
-- Dashboard home for notifications, mentions, activity, PRs, workflows, repository health, and active profile
-- Command palette for every major `ghg` workflow without memorizing subcommands
-- Keyboard-first navigation with vim-style bindings, tabs, search, filters, and sortable tables
-- Notification and mention triage: open, mark read, mark done, jump to related PR/issue/repo
-- PR and review workspace: list PRs, inspect metadata, open threads, resolve threads, create comments, approve/request changes through existing review flows
-- Repository workspace: inspect, govern, label, retire, and report across configured repository targets
-- Labels workspace: pull, push, prune, compare templates, and preview sync impact
-- Insights workspace: traffic, contributors, commits, frequency, popularity, and participation views
-- Workflow/run workspace: validate workflows, preview generated workflows, debug failed runs, and surface logs/status summaries
-- Profile/config workspace: view active profile, switch profiles, detect local profile, and edit common settings
-- Action details pane with human-readable summaries plus an explicit JSON preview/export path where relevant
-- Lightweight file, comment, and status previews; rich next-generation diff review remains a separate future milestone
-
-**Value:** Turns `ghg` from a set of powerful commands into a terminal-native GitHub cockpit. Users can discover and run the full product surface from one keyboard-driven UI while preserving scriptable CLI commands and explicit `--json` output.
-
----
-
 ## v2.9.0 — Project Management & Milestones
 
 **Why gh doesn't have it:** `gh project` commands are basic and new. No milestone commands exist. Subtask support (issue #10298) was only added to the API in 2025 and has no CLI support.
