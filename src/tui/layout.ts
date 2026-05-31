@@ -69,10 +69,7 @@ const getLayout = (
   const metadataHeight = Math.max(6, Math.floor(bodyHeight * 0.4));
   const inputsHeight = Math.max(4, bodyHeight - metadataHeight);
 
-  const outputContentHeight = Math.max(
-    1,
-    bodyHeight - PANEL_CHROME_LINES - 2,
-  );
+  const outputContentHeight = Math.max(1, bodyHeight - PANEL_CHROME_LINES - 2);
 
   return {
     bodyHeight,

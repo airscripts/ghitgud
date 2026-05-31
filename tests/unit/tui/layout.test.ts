@@ -63,9 +63,7 @@ describe("tui layout", () => {
       32 - 6 - layout.navbarHeight - layout.hintHeight,
     );
 
-    expect(layout.metadataHeight + layout.inputsHeight).toBe(
-      layout.bodyHeight,
-    );
+    expect(layout.metadataHeight + layout.inputsHeight).toBe(layout.bodyHeight);
 
     expect(layout.outputContentHeight).toBeLessThan(layout.bodyHeight);
   });

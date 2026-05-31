@@ -71,7 +71,9 @@ const createTuiApp = (runtime: Runtime) => {
       initialValues(operations[0]),
     );
 
-    const [result, setResult] = React.useState("No output to be shown, run a command first.");
+    const [result, setResult] = React.useState(
+      "No output to be shown, run a command first.",
+    );
     const [status, setStatus] = React.useState("Ready.");
     const [running, setRunning] = React.useState(false);
     const [mode, setMode] = React.useState<Mode>("dashboard");
@@ -193,7 +195,12 @@ const createTuiApp = (runtime: Runtime) => {
         event.direction === "up" ? -SCROLL_SENSITIVITY : SCROLL_SENSITIVITY;
 
       setContextScroll((current) =>
-        scrollBy(current, delta, outputLines.length, layout.outputContentHeight),
+        scrollBy(
+          current,
+          delta,
+          outputLines.length,
+          layout.outputContentHeight,
+        ),
       );
     };
 
