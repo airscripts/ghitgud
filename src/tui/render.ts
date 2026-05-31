@@ -23,7 +23,7 @@ const LABELS = {
   context: "Context",
   commands: "Commands",
   categories: "Categories",
-  tagline: "A simple CLI to give superpowers to GitHub.",
+  tagline: "A better GitHub CLI that extends the official gh CLI.",
   searchHint: (query: string) => `Search: ${query || ""}`,
   searchCommands: (query: string) => `Commands / ${query || "Search"}`,
 } as const;
