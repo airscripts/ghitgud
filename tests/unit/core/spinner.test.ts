@@ -15,12 +15,14 @@ vi.mock("ora", () => ({
 
 vi.mock("@/core/output-state", () => ({
   default: {
+    isHumanOutput: vi.fn(),
     isJsonOutput: vi.fn(),
   },
 }));
 
 describe("spinner", () => {
   beforeEach(() => {
+    vi.mocked(outputState.isHumanOutput).mockReturnValue(true);
     vi.mocked(outputState.isJsonOutput).mockReturnValue(false);
   });
 
@@ -40,6 +42,7 @@ describe("spinner", () => {
     });
 
     it("should return noop spinner in JSON mode", () => {
+      vi.mocked(outputState.isHumanOutput).mockReturnValue(false);
       vi.mocked(outputState.isJsonOutput).mockReturnValue(true);
       const result = spinner.createSpinner("Loading...");
 
@@ -51,6 +54,7 @@ describe("spinner", () => {
     });
 
     it("should return a working noop spinner in JSON mode", () => {
+      vi.mocked(outputState.isHumanOutput).mockReturnValue(false);
       vi.mocked(outputState.isJsonOutput).mockReturnValue(true);
       const result = spinner.createSpinner("Loading...");
 
@@ -71,6 +75,7 @@ describe("spinner", () => {
     });
 
     it("should skip spinner in JSON mode", async () => {
+      vi.mocked(outputState.isHumanOutput).mockReturnValue(false);
       vi.mocked(outputState.isJsonOutput).mockReturnValue(true);
       const fn = vi.fn().mockResolvedValue("result");
       const result = await spinner.withSpinner("Loading...", fn);

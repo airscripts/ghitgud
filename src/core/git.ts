@@ -1,5 +1,7 @@
-import logger from "@/core/logger";
 import { execSync } from "child_process";
+
+import logger from "@/core/logger";
+import output from "@/core/output";
 import { ConfigError } from "@/core/errors";
 import { ERROR_NO_GIT_ROOT, ERROR_NO_REMOTE_URL } from "@/core/constants";
 
@@ -97,7 +99,7 @@ function parseRepoFromRemoteUrl(remoteUrl: string): string | null {
 
 function deleteLocalBranch(branch: string, dryRun = false): boolean {
   if (dryRun) {
-    console.log(`[dry-run] Would delete local branch: ${branch}`);
+    output.log(`[dry-run] Would delete local branch: ${branch}`);
     return true;
   }
 
@@ -112,7 +114,7 @@ function deleteLocalBranch(branch: string, dryRun = false): boolean {
 
 function deleteRemoteBranch(branch: string, dryRun = false): boolean {
   if (dryRun) {
-    console.log(`[dry-run] Would delete remote branch: origin/${branch}`);
+    output.log(`[dry-run] Would delete remote branch: origin/${branch}`);
     return true;
   }
 
@@ -127,7 +129,7 @@ function deleteRemoteBranch(branch: string, dryRun = false): boolean {
 
 function fastForwardBase(baseBranch: string, dryRun = false): boolean {
   if (dryRun) {
-    console.log(`[dry-run] Would fast-forward ${baseBranch}`);
+    output.log(`[dry-run] Would fast-forward ${baseBranch}`);
     return true;
   }
 

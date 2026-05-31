@@ -22,7 +22,7 @@ describe("output", () => {
   });
 
   afterEach(() => {
-    outputState.setJsonOutput(false);
+    outputState.setOutputMode("human");
   });
 
   it("should emit JSON results in json mode", () => {
@@ -37,6 +37,15 @@ describe("output", () => {
   it("should not emit JSON results in human mode", () => {
     output.writeResult({ success: true, message: "pong" });
     expect(stdoutWrite).not.toHaveBeenCalled();
+  });
+
+  it("should suppress errors in silent mode", () => {
+    outputState.setSilentOutput(true);
+    output.writeError("Unauthorized.", "Set a token.");
+
+    expect(stderrWrite).not.toHaveBeenCalled();
+    expect(logger.error).not.toHaveBeenCalled();
+    expect(logger.info).not.toHaveBeenCalled();
   });
 
   it("should emit JSON errors to stderr in json mode", () => {

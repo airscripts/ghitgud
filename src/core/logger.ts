@@ -7,7 +7,7 @@ const baseLogger = createConsola({ defaults: { tag: "ghg" } });
 const callIfHuman =
   (method: (message: unknown, ...args: unknown[]) => unknown) =>
   (message: unknown, ...args: unknown[]) => {
-    if (!outputState.isJsonOutput()) {
+    if (outputState.isHumanOutput()) {
       method(message, ...args);
     }
   };
