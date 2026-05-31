@@ -14,6 +14,7 @@ const start = async () => {
     Text: ink.Text,
     useApp: ink.useApp,
     useInput: ink.useInput,
+    useStdin: ink.useStdin,
     useStdout: ink.useStdout,
   });
 
@@ -22,6 +23,11 @@ const start = async () => {
   });
 
   await instance.waitUntilExit();
+
+  // Clear the visible screen (2J), clear the scrollback buffer (3J),
+  // and move the cursor to the top-left corner (H) — equivalent to `clear`.
+  process.stdout.write("\x1b[2J\x1b[3J\x1b[H");
+
   outputState.setOutputMode(previousMode);
   return { success: true };
 };

@@ -1,4 +1,12 @@
-import type { TuiInput, TuiInputValues, TuiOperation } from "./types";
+import git from "@/core/git";
+import config from "@/core/config";
+
+import type {
+  TuiInput,
+  TuiOperation,
+  DashboardData,
+  TuiInputValues,
+} from "./types";
 
 const asString = (value: string | number | boolean | undefined) => {
   if (value === undefined) return "";
@@ -104,6 +112,37 @@ const buildContextLines = (
   return lines;
 };
 
+const safeRead = <T>(read: () => T): T | null => {
+  try {
+    return read();
+  } catch {
+    return null;
+  }
+};
+
+const getBranch = () => {
+  try {
+    if (!git.isInsideRepo()) return null;
+    return git.getCurrentBranch();
+  } catch {
+    return null;
+  }
+};
+
+const buildDashboardData = (version: string): DashboardData => {
+  const profiles = safeRead(() => config.listProfiles()) ?? [];
+  const profile = profiles.find((item) => item.active)?.name ?? null;
+  const token = safeRead(() => config.getTokenOptional());
+
+  return {
+    version,
+    profile,
+    branch: getBranch(),
+    tokenSet: !!token,
+    repo: safeRead(() => config.getRepoOptional()),
+  };
+};
+
 export {
   asString,
   validate,
@@ -112,4 +151,5 @@ export {
   initialValues,
   stringifyResult,
   buildContextLines,
+  buildDashboardData,
 };

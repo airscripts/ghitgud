@@ -1,3 +1,5 @@
+type Mode = "dashboard" | "normal" | "insert" | "palette" | "confirm";
+
 type TuiWorkspace =
   | "Dashboard"
   | "Notifications"
@@ -49,10 +51,30 @@ interface TuiRunResult {
   output: string;
 }
 
+interface DashboardData {
+  version: string;
+  tokenSet: boolean;
+  repo: string | null;
+  branch: string | null;
+  profile: string | null;
+}
+
+type MouseEvent =
+  | {
+      x: number;
+      y: number;
+      type: "press" | "release" | "drag";
+      button: "left" | "middle" | "right" | "none";
+    }
+  | { type: "scroll"; direction: "up" | "down"; x: number; y: number };
+
 export type {
+  Mode,
   TuiInput,
+  MouseEvent,
   TuiOperation,
   TuiRunResult,
+  DashboardData,
   TuiWorkspace,
   TuiInputValues,
   TuiOperationContext,

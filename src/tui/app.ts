@@ -1,25 +1,31 @@
+import operations from "./operations";
+import { renderApp } from "./render";
 import { buildStatusItems } from "./status";
 import outputState from "@/core/output-state";
-import operations, { workspaces } from "./operations";
-import { renderApp, renderOperationRows } from "./render";
-import type { TuiInputValues, TuiOperation } from "./types";
+import { parseMouseEvent, SCROLL_SENSITIVITY } from "./mouse";
 import { scrollBy, getLayout, clampScroll, getVisibleLines } from "./layout";
+import type { Mode, MouseEvent, TuiInputValues, TuiOperation } from "./types";
 
 import {
   validate,
   printable,
   initialValues,
   stringifyResult,
-  buildContextLines,
+  buildDashboardData,
 } from "./state";
 
-type Mode = "normal" | "insert" | "search" | "confirm";
+const MOUSE_ENABLE = "\x1b[?1000h\x1b[?1006h";
+const MOUSE_DISABLE = "\x1b[?1000l\x1b[?1006l";
+const HEADER_ROW = 1;
+const HINT_ROW = HEADER_ROW + 1;
+const BODY_START_ROW = HINT_ROW + 2;
 
 type Runtime = {
   React: typeof import("react");
   Box: unknown;
   Text: unknown;
   useApp: () => { exit: () => void };
+  useStdin?: () => { stdin: NodeJS.ReadStream };
   useInput: (
     handler: (
       input: string,
@@ -50,15 +56,14 @@ const asString = (value: string | number | boolean | undefined) => {
 };
 
 const createTuiApp = (runtime: Runtime) => {
-  const { React, Box, Text, useApp, useInput, useStdout } = runtime;
+  const { React, Box, Text, useApp, useInput, useStdout, useStdin } = runtime;
   const h = React.createElement;
 
   return function TuiApp() {
     const app = useApp();
     const { stdout } = useStdout();
-
+    const stdin = useStdin?.().stdin;
     const layout = getLayout(stdout.columns, stdout.rows);
-    const [workspaceIndex, setWorkspaceIndex] = React.useState(0);
     const [operationIndex, setOperationIndex] = React.useState(0);
     const [activeField, setActiveField] = React.useState(0);
 
@@ -66,38 +71,39 @@ const createTuiApp = (runtime: Runtime) => {
       initialValues(operations[0]),
     );
 
-    const [result, setResult] = React.useState("Select an operation.");
+    const [result, setResult] = React.useState("No output to be shown, run a command first.");
     const [status, setStatus] = React.useState("Ready.");
     const [running, setRunning] = React.useState(false);
-    const [mode, setMode] = React.useState<Mode>("normal");
-    const [query, setQuery] = React.useState("");
+    const [mode, setMode] = React.useState<Mode>("dashboard");
+    const [previousMode, setPreviousMode] = React.useState<Mode>("normal");
+    const [paletteQuery, setPaletteQuery] = React.useState("");
+    const [paletteIndex, setPaletteIndex] = React.useState(0);
+    const [showHelp, setShowHelp] = React.useState(false);
     const [contextScroll, setContextScroll] = React.useState(0);
     const [contextHScroll, setContextHScroll] = React.useState(0);
 
-    const workspace = workspaces[workspaceIndex];
+    const dashboardData = React.useMemo(
+      () => buildDashboardData(__VERSION__),
+      [],
+    );
 
-    const filteredOperations = React.useMemo(() => {
-      return operations.filter((operation) => {
-        const matchesWorkspace = operation.workspace === workspace;
-        if (mode !== "search" || !query) return matchesWorkspace;
+    const displayMode = mode === "palette" ? previousMode : mode;
+    const paletteOperations = React.useMemo(() => {
+      if (!paletteQuery) return operations;
 
-        const haystack = [
-          operation.id,
-          operation.title,
-          operation.command,
-          operation.description,
-          operation.workspace,
-        ]
+      const needle = paletteQuery.toLowerCase();
+
+      return operations.filter((op) =>
+        [op.id, op.title, op.command, op.description, op.workspace]
           .join(" ")
-          .toLowerCase();
-
-        return haystack.includes(query.toLowerCase());
-      });
-    }, [workspace, mode, query]);
+          .toLowerCase()
+          .includes(needle),
+      );
+    }, [paletteQuery]);
 
     const operation =
-      filteredOperations[
-        Math.min(operationIndex, Math.max(0, filteredOperations.length - 1))
+      operations[
+        Math.min(operationIndex, Math.max(0, operations.length - 1))
       ] ?? operations[0];
 
     const inputs = operation.inputs ?? [];
@@ -107,37 +113,120 @@ const createTuiApp = (runtime: Runtime) => {
       setValues(initialValues(nextOperation));
       setActiveField(0);
       setMode("normal");
-      setResult("Select an operation.");
+      setResult("No output to be shown, run a command first.");
       setStatus("Ready.");
     };
 
-    const chooseOperation = (index: number) => {
-      const nextIndex = Math.max(
-        0,
-        Math.min(index, filteredOperations.length - 1),
-      );
-
-      setOperationIndex(nextIndex);
-      resetForOperation(filteredOperations[nextIndex] ?? operations[0]);
+    const openPalette = () => {
+      setPreviousMode(mode === "palette" ? previousMode : mode);
+      setPaletteQuery("");
+      setPaletteIndex(0);
+      setMode("palette");
     };
 
-    const chooseWorkspace = (index: number) => {
-      const nextIndex =
-        (index + workspaces.length) % Math.max(workspaces.length, 1);
+    const chooseOperation = (index: number) => {
+      const nextIndex = Math.max(0, Math.min(index, operations.length - 1));
+      setOperationIndex(nextIndex);
+      resetForOperation(operations[nextIndex] ?? operations[0]);
+    };
 
-      setWorkspaceIndex(nextIndex);
+    const activateOperation = (nextOperation: TuiOperation) => {
+      const nextOperationIndex = operations.findIndex(
+        (item) => item.id === nextOperation.id,
+      );
+
+      setOperationIndex(Math.max(0, nextOperationIndex));
+      resetForOperation(nextOperation);
+    };
+
+    const returnToDashboard = () => {
+      setMode("dashboard");
+      setShowHelp(false);
+      setActiveField(0);
       setOperationIndex(0);
+      resetForOperation(operations[0]);
+      setMode("dashboard");
+    };
 
-      resetForOperation(
-        operations.find((item) => item.workspace === workspaces[nextIndex]) ??
-          operations[0],
+    const closePalette = () => {
+      setMode(previousMode);
+      setPaletteQuery("");
+      setPaletteIndex(0);
+    };
+
+    const chooseInput = (delta: number) => {
+      if (!inputs.length) return;
+
+      setActiveField(
+        (current) => (current + delta + inputs.length) % inputs.length,
+      );
+    };
+
+    const handleMouse = (event: MouseEvent) => {
+      if (showHelp || running) return;
+
+      if (mode === "palette" && event.type === "scroll") {
+        setPaletteIndex((current) =>
+          Math.max(
+            0,
+            Math.min(
+              current +
+                (event.direction === "up"
+                  ? -SCROLL_SENSITIVITY
+                  : SCROLL_SENSITIVITY),
+              paletteOperations.length - 1,
+            ),
+          ),
+        );
+
+        return;
+      }
+
+      if (displayMode === "dashboard") return;
+      if (event.type !== "scroll") return;
+
+      const bodyStartRow = BODY_START_ROW;
+      const bodyEndRow = bodyStartRow + layout.bodyHeight - 1;
+      if (event.y < bodyStartRow || event.y > bodyEndRow) return;
+
+      const delta =
+        event.direction === "up" ? -SCROLL_SENSITIVITY : SCROLL_SENSITIVITY;
+
+      setContextScroll((current) =>
+        scrollBy(current, delta, outputLines.length, layout.outputContentHeight),
       );
     };
 
     React.useEffect(() => {
       setContextScroll(0);
       setContextHScroll(0);
-    }, [operation.id, query, result, workspaceIndex]);
+    }, [operation.id]);
+
+    React.useEffect(() => {
+      setPaletteIndex(0);
+    }, [paletteQuery]);
+
+    React.useEffect(() => {
+      setPaletteIndex((current) =>
+        Math.max(0, Math.min(current, paletteOperations.length - 1)),
+      );
+    }, [paletteOperations.length]);
+
+    React.useEffect(() => {
+      if (!stdin) return undefined;
+      process.stdout.write(MOUSE_ENABLE);
+
+      const onData = (data: Buffer) => {
+        const event = parseMouseEvent(data.toString("utf8"));
+        if (event) handleMouse(event);
+      };
+
+      stdin.on("data", onData);
+      return () => {
+        stdin.off("data", onData);
+        process.stdout.write(MOUSE_DISABLE);
+      };
+    });
 
     const runOperation = async () => {
       const validationError = validate(operation, values);
@@ -173,36 +262,13 @@ const createTuiApp = (runtime: Runtime) => {
       }));
     };
 
-    const handleSearch = (input: string, key: Record<string, unknown>) => {
-      if (key.escape) {
-        setMode("normal");
-        setQuery("");
-        return;
-      }
-
-      if (key.return) {
-        setMode("normal");
-        chooseOperation(0);
-        return;
-      }
-
-      if (key.backspace || key.delete) {
-        setQuery((current) => current.slice(0, -1));
-        return;
-      }
-
-      if (printable(input)) {
-        setQuery((current) => `${current}${input}`);
-      }
-    };
-
     const handleConfirm = (input: string, key: Record<string, unknown>) => {
       if (input.toLowerCase() === "y") {
         void runOperation();
         return;
       }
 
-      if (input.toLowerCase() === "n" || key.escape) {
+      if (input.toLowerCase() === "n" || input === "q" || key.escape) {
         setMode("normal");
         setStatus("Cancelled.");
       }
@@ -213,55 +279,27 @@ const createTuiApp = (runtime: Runtime) => {
       key: Record<string, unknown>,
     ) => {
       if (input === "q") {
-        app.exit();
+        returnToDashboard();
         return;
       }
 
       if (input === "?") {
-        setResult(
-          [
-            "keyboard shortcuts",
-            "q quit",
-            "/ search",
-            "[ ] switch workspace",
-            "j/k or arrows select operation",
-            "tab focus input",
-            "i enter insert mode",
-            "esc exit insert mode",
-            "space toggle boolean",
-            "enter run",
-            "u/d scroll context vertical",
-            "h/l scroll context horizontal",
-            "g/G context top/bottom",
-          ].join("\n"),
-        );
-
+        setShowHelp(true);
         return;
       }
 
-      if (input === "/") {
-        setMode("search");
-        setQuery("");
-        return;
-      }
-
-      if (input === "[") {
-        chooseWorkspace(workspaceIndex - 1);
-        return;
-      }
-
-      if (input === "]") {
-        chooseWorkspace(workspaceIndex + 1);
+      if (input === "c") {
+        openPalette();
         return;
       }
 
       if (key.upArrow || input === "k") {
-        chooseOperation(operationIndex - 1);
+        chooseInput(-1);
         return;
       }
 
       if (key.downArrow || input === "j") {
-        chooseOperation(operationIndex + 1);
+        chooseInput(1);
         return;
       }
     };
@@ -270,22 +308,13 @@ const createTuiApp = (runtime: Runtime) => {
       input: string,
       key: Record<string, unknown>,
     ) => {
-      const contextLines = buildContextLines(
-        operation,
-        values,
-        result,
-        mode === "confirm",
-        activeField,
-        mode === "insert",
-      );
-
       if (input === "u" || key.pageUp) {
         setContextScroll((current) =>
           scrollBy(
             current,
-            -Math.ceil(layout.contextHeight / 2),
-            contextLines.length,
-            layout.contextHeight,
+            -Math.ceil(layout.outputContentHeight / 2),
+            outputLines.length,
+            layout.outputContentHeight,
           ),
         );
 
@@ -296,9 +325,9 @@ const createTuiApp = (runtime: Runtime) => {
         setContextScroll((current) =>
           scrollBy(
             current,
-            Math.ceil(layout.contextHeight / 2),
-            contextLines.length,
-            layout.contextHeight,
+            Math.ceil(layout.outputContentHeight / 2),
+            outputLines.length,
+            layout.outputContentHeight,
           ),
         );
 
@@ -313,9 +342,9 @@ const createTuiApp = (runtime: Runtime) => {
       if (input === "G") {
         setContextScroll(
           clampScroll(
-            contextLines.length,
-            contextLines.length,
-            layout.contextHeight,
+            outputLines.length,
+            outputLines.length,
+            layout.outputContentHeight,
           ),
         );
 
@@ -329,7 +358,7 @@ const createTuiApp = (runtime: Runtime) => {
     ) => {
       if (input === "h" || key.leftArrow) {
         setContextHScroll((current) =>
-          Math.max(0, current - Math.ceil(layout.contextWidth / 2)),
+          Math.max(0, current - Math.ceil(layout.outputWidth / 2)),
         );
 
         return;
@@ -337,7 +366,7 @@ const createTuiApp = (runtime: Runtime) => {
 
       if (input === "l" || key.rightArrow) {
         setContextHScroll(
-          (current) => current + Math.ceil(layout.contextWidth / 2),
+          (current) => current + Math.ceil(layout.outputWidth / 2),
         );
 
         return;
@@ -348,14 +377,6 @@ const createTuiApp = (runtime: Runtime) => {
       input: string,
       key: Record<string, unknown>,
     ) => {
-      if (key.tab) {
-        if (inputs.length) {
-          setActiveField((current) => (current + 1) % inputs.length);
-        }
-
-        return;
-      }
-
       if (key.return) {
         if (operation.mutates) {
           setMode("confirm");
@@ -383,7 +404,47 @@ const createTuiApp = (runtime: Runtime) => {
       }
     };
 
+    const handlePalette = (input: string, key: Record<string, unknown>) => {
+      if (input === "q" || key.escape) {
+        closePalette();
+        return;
+      }
+
+      if (key.return) {
+        const nextOperation = paletteOperations[paletteIndex];
+        if (nextOperation) activateOperation(nextOperation);
+        return;
+      }
+
+      if (key.upArrow || input === "k") {
+        setPaletteIndex((current) => Math.max(0, current - 1));
+        return;
+      }
+
+      if (key.downArrow || input === "j") {
+        setPaletteIndex((current) =>
+          Math.min(current + 1, Math.max(0, paletteOperations.length - 1)),
+        );
+
+        return;
+      }
+
+      if (key.backspace || key.delete) {
+        setPaletteQuery((current) => current.slice(0, -1));
+        return;
+      }
+
+      if (printable(input)) {
+        setPaletteQuery((current) => `${current}${input}`);
+      }
+    };
+
     const handleInsert = (input: string, key: Record<string, unknown>) => {
+      if (input === "q") {
+        returnToDashboard();
+        return;
+      }
+
       if (key.escape) {
         setMode("normal");
         return;
@@ -409,8 +470,27 @@ const createTuiApp = (runtime: Runtime) => {
 
       if (running) return;
 
-      if (mode === "search") {
-        handleSearch(input, key as Record<string, unknown>);
+      if (showHelp) {
+        if (input === "q" || key.escape) setShowHelp(false);
+        return;
+      }
+
+      if (mode === "dashboard") {
+        if (input === "q") {
+          app.exit();
+          return;
+        }
+
+        if (key.return) {
+          setMode("normal");
+          chooseOperation(0);
+        }
+
+        return;
+      }
+
+      if (mode === "palette") {
+        handlePalette(input, key as Record<string, unknown>);
         return;
       }
 
@@ -430,46 +510,47 @@ const createTuiApp = (runtime: Runtime) => {
       handleNormalAction(input, key as Record<string, unknown>);
     });
 
-    const contextLines = buildContextLines(
-      operation,
-      values,
-      result,
-      mode === "confirm",
-      activeField,
-      mode === "insert",
-    );
+    const outputLines = [
+      ...(mode === "confirm"
+        ? [
+            "Mutation Confirmation",
+            "This action mutates state. Press y/Y to run or n/N to cancel.",
+            " ",
+          ]
+        : []),
+      ...result.split("\n"),
+    ];
 
-    const visibleContext = getVisibleLines(
-      contextLines,
+    const visibleOutput = getVisibleLines(
+      outputLines,
       contextScroll,
-      layout.contextHeight,
+      layout.outputContentHeight,
     );
 
     const statusItems = buildStatusItems({
-      workspace,
+      workspace: operation.workspace,
     });
 
-    const operationRows = renderOperationRows(
-      { h, Box, Text },
-      filteredOperations,
-      operation,
-      layout,
-    );
-
     return renderApp(h, Box, Text, {
-      mode,
-      query,
       layout,
       status,
+      values,
+      result,
       running,
+      showHelp,
       operation,
-      workspaces,
       statusItems,
-      operationRows,
-      visibleContext,
+      activeField,
+      paletteQuery,
+      paletteIndex,
+      visibleOutput,
+      dashboardData,
       contextHScroll,
-      workspaceIndex,
-      searching: mode === "search",
+      mode: displayMode,
+      paletteOperations,
+      confirming: mode === "confirm",
+      showPalette: mode === "palette",
+      insertMode: displayMode === "insert",
     });
   };
 };

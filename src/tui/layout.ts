@@ -2,10 +2,15 @@ interface TuiLayout {
   rows: number;
   columns: number;
   bodyHeight: number;
+  hintHeight: number;
+  inputWidth: number;
+  inputsHeight: number;
+  outputWidth: number;
+  navbarHeight: number;
   contextWidth: number;
-  commandWidth: number;
   contextHeight: number;
-  categoryWidth: number;
+  metadataHeight: number;
+  outputContentHeight: number;
 }
 
 interface VisibleLines {
@@ -16,9 +21,12 @@ interface VisibleLines {
   lines: string[];
 }
 
-const MIN_COLUMNS = 80;
 const MIN_ROWS = 20;
-const FRAME_LINES = 7;
+const FRAME_LINES = 6;
+const HINT_HEIGHT = 1;
+const MIN_COLUMNS = 80;
+const NAVBAR_HEIGHT = 1;
+const OUTPUT_RATIO = 0.6;
 const PANEL_CHROME_LINES = 4;
 
 const clamp = (value: number, min: number, max: number) => {
@@ -48,25 +56,37 @@ const getLayout = (
 ): TuiLayout => {
   const safeColumns = Math.max(columns ?? 100, MIN_COLUMNS);
   const safeRows = Math.max(rows ?? 30, MIN_ROWS);
-  const compact = safeColumns < 105;
-  const categoryWidth = compact ? 18 : 22;
-  const commandWidth = compact ? 28 : 34;
-  const bodyHeight = Math.max(10, safeRows - FRAME_LINES);
-  const contextHeight = Math.max(6, bodyHeight - PANEL_CHROME_LINES);
+  const contextWidth = Math.max(20, safeColumns - 6);
+  const outputWidth = Math.max(20, Math.floor(contextWidth * OUTPUT_RATIO));
+  const inputWidth = Math.max(20, contextWidth - outputWidth - 1);
 
-  const contextWidth = Math.max(
-    20,
-    safeColumns - categoryWidth - commandWidth - 8,
+  const bodyHeight = Math.max(
+    10,
+    safeRows - FRAME_LINES - NAVBAR_HEIGHT - HINT_HEIGHT,
+  );
+
+  const contextHeight = Math.max(6, bodyHeight - PANEL_CHROME_LINES);
+  const metadataHeight = Math.max(6, Math.floor(bodyHeight * 0.4));
+  const inputsHeight = Math.max(4, bodyHeight - metadataHeight);
+
+  const outputContentHeight = Math.max(
+    1,
+    bodyHeight - PANEL_CHROME_LINES - 2,
   );
 
   return {
     bodyHeight,
+    inputWidth,
+    outputWidth,
+    inputsHeight,
     contextWidth,
-    commandWidth,
     contextHeight,
-    categoryWidth,
+    metadataHeight,
     rows: safeRows,
+    outputContentHeight,
     columns: safeColumns,
+    hintHeight: HINT_HEIGHT,
+    navbarHeight: NAVBAR_HEIGHT,
   };
 };
 

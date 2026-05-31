@@ -91,6 +91,7 @@ describe("git core", () => {
 
     expect(execSyncMock).toHaveBeenCalledWith("git rev-parse --show-toplevel", {
       encoding: "utf8",
+      stdio: ["pipe", "pipe", "pipe"],
     });
   });
 

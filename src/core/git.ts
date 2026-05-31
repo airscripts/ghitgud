@@ -44,6 +44,7 @@ function getRepoRoot(): string {
   try {
     const output = execSync("git rev-parse --show-toplevel", {
       encoding: "utf8",
+      stdio: ["pipe", "pipe", "pipe"],
     });
 
     return output.trim();

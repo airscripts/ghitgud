@@ -45,9 +45,29 @@ describe("tui layout", () => {
     const compact = getLayout(90, 24);
     const wide = getLayout(140, 40);
 
-    expect(compact.categoryWidth).toBeLessThan(wide.categoryWidth);
-    expect(compact.commandWidth).toBeLessThan(wide.commandWidth);
+    expect(compact.navbarHeight).toBe(1);
+    expect(compact.hintHeight).toBe(1);
+    expect(wide.navbarHeight).toBe(1);
+    expect(wide.hintHeight).toBe(1);
     expect(wide.contextHeight).toBeGreaterThan(compact.contextHeight);
+  });
+
+  it("should reserve rows for navbar, hint, and spacing", () => {
+    const layout = getLayout(120, 32);
+
+    expect(layout.contextWidth).toBe(120 - 6);
+    expect(layout.outputWidth).toBe(Math.floor((120 - 6) * 0.6));
+    expect(layout.inputWidth).toBe(120 - 6 - layout.outputWidth - 1);
+
+    expect(layout.bodyHeight).toBe(
+      32 - 6 - layout.navbarHeight - layout.hintHeight,
+    );
+
+    expect(layout.metadataHeight + layout.inputsHeight).toBe(
+      layout.bodyHeight,
+    );
+
+    expect(layout.outputContentHeight).toBeLessThan(layout.bodyHeight);
   });
 
   it("should truncate long text", () => {
