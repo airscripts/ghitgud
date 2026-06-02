@@ -8,6 +8,7 @@ import prCommand from "@/commands/pr";
 import tuiCommand from "@/commands/tui";
 import runCommand from "@/commands/run";
 import pingCommand from "@/commands/ping";
+import issueCommand from "@/commands/issue";
 import proxyCommand from "@/commands/proxy";
 import reposCommand from "@/commands/repos";
 import cacheCommand from "@/commands/cache";
@@ -15,12 +16,14 @@ import labelsCommand from "@/commands/labels";
 import outputState from "@/core/output-state";
 import configCommand from "@/commands/config";
 import reviewCommand from "@/commands/review";
+import projectCommand from "@/commands/project";
 import profileCommand from "@/commands/profile";
 import insightsCommand from "@/commands/insights";
 import mentionsCommand from "@/commands/mentions";
 import workflowCommand from "@/commands/workflow";
 import { ERROR_NO_TOKEN } from "@/core/constants";
 import activityCommand from "@/commands/activity";
+import milestoneCommand from "@/commands/milestone";
 import { setTheme, initializeTheme } from "@/core/theme";
 import notificationsCommand from "@/commands/notifications";
 
@@ -65,6 +68,9 @@ if (!proxyCommand.runProxyFromArgv()) {
   profileCommand.register(program);
   configCommand.register(program);
   prCommand.register(program);
+  issueCommand.register(program);
+  projectCommand.register(program);
+  milestoneCommand.register(program);
   tuiCommand.register(program);
   reviewCommand.register(program);
   workflowCommand.register(program);
@@ -92,6 +98,9 @@ Examples:
   ghg proxy pr checkout 17
   ghg profile detect
   ghg review threads 42
+  ghg milestone progress v2.9.0
+  ghg project board 1
+  ghg issue subtasks 42
   ghg tui
   ghg workflow validate
   ghg workflow preview

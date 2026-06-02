@@ -25,6 +25,15 @@ const EXPECTED_OPERATION_IDS = [
   "review.resolve",
   "review.suggest",
   "review.apply",
+  "milestone.create",
+  "milestone.list",
+  "milestone.close",
+  "milestone.progress",
+  "project.board",
+  "issue.subtasks.list",
+  "issue.subtasks.create",
+  "issue.subtasks.link",
+  "issue.parent",
   "repos.inspect",
   "repos.govern",
   "repos.label",
@@ -75,6 +84,8 @@ describe("tui operations", () => {
       .map((operation) => operation.id);
 
     expect(mutating).toContain("notifications.read");
+    expect(mutating).toContain("milestone.create");
+    expect(mutating).toContain("issue.subtasks.link");
     expect(mutating).toContain("repos.govern");
     expect(mutating).toContain("config.set");
   });

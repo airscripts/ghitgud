@@ -97,6 +97,7 @@ function handleRateLimit(response: Response): never {
 function buildHeaders(token?: string): Record<string, string> {
   const headers: Record<string, string> = {
     Accept: GITHUB_API_ACCEPT,
+    "Content-Type": "application/json",
     "X-GitHub-Api-Version": GITHUB_API_VERSION,
   };
 
@@ -235,6 +236,15 @@ const client = {
 
   deleteTokenRequired: (endpoint: string) =>
     requestTokenRequired(endpoint, { method: "DELETE" }),
+
+  graphqlTokenRequired: (
+    query: string,
+    variables: Record<string, unknown> = {},
+  ) =>
+    requestTokenRequired("/graphql", {
+      method: "POST",
+      body: { query, variables },
+    }),
 
   getRepo: () => config.getRepo(),
   validateToken: (token: string) => request("/user", {}, token),
