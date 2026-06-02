@@ -60,6 +60,11 @@ const EXPECTED_OPERATION_IDS = [
   "ping",
   "version",
   "proxy",
+  "release.changelog",
+  "release.bump",
+  "release.verify",
+  "release.notes",
+  "release.draft",
 ];
 
 describe("tui operations", () => {

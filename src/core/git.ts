@@ -235,7 +235,110 @@ function commitChanges(message: string): void {
   execSync(`git commit -m "${message}"`);
 }
 
+function getLatestTag(): string | null {
+  try {
+    const output = execSync("git describe --tags --abbrev=0", {
+      encoding: "utf8",
+      stdio: ["pipe", "pipe", "pipe"],
+    });
+
+    return output.trim() || null;
+  } catch {
+    return null;
+  }
+}
+
+interface CommitEntry {
+  hash: string;
+  subject: string;
+  body: string;
+}
+
+function getCommitsSinceTag(since: string, to = "HEAD"): CommitEntry[] {
+  try {
+    const format = "%H%n%s%n%b%n---END---";
+    const output = execSync(`git log ${since}..${to} --format='${format}'`, {
+      encoding: "utf8",
+    });
+
+    const entries = output.split("\n---END---\n").filter(Boolean);
+    return entries.map((entry) => {
+      const lines = entry.split("\n");
+      const hash = lines[0]?.trim() ?? "";
+      const subject = lines[1]?.trim() ?? "";
+      const body = lines.slice(2).join("\n").trim();
+      return { hash, subject, body };
+    });
+  } catch {
+    return [];
+  }
+}
+
+function tagExists(tag: string): boolean {
+  try {
+    execSync(`git rev-parse --verify refs/tags/${tag}`, {
+      stdio: ["pipe", "pipe", "pipe"],
+    });
+
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+interface SignatureResult {
+  signed: boolean;
+  key?: string;
+}
+
+function verifyTag(tag: string): SignatureResult {
+  try {
+    const output = execSync(`git verify-tag ${tag}`, {
+      encoding: "utf8",
+      stdio: ["pipe", "pipe", "pipe"],
+    });
+
+    return { signed: true, key: extractKey(output) };
+  } catch {
+    return { signed: false };
+  }
+}
+
+function getCommitSignatureForTag(tag: string): SignatureResult {
+  try {
+    const output = execSync(`git log --show-signature -1 ${tag}^{commit}`, {
+      encoding: "utf8",
+      stdio: ["pipe", "pipe", "pipe"],
+    });
+
+    return { signed: true, key: extractKey(output) };
+  } catch {
+    return { signed: false };
+  }
+}
+
+function extractKey(output: string): string | undefined {
+  const match = output.match(/Good signature from\s+["']?([^"'\n]+)["']?/);
+  return match?.[1]?.trim() ?? undefined;
+}
+
+function createAnnotatedTag(tag: string, message: string): void {
+  execSync(`git tag -a ${tag} -m "${message}"`, { stdio: "inherit" });
+}
+
+function pushTag(tag: string): void {
+  execSync(`git push origin ${tag}`, { stdio: "inherit" });
+}
+
+function fetchTags(): void {
+  execSync("git fetch --tags", { stdio: "inherit" });
+}
+
 export default {
+  pushTag,
+  tagExists,
+  verifyTag,
+  fetchTags,
   addRemote,
   stageFiles,
   pushBranch,
@@ -247,6 +350,7 @@ export default {
   pushToRemote,
   listBranches,
   rebaseBranch,
+  getLatestTag,
   isInsideRepo,
   getAheadCount,
   commitChanges,
@@ -257,8 +361,11 @@ export default {
   getDefaultBranch,
   deleteLocalBranch,
   deleteRemoteBranch,
+  createAnnotatedTag,
+  getCommitsSinceTag,
   branchExistsLocally,
   branchExistsRemotely,
   branchExistsOnRemote,
   parseRepoFromRemoteUrl,
+  getCommitSignatureForTag,
 };

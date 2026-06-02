@@ -18,6 +18,7 @@ import configCommand from "@/commands/config";
 import reviewCommand from "@/commands/review";
 import projectCommand from "@/commands/project";
 import profileCommand from "@/commands/profile";
+import releaseCommand from "@/commands/release";
 import insightsCommand from "@/commands/insights";
 import mentionsCommand from "@/commands/mentions";
 import workflowCommand from "@/commands/workflow";
@@ -76,6 +77,7 @@ if (!proxyCommand.runProxyFromArgv()) {
   workflowCommand.register(program);
   cacheCommand.register(program);
   runCommand.register(program);
+  releaseCommand.register(program);
 
   program
     .command("version")
@@ -105,6 +107,9 @@ Examples:
   ghg workflow validate
   ghg workflow preview
   ghg run debug 123456
+  ghg release changelog
+  ghg release bump --create --push
+  ghg release draft --level minor
 `,
   );
 

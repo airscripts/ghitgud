@@ -113,3 +113,7 @@ export const ERROR_REVIEW_THREAD_NOT_FOUND = "Review thread not found.";
 
 export const ERROR_REVIEW_COMMIT_SHA_REQUIRED =
   "Unable to determine commit SHA for comment.";
+
+export const RELEASE_FALLBACK_SINCE = "HEAD~20";
+export const RELEASE_TEMPLATE_FILE = "release.md";
+export const RELEASE_DEFAULT_GENERATED = "generated";

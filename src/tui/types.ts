@@ -16,7 +16,8 @@ type TuiWorkspace =
   | "Run"
   | "Profile"
   | "Config"
-  | "Utility";
+  | "Utility"
+  | "Release";
 
 type TuiInputType = "string" | "number" | "boolean";
 
