@@ -2,24 +2,6 @@
 
 ---
 
-## v2.9.0 — Project Management & Milestones
-
-**Why gh doesn't have it:** `gh project` commands are basic and new. No milestone commands exist. Subtask support (issue #10298) was only added to the API in 2025 and has no CLI support.
-
-**Commands:**
-
-- `ghg milestone create --title <name> --due <date>`
-- `ghg milestone list --status open|closed`
-- `ghg milestone close <name>`
-- `ghg milestone progress <name>` — completion percentage
-- `ghg project board <id>` — ASCII kanban view in terminal
-- `ghg issue subtasks <issue>` — list/create/link subtasks
-- `ghg issue parent <child> --parent <parent>`
-
-**Value:** Makes ghg useful for project leads and Scrum masters who track sprint progress. The ASCII kanban board is a killer demo feature.
-
----
-
 ## v2.10.0 — Release Automation
 
 **Why gh doesn't have it:** `gh release create --generate notes` exists but has no conventional commit support, no auto versioning, no changelog templates. Teams write custom release scripts.

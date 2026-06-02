@@ -262,6 +262,30 @@ ghg ping                        # Check if the CLI is working.
 ghg version                     # Show version number.
 ```
 
+### Milestones
+
+```bash
+ghg milestone create --title "v2.9.0" --due 2026-06-30
+ghg milestone list --status open
+ghg milestone close "v2.9.0"
+ghg milestone progress "v2.9.0"
+```
+
+### Project Boards
+
+```bash
+ghg project board <id> --owner <owner>
+```
+
+### Issue Management
+
+```bash
+ghg issue subtasks <issue>
+ghg issue subtasks <issue> --create --title "Sub-task"
+ghg issue subtasks <issue> --link <sub-issue>
+ghg issue parent <child> --parent <parent>
+```
+
 ---
 
 ## PR Workflow
@@ -393,12 +417,15 @@ src/
     cache.ts            # ghg cache <inspect|download>.
     config.ts           # ghg config <get|set>.
     insights.ts         # ghg insights <traffic|contributors|commits|frequency|popularity|participation>.
+    issue.ts            # ghg issue <subtasks|parent>.
     labels.ts           # ghg labels <list|pull|push|prune>.
     mentions.ts         # ghg mentions.
+    milestone.ts        # ghg milestone <create|list|close|progress>.
     notifications.ts    # ghg notifications <list|read|done>.
     ping.ts             # ghg ping.
     pr.ts               # ghg pr <cleanup|push|next|stack>.
     profile.ts          # ghg profile <add|list|switch|detect>.
+    project.ts          # ghg project <board>.
     proxy.ts            # ghg proxy <passthrough>.
     repos.ts            # ghg repos <inspect|govern|label|retire|report>.
     review.ts           # ghg review <comment|threads|resolve|suggest|apply>.
@@ -414,7 +441,11 @@ src/
     insights.ts         # Repository insights business logic.
     review.ts           # Code review business logic.
     cache.ts            # Cache inspection business logic.
+    issue.ts            # Issue subtask and parent business logic.
+    milestone.ts        # Milestone business logic.
+    notifications.ts    # Notifications business logic.
     run.ts              # Workflow run debugging business logic.
+    project.ts          # Project board business logic.
     workflow.ts         # Workflow validation and preview business logic.
     repos/
       govern.ts         # Repository rulesets.
@@ -429,6 +460,8 @@ src/
     contents.ts         # Contents API.
     insights.ts         # Insights API.
     issues.ts           # Issues API.
+    milestones.ts       # Milestones API.
+    projects.ts         # Projects API.
     labels.ts           # GitHub Labels API methods.
     notifications.ts    # GitHub Notifications API methods.
     pr.ts               # GitHub PR API methods.
