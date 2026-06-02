@@ -169,6 +169,59 @@ interface ReviewApplyResult {
   skipped: number;
 }
 
+type MilestoneState = "open" | "closed";
+
+interface Milestone {
+  id: number;
+  url: string;
+  title: string;
+  number: number;
+  html_url: string;
+  open_issues: number;
+  state: MilestoneState;
+  due_on: string | null;
+  closed_issues: number;
+}
+
+interface MilestoneProgress {
+  title: string;
+  total: number;
+  percent: number;
+  openIssues: number;
+  closedIssues: number;
+}
+
+interface IssueSummary {
+  id?: number;
+  url?: string;
+  title: string;
+  state?: string;
+  number?: number;
+  html_url?: string;
+}
+
+type SubIssueSummary = IssueSummary;
+
+interface ProjectBoardItem {
+  url?: string;
+  type: string;
+  title: string;
+  state?: string;
+  number?: number;
+}
+
+interface ProjectBoardColumn {
+  name: string;
+  items: ProjectBoardItem[];
+}
+
+interface ProjectBoard {
+  owner: string;
+  title: string;
+  number: number;
+  columns: ProjectBoardColumn[];
+}
+
 const normalizeLabel = (label: Label) => ({
   name: label.name,
   color: label.color,
@@ -197,4 +250,12 @@ export type { ReviewComment };
 export type { ReviewThread };
 export type { ReviewSuggestion };
 export type { ReviewApplyResult };
+export type { Milestone };
+export type { MilestoneState };
+export type { MilestoneProgress };
+export type { IssueSummary };
+export type { SubIssueSummary };
+export type { ProjectBoard };
+export type { ProjectBoardColumn };
+export type { ProjectBoardItem };
 export { normalizeLabel };

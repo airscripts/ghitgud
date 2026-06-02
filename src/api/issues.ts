@@ -18,6 +18,45 @@ async function getCount(repo: string, qualifiers: string[]): Promise<number> {
 }
 
 const issues = {
+  get: async (
+    issueNumber: number,
+    repo = client.getRepo(),
+  ): Promise<Response> => {
+    return client.getTokenRequired(`/repos/${repo}/issues/${issueNumber}`);
+  },
+
+  create: async (
+    options: { title: string; body?: string },
+    repo = client.getRepo(),
+  ): Promise<Response> => {
+    return client.postTokenRequired(`/repos/${repo}/issues`, {
+      title: options.title,
+      ...(options.body ? { body: options.body } : {}),
+    });
+  },
+
+  listSubIssues: async (
+    issueNumber: number,
+    repo = client.getRepo(),
+  ): Promise<Response> => {
+    return client.getTokenRequired(
+      `/repos/${repo}/issues/${issueNumber}/sub_issues`,
+    );
+  },
+
+  addSubIssue: async (
+    issueNumber: number,
+    subIssueNumber: number,
+    repo = client.getRepo(),
+  ): Promise<Response> => {
+    return client.postTokenRequired(
+      `/repos/${repo}/issues/${issueNumber}/sub_issues`,
+      {
+        sub_issue_id: subIssueNumber,
+      },
+    );
+  },
+
   countOpen: async (repo: string): Promise<number> => {
     return getCount(repo, ["type:issue", "state:open"]);
   },
