@@ -3,13 +3,16 @@ import proxy from "@/commands/proxy";
 import prService from "@/services/pr";
 import runService from "@/services/run";
 import cacheService from "@/services/cache";
+import issueService from "@/services/issue";
 import stackService from "@/services/stack";
 import labelsService from "@/services/labels";
 import configService from "@/services/config";
 import reviewService from "@/services/review";
+import projectService from "@/services/project";
 import profileService from "@/services/profile";
 import insightsService from "@/services/insights";
 import workflowService from "@/services/workflow";
+import milestoneService from "@/services/milestone";
 import reposLabelService from "@/services/repos/label";
 import reposGovernService from "@/services/repos/govern";
 import reposReportService from "@/services/repos/report";
@@ -462,6 +465,172 @@ const operations: TuiOperation[] = [
         text(values, "repo"),
         booleanValue(values, "push"),
       ),
+  },
+
+  {
+    mutates: true,
+    id: "milestone.create",
+    workspace: "Milestones",
+    title: "Create Milestone",
+    command: "ghg milestone create",
+    description: "Create a repository milestone with a due date.",
+
+    inputs: [
+      { key: "title", label: "Title", type: "string", required: true },
+
+      {
+        key: "due",
+        type: "string",
+        label: "Due date",
+        required: true,
+        placeholder: "2026-06-30",
+      },
+    ],
+
+    run: ({ values }) =>
+      milestoneService.create({
+        due: requiredText(values, "due"),
+        title: requiredText(values, "title"),
+      }),
+  },
+
+  {
+    id: "milestone.list",
+    workspace: "Milestones",
+    title: "List Milestones",
+    command: "ghg milestone list",
+    description: "List open or closed repository milestones.",
+
+    inputs: [
+      {
+        key: "status",
+        type: "string",
+        label: "Status",
+        defaultValue: "open",
+        placeholder: "open or closed",
+      },
+    ],
+
+    run: ({ values }) =>
+      milestoneService.list({
+        status: (text(values, "status") ?? "open") as "open" | "closed",
+      }),
+  },
+
+  {
+    mutates: true,
+    id: "milestone.close",
+    workspace: "Milestones",
+    title: "Close Milestone",
+    command: "ghg milestone close <name>",
+    description: "Close a milestone by exact title.",
+    inputs: [{ key: "name", label: "Name", type: "string", required: true }],
+    run: ({ values }) => milestoneService.close(requiredText(values, "name")),
+  },
+
+  {
+    workspace: "Milestones",
+    id: "milestone.progress",
+    title: "Milestone Progress",
+    command: "ghg milestone progress <name>",
+    description: "Show milestone completion percentage.",
+    inputs: [{ key: "name", label: "Name", type: "string", required: true }],
+
+    run: ({ values }) =>
+      milestoneService.progress(requiredText(values, "name")),
+  },
+
+  {
+    id: "project.board",
+    workspace: "Projects",
+    title: "Project Board",
+    command: "ghg project board <id>",
+    description: "Render a GitHub Projects v2 kanban board.",
+
+    inputs: [
+      { key: "id", label: "Project number", type: "number", required: true },
+      { key: "owner", label: "Owner", type: "string" },
+    ],
+
+    run: ({ values }) =>
+      projectService.board(String(numberValue(values, "id")), {
+        owner: text(values, "owner"),
+      }),
+  },
+
+  {
+    workspace: "Issues",
+    title: "List Sub-Issues",
+    id: "issue.subtasks.list",
+    command: "ghg issue subtasks <issue>",
+    description: "List sub-issues for a parent issue.",
+
+    inputs: [
+      { key: "issue", label: "Parent issue", type: "number", required: true },
+    ],
+
+    run: ({ values }) =>
+      issueService.subtasks(String(numberValue(values, "issue"))),
+  },
+
+  {
+    mutates: true,
+    workspace: "Issues",
+    title: "Create Sub-Issue",
+    id: "issue.subtasks.create",
+    command: "ghg issue subtasks <issue> --create",
+    description: "Create a new issue and link it as a sub-issue.",
+
+    inputs: [
+      { key: "issue", label: "Parent issue", type: "number", required: true },
+      { key: "title", label: "Title", type: "string", required: true },
+      { key: "body", label: "Body", type: "string" },
+    ],
+
+    run: ({ values }) =>
+      issueService.subtasks(String(numberValue(values, "issue")), {
+        create: true,
+        body: text(values, "body"),
+        title: requiredText(values, "title"),
+      }),
+  },
+
+  {
+    mutates: true,
+    workspace: "Issues",
+    title: "Link Sub-Issue",
+    id: "issue.subtasks.link",
+    command: "ghg issue subtasks <issue> --link <issue>",
+    description: "Link an existing issue as a sub-issue.",
+
+    inputs: [
+      { key: "issue", label: "Parent issue", type: "number", required: true },
+      { key: "link", label: "Child issue", type: "number", required: true },
+    ],
+
+    run: ({ values }) =>
+      issueService.subtasks(String(numberValue(values, "issue")), {
+        link: String(numberValue(values, "link")),
+      }),
+  },
+
+  {
+    mutates: true,
+    id: "issue.parent",
+    workspace: "Issues",
+    title: "Set Issue Parent",
+    command: "ghg issue parent <child> --parent <parent>",
+    description: "Link an existing issue to a parent issue.",
+
+    inputs: [
+      { key: "child", label: "Child issue", type: "number", required: true },
+      { key: "parent", label: "Parent issue", type: "number", required: true },
+    ],
+
+    run: ({ values }) =>
+      issueService.parent(String(numberValue(values, "child")), {
+        parent: String(numberValue(values, "parent")),
+      }),
   },
 
   {
