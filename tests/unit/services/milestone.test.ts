@@ -32,7 +32,7 @@ const MILESTONE = {
   number: 7,
   state: "open",
   open_issues: 2,
-  title: "v2.9.0",
+  title: "v2.10.0",
   closed_issues: 6,
   due_on: "2026-06-30T00:00:00Z",
   html_url: "https://github.com/owner/repo/milestone/7",
@@ -50,17 +50,17 @@ describe("milestone service", () => {
     });
 
     const result = await milestoneService.create({
-      title: "v2.9.0",
+      title: "v2.10.0",
       due: "2026-06-30",
     });
 
     expect(api.create).toHaveBeenCalledWith({
-      title: "v2.9.0",
+      title: "v2.10.0",
       dueOn: "2026-06-30T00:00:00.000Z",
     });
 
     expect(result).toEqual({ success: true, milestone: MILESTONE });
-    expect(logger.success).toHaveBeenCalledWith('Created milestone "v2.9.0".');
+    expect(logger.success).toHaveBeenCalledWith('Created milestone "v2.10.0".');
   });
 
   it("computes milestone progress", async () => {
@@ -68,7 +68,7 @@ describe("milestone service", () => {
       .mockResolvedValueOnce({ json: () => Promise.resolve([MILESTONE]) })
       .mockResolvedValueOnce({ json: () => Promise.resolve([]) });
 
-    const result = await milestoneService.progress("v2.9.0");
+    const result = await milestoneService.progress("v2.10.0");
 
     expect(result).toEqual({
       success: true,
@@ -78,7 +78,7 @@ describe("milestone service", () => {
         percent: 75,
         openIssues: 2,
         closedIssues: 6,
-        title: "v2.9.0",
+        title: "v2.10.0",
       },
     });
   });
@@ -92,7 +92,7 @@ describe("milestone service", () => {
       json: () => Promise.resolve({ ...MILESTONE, state: "closed" }),
     });
 
-    await milestoneService.close("v2.9.0");
+    await milestoneService.close("v2.10.0");
     expect(api.close).toHaveBeenCalledWith(7);
   });
 

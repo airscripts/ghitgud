@@ -35,7 +35,7 @@ const register = (program: Command) => {
       const title =
         name ??
         (await prompt.text("Enter the milestone title to close:", {
-          placeholder: "v2.9.0",
+          placeholder: "v2.10.0",
         }));
 
       await command.run(() => milestoneService.close(title));
@@ -49,7 +49,7 @@ const register = (program: Command) => {
       const title =
         name ??
         (await prompt.text("Enter the milestone title:", {
-          placeholder: "v2.9.0",
+          placeholder: "v2.10.0",
         }));
 
       await command.run(() => milestoneService.progress(title));

@@ -25,14 +25,14 @@ describe("milestones api", () => {
   it("creates milestones with token required", async () => {
     (client.postTokenRequired as Mock).mockResolvedValue({ status: 201 });
     await milestones.create({
-      title: "v2.9.0",
+      title: "v2.10.0",
       dueOn: "2026-06-30T00:00:00.000Z",
     });
 
     expect(client.postTokenRequired).toHaveBeenCalledWith(
       "/repos/owner/repo/milestones",
       {
-        title: "v2.9.0",
+        title: "v2.10.0",
         due_on: "2026-06-30T00:00:00.000Z",
       },
     );

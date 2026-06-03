@@ -5,6 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.10.0] - 2026-06-04
+
+### Added
+
+- Release automation commands: `ghg release changelog`, `bump`, `verify`, `notes`, and `draft`
+- Conventional commit parsing for auto-detecting next semver bump (feat is minor, fix is patch, BREAKING is major)
+- Template-based release notes generation with variables: `VERSION`, `CHANGELOG`, `REPO`, `DATE`, `PREVIOUS_TAG`
+- GPG tag and commit signature verification
+- Draft release creation on GitHub with auto-generated or custom notes
+- Default release notes template at `templates/release.md`
+
 ## [2.9.0] - 2026-06-02
 
 ### Added

@@ -2,22 +2,6 @@
 
 ---
 
-## v2.10.0 — Release Automation
-
-**Why gh doesn't have it:** `gh release create --generate notes` exists but has no conventional commit support, no auto versioning, no changelog templates. Teams write custom release scripts.
-
-**Commands:**
-
-- `ghg release changelog` — generate changelog from conventional commits since last tag
-- `ghg release bump` — auto detect next semver from commit types (feat → minor, fix → patch, BREAKING → major)
-- `ghg release verify` — check attestation, signatures, and artifact integrity
-- `ghg release notes --template <file>` — custom release notes template with template style variables
-- `ghg release draft --level minor` — create draft release with auto generated notes
-
-**Value:** Fully automated release pipeline from terminal. Connects commits to changelog to release in one command chain.
-
----
-
 ## v2.11.0 — Enterprise Security & Compliance
 
 **Why gh doesn't have it:** Enterprise audit logs are API-only. No secret scanning management in CLI. Dependabot alerts require browser. Platform engineers need terminal access for compliance workflows.

@@ -100,7 +100,7 @@ Examples:
   ghg proxy pr checkout 17
   ghg profile detect
   ghg review threads 42
-  ghg milestone progress v2.9.0
+  ghg milestone progress v2.10.0
   ghg project board 1
   ghg issue subtasks 42
   ghg tui

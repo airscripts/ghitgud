@@ -78,6 +78,7 @@ Every command reads from `src/core/config.ts`, which resolves values in this ord
 - **Structured JSON Output** — every command supports machine-parseable JSON via `--json`
 - **Terminal Themes** — built-in dark, light, and auto color themes via `--theme`
 - **Full Terminal UI** — browse and run the full `ghg` workflow surface from `ghg tui`
+- **Release Automation** — generate changelogs, auto-detect next semver, verify signatures, render templated notes, and create draft releases
 - **Milestone Management** — track sprint progress with create, list, close, and progress commands
 - **Project Boards** — render an ASCII kanban board for any GitHub Project v2
 - **Issue Subtasks** — create, link, and organize sub-issues with parent support
@@ -268,10 +269,10 @@ ghg version                     # Show version number.
 ### Milestones
 
 ```bash
-ghg milestone create --title "v2.9.0" --due 2026-06-30
+ghg milestone create --title "v2.10.0" --due 2026-06-30
 ghg milestone list --status open
-ghg milestone close "v2.9.0"
-ghg milestone progress "v2.9.0"
+ghg milestone close "v2.10.0"
+ghg milestone progress "v2.10.0"
 ```
 
 ### Project Boards
