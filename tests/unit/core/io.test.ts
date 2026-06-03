@@ -1,9 +1,11 @@
 import os from "os";
 import fs from "fs";
 import path from "path";
+import { describe, it, expect, beforeEach, afterEach } from "vitest";
+
 import io from "@/core/io";
 import { ENCODING } from "@/core/constants";
-import { describe, it, expect, beforeEach, afterEach } from "vitest";
+import { GhitgudError } from "@/core/errors";
 
 describe("io", () => {
   const testDir = path.join(os.tmpdir(), "ghitgud-test-io");
@@ -68,6 +70,44 @@ describe("io", () => {
     it("should not throw if directory already exists", () => {
       io.ensureDir(testDir);
       expect(fs.existsSync(testDir)).toBe(true);
+    });
+  });
+
+  describe("resolveInsideRoot", () => {
+    it("resolves relative paths inside the root", () => {
+      expect(io.resolveInsideRoot("/repo", "src/main.ts")).toBe(
+        "/repo/src/main.ts",
+      );
+    });
+
+    it("rejects absolute paths", () => {
+      expect(() => io.resolveInsideRoot("/repo", "/tmp/outside.ts")).toThrow(
+        GhitgudError,
+      );
+    });
+
+    it("rejects paths escaping the root", () => {
+      expect(() => io.resolveInsideRoot("/repo", "../outside.ts")).toThrow(
+        "Path escapes repository root: ../outside.ts",
+      );
+    });
+  });
+
+  describe("safeFilename", () => {
+    it("keeps readable safe filename characters", () => {
+      expect(io.safeFilename("logs.v1-cache_key", "fallback")).toBe(
+        "logs.v1-cache_key",
+      );
+    });
+
+    it("replaces unsafe filename characters", () => {
+      expect(io.safeFilename("../artifact name?.zip", "fallback")).toBe(
+        ".._artifact_name_.zip",
+      );
+    });
+
+    it("uses fallback when sanitized value is empty", () => {
+      expect(io.safeFilename("///", "fallback")).toBe("fallback");
     });
   });
 });

@@ -101,11 +101,10 @@ function readCredentials(): NormalizedCredentials {
 function writeCredentials(credentials: NormalizedCredentials): void {
   fs.mkdirSync(GHITGUD_FOLDER, { recursive: true });
 
-  fs.writeFileSync(
-    CREDENTIALS_PATH,
-    JSON.stringify(credentials, null, 2),
-    ENCODING,
-  );
+  fs.writeFileSync(CREDENTIALS_PATH, JSON.stringify(credentials, null, 2), {
+    encoding: ENCODING,
+    mode: 0o600,
+  });
 }
 
 function getProfileNames(credentials: NormalizedCredentials): string[] {

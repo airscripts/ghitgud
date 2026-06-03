@@ -211,4 +211,40 @@ describe("review service", () => {
     expect(result.success).toBe(true);
     expect(result.metadata.branch).toBe("feature");
   });
+
+  it("skips suggestions whose paths escape the repository root", async () => {
+    const comments = [
+      {
+        id: 1,
+        line: 10,
+        side: "RIGHT",
+        path: "../outside.ts",
+        createdAt: "2026-05-30",
+        user: { login: "alice" },
+        body: "```suggestion\nconst x = 2;\n```",
+        diff_hunk: "@@ -10 +10 @@\n-const x = 1;\n+const x = 1;",
+      },
+    ];
+
+    vi.mocked(api.listComments).mockResolvedValue(
+      new Response(JSON.stringify(comments)),
+    );
+
+    vi.mocked(api.getPrDetails).mockResolvedValue(
+      new Response(JSON.stringify({ head: { ref: "feature" } })),
+    );
+
+    vi.mocked(git.getCurrentBranch).mockReturnValue("main");
+    vi.mocked(git.branchExistsLocally).mockReturnValue(true);
+    vi.mocked(git.isInsideRepo).mockReturnValue(true);
+    vi.mocked(git.getRepoRoot).mockReturnValue("/tmp/repo");
+
+    const result = await service.apply(42, "owner/repo", false);
+
+    expect(result.success).toBe(true);
+    expect(result.metadata.applied).toBe(0);
+    expect(result.metadata.skipped).toBe(1);
+    expect(git.stageFiles).not.toHaveBeenCalled();
+    expect(git.commitChanges).not.toHaveBeenCalled();
+  });
 });

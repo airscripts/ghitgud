@@ -1,5 +1,8 @@
 import fs from "fs";
+import path from "path";
+
 import { ENCODING } from "@/core/constants";
+import { GhitgudError } from "@/core/errors";
 
 const readJsonFile = <T>(filePath: string): T => {
   const data = fs.readFileSync(filePath, ENCODING);
@@ -18,4 +21,32 @@ const ensureDir = (dirPath: string): void => {
   fs.mkdirSync(dirPath, { recursive: true });
 };
 
-export default { readJsonFile, writeJsonFile, fileExists, ensureDir };
+const resolveInsideRoot = (root: string, relativePath: string): string => {
+  if (path.isAbsolute(relativePath)) {
+    throw new GhitgudError(`Path must be relative: ${relativePath}`);
+  }
+
+  const resolvedRoot = path.resolve(root);
+  const resolvedPath = path.resolve(resolvedRoot, relativePath);
+  const relative = path.relative(resolvedRoot, resolvedPath);
+
+  if (relative.startsWith("..") || path.isAbsolute(relative)) {
+    throw new GhitgudError(`Path escapes repository root: ${relativePath}`);
+  }
+
+  return resolvedPath;
+};
+
+const safeFilename = (value: string, fallback: string): string => {
+  const sanitized = value.replace(/[^\w.-]/g, "_").replace(/^_+|_+$/g, "");
+  return sanitized || fallback;
+};
+
+export default {
+  ensureDir,
+  fileExists,
+  safeFilename,
+  readJsonFile,
+  writeJsonFile,
+  resolveInsideRoot,
+};

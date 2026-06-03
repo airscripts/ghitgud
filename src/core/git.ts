@@ -1,17 +1,35 @@
-import { execSync } from "child_process";
+import { execFileSync } from "child_process";
 
 import logger from "@/core/logger";
 import output from "@/core/output";
 import { ConfigError } from "@/core/errors";
 import { ERROR_NO_GIT_ROOT, ERROR_NO_REMOTE_URL } from "@/core/constants";
 
+type GitOptions = {
+  encoding?: BufferEncoding;
+  stdio?: "inherit" | ["pipe", "pipe", "pipe"];
+};
+
+function git(args: string[], options: GitOptions = {}): string {
+  const result = execFileSync("git", args, {
+    ...options,
+    encoding: options.encoding ?? "utf8",
+  });
+
+  return result;
+}
+
+function gitInherit(args: string[]): void {
+  execFileSync("git", args, { stdio: "inherit" });
+}
+
 function getCurrentBranch(): string {
-  return execSync("git branch --show-current", { encoding: "utf8" }).trim();
+  return git(["branch", "--show-current"]).trim();
 }
 
 function branchExistsLocally(branch: string): boolean {
   try {
-    execSync(`git show-ref --verify --quiet refs/heads/${branch}`);
+    git(["show-ref", "--verify", "--quiet", `refs/heads/${branch}`]);
     return true;
   } catch {
     return false;
@@ -20,8 +38,8 @@ function branchExistsLocally(branch: string): boolean {
 
 function branchExistsRemotely(branch: string): boolean {
   try {
-    execSync(`git ls-remote --heads origin ${branch} | grep -q "${branch}"`);
-    return true;
+    const output = git(["ls-remote", "--heads", "origin", branch]);
+    return output.trim().length > 0;
   } catch {
     return false;
   }
@@ -29,12 +47,12 @@ function branchExistsRemotely(branch: string): boolean {
 
 function getDefaultBranch(): string {
   try {
-    const output = execSync(
-      "git remote show origin | grep 'HEAD branch' | cut -d' ' -f5",
-      { encoding: "utf8" },
-    );
+    const output = git(["remote", "show", "origin"]);
+    const headLine = output
+      .split("\n")
+      .find((line) => line.includes("HEAD branch:"));
 
-    return output.trim() || "main";
+    return headLine?.split(":").at(-1)?.trim() || "main";
   } catch {
     return "main";
   }
@@ -42,8 +60,7 @@ function getDefaultBranch(): string {
 
 function getRepoRoot(): string {
   try {
-    const output = execSync("git rev-parse --show-toplevel", {
-      encoding: "utf8",
+    const output = git(["rev-parse", "--show-toplevel"], {
       stdio: ["pipe", "pipe", "pipe"],
     });
 
@@ -54,15 +71,13 @@ function getRepoRoot(): string {
 }
 
 function getRemoteNames(): string[] {
-  const output = execSync("git remote", { encoding: "utf8" });
+  const output = git(["remote"]);
   return output.trim().split("\n").filter(Boolean);
 }
 
 function getRemoteUrl(remote = "origin"): string {
   try {
-    const output = execSync(`git remote get-url ${remote}`, {
-      encoding: "utf8",
-    });
+    const output = git(["remote", "get-url", remote]);
 
     return output.trim();
   } catch {
@@ -75,9 +90,7 @@ function getRemoteUrl(remote = "origin"): string {
 
   for (const name of remotes) {
     try {
-      const output = execSync(`git remote get-url ${name}`, {
-        encoding: "utf8",
-      });
+      const output = git(["remote", "get-url", name]);
 
       return output.trim();
     } catch {
@@ -105,7 +118,7 @@ function deleteLocalBranch(branch: string, dryRun = false): boolean {
   }
 
   try {
-    execSync(`git branch -D ${branch}`);
+    git(["branch", "-D", branch]);
     return true;
   } catch (error) {
     logger.warn(`Failed to delete local branch ${branch}: ${error}`);
@@ -120,7 +133,7 @@ function deleteRemoteBranch(branch: string, dryRun = false): boolean {
   }
 
   try {
-    execSync(`git push origin --delete ${branch}`);
+    git(["push", "origin", "--delete", branch]);
     return true;
   } catch (error) {
     logger.warn(`Failed to delete remote branch origin/${branch}: ${error}`);
@@ -135,8 +148,8 @@ function fastForwardBase(baseBranch: string, dryRun = false): boolean {
   }
 
   try {
-    execSync(`git checkout ${baseBranch}`);
-    execSync(`git pull origin ${baseBranch} --ff-only`);
+    git(["checkout", baseBranch]);
+    git(["pull", "origin", baseBranch, "--ff-only"]);
     return true;
   } catch (error) {
     logger.warn(`Could not fast-forward ${baseBranch}: ${error}`);
@@ -145,12 +158,12 @@ function fastForwardBase(baseBranch: string, dryRun = false): boolean {
 }
 
 function checkoutBranch(branch: string): void {
-  execSync(`git checkout ${branch}`);
+  git(["checkout", branch]);
 }
 
 function remoteExists(remote: string): boolean {
   try {
-    execSync(`git remote get-url ${remote}`);
+    git(["remote", "get-url", remote]);
     return true;
   } catch {
     return false;
@@ -158,18 +171,28 @@ function remoteExists(remote: string): boolean {
 }
 
 function addRemote(name: string, url: string): void {
-  execSync(`git remote add ${name} ${url}`, { stdio: "inherit" });
+  gitInherit(["remote", "add", name, url]);
 }
 
 function pushToRemote(remote: string, branch: string, force: boolean): void {
-  const flag = force ? " --force-with-lease" : "";
-  execSync(`git push${flag} ${remote} HEAD:${branch}`, { stdio: "inherit" });
+  gitInherit([
+    "push",
+    ...(force ? ["--force-with-lease"] : []),
+    remote,
+    `HEAD:${branch}`,
+  ]);
 }
 
 function branchExistsOnRemote(remote: string, branch: string): boolean {
   try {
-    execSync(`git ls-remote --heads ${remote} refs/heads/${branch}`);
-    return true;
+    const output = git([
+      "ls-remote",
+      "--heads",
+      remote,
+      `refs/heads/${branch}`,
+    ]);
+
+    return output.trim().length > 0;
   } catch {
     return false;
   }
@@ -177,7 +200,7 @@ function branchExistsOnRemote(remote: string, branch: string): boolean {
 
 function hasDiverged(localBranch: string, remoteRef: string): boolean {
   try {
-    execSync(`git merge-base --is-ancestor ${remoteRef} ${localBranch}`);
+    git(["merge-base", "--is-ancestor", remoteRef, localBranch]);
     return false;
   } catch {
     return true;
@@ -185,30 +208,43 @@ function hasDiverged(localBranch: string, remoteRef: string): boolean {
 }
 
 function listBranches(): string[] {
-  const output = execSync("git branch --format='%(refname:short)'", {
-    encoding: "utf8",
-  });
+  const output = git(["branch", "--format=%(refname:short)"]);
+
+  return output.trim().split("\n").filter(Boolean);
+}
+
+function listDecorationsInAncestryPath(
+  branch: string,
+  excludedRef: string,
+): string[] {
+  const output = git([
+    "log",
+    "--oneline",
+    "--ancestry-path",
+    branch,
+    "--not",
+    excludedRef,
+    "--simplify-by-decoration",
+    "--format=%D",
+  ]);
 
   return output.trim().split("\n").filter(Boolean);
 }
 
 function rebaseBranch(branch: string, newBase: string): void {
-  execSync(`git checkout ${branch}`);
-  execSync(`git rebase ${newBase}`);
+  git(["checkout", branch]);
+  git(["rebase", newBase]);
 }
 
 function pushBranch(branch: string): void {
-  execSync(`git push -u origin ${branch} --force-with-lease`);
+  git(["push", "-u", "origin", branch, "--force-with-lease"]);
 }
 
 function getAheadCount(branch: string, baseBranch: string): number {
   try {
-    const output = execSync(
-      `git log --oneline ${baseBranch}..${branch} | wc -l`,
-      { encoding: "utf8" },
-    );
+    const output = git(["log", "--oneline", `${baseBranch}..${branch}`]);
 
-    return parseInt(output.trim(), 10);
+    return output.trim().split("\n").filter(Boolean).length;
   } catch {
     return 0;
   }
@@ -216,7 +252,7 @@ function getAheadCount(branch: string, baseBranch: string): number {
 
 function isInsideRepo(): boolean {
   try {
-    execSync("git rev-parse --is-inside-work-tree", { encoding: "utf8" });
+    git(["rev-parse", "--is-inside-work-tree"]);
     return true;
   } catch {
     return false;
@@ -224,21 +260,20 @@ function isInsideRepo(): boolean {
 }
 
 function fetchBranch(remote: string, branch: string): void {
-  execSync(`git fetch ${remote} ${branch}`);
+  git(["fetch", remote, branch]);
 }
 
 function stageFiles(): void {
-  execSync("git add -A");
+  git(["add", "-A"]);
 }
 
 function commitChanges(message: string): void {
-  execSync(`git commit -m "${message}"`);
+  git(["commit", "-m", message]);
 }
 
 function getLatestTag(): string | null {
   try {
-    const output = execSync("git describe --tags --abbrev=0", {
-      encoding: "utf8",
+    const output = git(["describe", "--tags", "--abbrev=0"], {
       stdio: ["pipe", "pipe", "pipe"],
     });
 
@@ -257,9 +292,7 @@ interface CommitEntry {
 function getCommitsSinceTag(since: string, to = "HEAD"): CommitEntry[] {
   try {
     const format = "%H%n%s%n%b%n---END---";
-    const output = execSync(`git log ${since}..${to} --format='${format}'`, {
-      encoding: "utf8",
-    });
+    const output = git(["log", `${since}..${to}`, `--format=${format}`]);
 
     const entries = output.split("\n---END---\n").filter(Boolean);
     return entries.map((entry) => {
@@ -276,7 +309,7 @@ function getCommitsSinceTag(since: string, to = "HEAD"): CommitEntry[] {
 
 function tagExists(tag: string): boolean {
   try {
-    execSync(`git rev-parse --verify refs/tags/${tag}`, {
+    git(["rev-parse", "--verify", `refs/tags/${tag}`], {
       stdio: ["pipe", "pipe", "pipe"],
     });
 
@@ -293,8 +326,7 @@ interface SignatureResult {
 
 function verifyTag(tag: string): SignatureResult {
   try {
-    const output = execSync(`git verify-tag ${tag}`, {
-      encoding: "utf8",
+    const output = git(["verify-tag", tag], {
       stdio: ["pipe", "pipe", "pipe"],
     });
 
@@ -306,8 +338,7 @@ function verifyTag(tag: string): SignatureResult {
 
 function getCommitSignatureForTag(tag: string): SignatureResult {
   try {
-    const output = execSync(`git log --show-signature -1 ${tag}^{commit}`, {
-      encoding: "utf8",
+    const output = git(["log", "--show-signature", "-1", `${tag}^{commit}`], {
       stdio: ["pipe", "pipe", "pipe"],
     });
 
@@ -323,15 +354,15 @@ function extractKey(output: string): string | undefined {
 }
 
 function createAnnotatedTag(tag: string, message: string): void {
-  execSync(`git tag -a ${tag} -m "${message}"`, { stdio: "inherit" });
+  gitInherit(["tag", "-a", tag, "-m", message]);
 }
 
 function pushTag(tag: string): void {
-  execSync(`git push origin ${tag}`, { stdio: "inherit" });
+  gitInherit(["push", "origin", tag]);
 }
 
 function fetchTags(): void {
-  execSync("git fetch --tags", { stdio: "inherit" });
+  gitInherit(["fetch", "--tags"]);
 }
 
 export default {
@@ -368,4 +399,5 @@ export default {
   branchExistsOnRemote,
   parseRepoFromRemoteUrl,
   getCommitSignatureForTag,
+  listDecorationsInAncestryPath,
 };

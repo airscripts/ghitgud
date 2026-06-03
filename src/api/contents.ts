@@ -1,4 +1,5 @@
 import client from "./client";
+import { contentsPath } from "./path";
 import { NotFoundError } from "@/core/errors";
 
 interface ContentEntry {
@@ -7,20 +8,9 @@ interface ContentEntry {
   type: string;
 }
 
-function contentPath(path: string): string {
-  return path
-    .split("/")
-    .map((segment) => encodeURIComponent(segment))
-    .join("/");
-}
-
 const contents = {
   list: async (repo: string, path = ""): Promise<ContentEntry[]> => {
-    const endpoint = path
-      ? `/repos/${repo}/contents/${contentPath(path)}`
-      : `/repos/${repo}/contents`;
-
-    const response = await client.get(endpoint);
+    const response = await client.get(contentsPath(repo, path));
     const data = (await response.json()) as ContentEntry | ContentEntry[];
 
     return Array.isArray(data) ? data : [data];
@@ -28,7 +18,7 @@ const contents = {
 
   exists: async (repo: string, path: string): Promise<boolean> => {
     try {
-      await client.get(`/repos/${repo}/contents/${contentPath(path)}`);
+      await client.get(contentsPath(repo, path));
       return true;
     } catch (error) {
       if (error instanceof NotFoundError) {

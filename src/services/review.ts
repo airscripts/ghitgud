@@ -1,5 +1,6 @@
 import fs from "fs";
 
+import io from "@/core/io";
 import git from "@/core/git";
 import api from "@/api/review";
 import output from "@/core/output";
@@ -397,9 +398,9 @@ const apply = async (pr: number, repo?: string, pushFlag = false) => {
     }
 
     const repoRoot = git.getRepoRoot();
-    const absolutePath = `${repoRoot}/${filePath}`;
 
     try {
+      const absolutePath = io.resolveInsideRoot(repoRoot, filePath);
       const content = fs.readFileSync(absolutePath, "utf8");
       const lines = content.split("\n");
 

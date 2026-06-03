@@ -1,6 +1,7 @@
 import fs from "fs";
 import path from "path";
 
+import io from "@/core/io";
 import api from "@/api/cache";
 import output from "@/core/output";
 import logger from "@/core/logger";
@@ -95,7 +96,7 @@ const download = async (
 
   const metadataPath = path.join(
     outputDir,
-    `cache-${key.replace(/[^\w-]/g, "_")}.json`,
+    `cache-${io.safeFilename(key, "cache")}.json`,
   );
 
   fs.writeFileSync(metadataPath, JSON.stringify(entries, null, 2), "utf8");
@@ -127,7 +128,7 @@ const download = async (
 
       const artifactPath = path.join(
         outputDir,
-        `${artifact.name.replace(/[^\w-]/g, "_")}.zip`,
+        `${io.safeFilename(artifact.name, `artifact-${artifact.id}`)}.zip`,
       );
 
       fs.writeFileSync(

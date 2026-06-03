@@ -1,6 +1,7 @@
 import fs from "fs";
 import path from "path";
 
+import io from "@/core/io";
 import output from "@/core/output";
 import logger from "@/core/logger";
 import config from "@/core/config";
@@ -79,7 +80,7 @@ const debugRun = async (
 
     const artifactPath = path.join(
       outputDir,
-      `${artifact.name.replace(/[^\w-]/g, "_")}.zip`,
+      `${io.safeFilename(artifact.name, `artifact-${artifact.id}`)}.zip`,
     );
 
     fs.writeFileSync(

@@ -110,6 +110,15 @@ describe("config", () => {
       expect(value).toBe("test-token");
     });
 
+    it("should write credentials with private file permissions", async () => {
+      vi.resetModules();
+      const { default: config } = await import("@/core/config");
+      config.write("token", "test-token");
+
+      const mode = fs.statSync(credentialsPath).mode & 0o777;
+      expect(mode).toBe(0o600);
+    });
+
     it("should migrate legacy credentials into the new profile format on write", async () => {
       fs.mkdirSync(GHITGUD_FOLDER, { recursive: true });
 

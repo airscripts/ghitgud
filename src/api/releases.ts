@@ -1,4 +1,5 @@
 import client from "./client";
+import { repoPath } from "./path";
 
 export interface GitHubRelease {
   id: number;
@@ -26,9 +27,7 @@ export interface CreateReleaseBody {
 
 const releases = {
   fetchByTag: async (repo: string, tag: string): Promise<GitHubRelease> => {
-    const response = await client.get(
-      `/repos/${repo}/releases/tags/${encodeURIComponent(tag)}`,
-    );
+    const response = await client.get(repoPath(repo, "releases", "tags", tag));
 
     return (await response.json()) as GitHubRelease;
   },
@@ -37,7 +36,7 @@ const releases = {
     repo: string,
     body: CreateReleaseBody,
   ): Promise<GitHubRelease> => {
-    const response = await client.post(`/repos/${repo}/releases`, body);
+    const response = await client.post(repoPath(repo, "releases"), body);
     return (await response.json()) as GitHubRelease;
   },
 };

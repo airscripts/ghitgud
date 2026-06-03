@@ -1,5 +1,4 @@
 import path from "path";
-import { execSync } from "child_process";
 
 import api from "@/api/pr";
 import io from "@/core/io";
@@ -35,12 +34,7 @@ function saveStackData(data: StackData): void {
 
 function findParentBranch(branch: string, branches: string[]): string {
   try {
-    const stdout = execSync(
-      `git log --oneline --ancestry-path ${branch} --not origin/main --simplify-by-decoration --format="%D"`,
-      { encoding: "utf8" },
-    );
-
-    const lines = stdout.trim().split("\n").filter(Boolean);
+    const lines = git.listDecorationsInAncestryPath(branch, "origin/main");
     for (const line of lines) {
       const match = line.match(/HEAD -> (.+)/);
 
