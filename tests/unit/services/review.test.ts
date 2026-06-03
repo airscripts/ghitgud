@@ -3,6 +3,7 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import git from "@/core/git";
 import api from "@/api/review";
 import service from "@/services/review";
+import { GhitgudError } from "@/core/errors";
 
 vi.mock("@/api/review", () => ({
   default: {
@@ -65,6 +66,31 @@ describe("review service", () => {
       path: "src/main.ts",
       commit_id: "head123",
     });
+  });
+
+  it("rejects invalid review sides before fetching PR details", async () => {
+    await expect(
+      service.comment({
+        pr: 42,
+        line: 10,
+        body: "LGTM",
+        file: "src/main.ts",
+        side: "MIDDLE" as "RIGHT",
+      }),
+    ).rejects.toThrow(GhitgudError);
+
+    await expect(
+      service.comment({
+        pr: 42,
+        line: 10,
+        body: "LGTM",
+        file: "src/main.ts",
+        side: "MIDDLE" as "RIGHT",
+      }),
+    ).rejects.toThrow("Invalid review side: MIDDLE.");
+
+    expect(api.getPrDetails).not.toHaveBeenCalled();
+    expect(api.createComment).not.toHaveBeenCalled();
   });
 
   it("lists threads", async () => {

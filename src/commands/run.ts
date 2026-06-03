@@ -1,5 +1,6 @@
 import { Command } from "commander";
 
+import parse from "@/core/parse";
 import prompt from "@/core/prompt";
 import command from "@/core/command";
 import runService from "@/services/run";
@@ -27,7 +28,7 @@ const register = (program: Command) => {
           }));
 
         await command.run(() =>
-          runService.debugRun(parseInt(value, 10), options),
+          runService.debugRun(parse.parsePositiveInt(value, "run id"), options),
         );
       },
     );

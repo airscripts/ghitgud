@@ -26,7 +26,10 @@ export interface CreateReleaseBody {
 
 const releases = {
   fetchByTag: async (repo: string, tag: string): Promise<GitHubRelease> => {
-    const response = await client.get(`/repos/${repo}/releases/tags/${tag}`);
+    const response = await client.get(
+      `/repos/${repo}/releases/tags/${encodeURIComponent(tag)}`,
+    );
+
     return (await response.json()) as GitHubRelease;
   },
 

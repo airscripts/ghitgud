@@ -57,6 +57,12 @@ function normalizeComment(comment: GitHubReviewComment): ReviewComment {
   };
 }
 
+function normalizeSide(side: string | undefined): "LEFT" | "RIGHT" {
+  const value = side ?? "RIGHT";
+  if (value === "LEFT" || value === "RIGHT") return value;
+  throw new GhitgudError(`Invalid review side: ${value}.`);
+}
+
 function parseSuggestionBody(body: string): string | null {
   const match = body.match(/```suggestion\n([\s\S]*?)\n```/);
 
@@ -202,6 +208,7 @@ const comment = async (options: CommentOptions) => {
   if (!options.line) throw new GhitgudError(ERROR_REVIEW_LINE_REQUIRED);
   if (!options.body) throw new GhitgudError(ERROR_REVIEW_BODY_REQUIRED);
 
+  const side = normalizeSide(options.side);
   const repo = resolveRepo(options.repo);
   logger.start(`Creating review comment on PR #${options.pr}.`);
 
@@ -211,7 +218,7 @@ const comment = async (options: CommentOptions) => {
     path: options.file,
     line: options.line,
     commit_id: commitId,
-    side: options.side ?? "RIGHT",
+    side,
   });
 
   const data = (await response.json()) as ReviewComment;

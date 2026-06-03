@@ -1,5 +1,6 @@
 import { Command } from "commander";
 
+import parse from "@/core/parse";
 import prompt from "@/core/prompt";
 import command from "@/core/command";
 import service from "@/services/notifications";
@@ -31,7 +32,10 @@ Examples:
           all: options.all,
           repo: options.repo,
           participating: options.participating,
-          limit: options.limit ? parseInt(options.limit, 10) : undefined,
+
+          limit: options.limit
+            ? parse.parsePositiveInt(options.limit, "limit")
+            : undefined,
         }),
       );
     });

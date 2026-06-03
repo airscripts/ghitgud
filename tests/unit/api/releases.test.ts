@@ -43,6 +43,27 @@ describe("releases api", () => {
 
       expect(result.tag_name).toBe("2.10.0");
     });
+
+    it("should encode tag names in path segments", async () => {
+      const mockRelease = {
+        id: 1,
+        draft: false,
+        name: "Release 2.10.0",
+        tag_name: "release/2.10.0",
+        html_url: "https://github.com/owner/repo/releases/tag/release/2.10.0",
+      };
+
+      vi.mocked(client.get).mockResolvedValue({
+        json: vi.fn().mockResolvedValue(mockRelease),
+      } as unknown as Response);
+
+      const result = await releases.fetchByTag(mockRepo, "release/2.10.0");
+      expect(client.get).toHaveBeenCalledWith(
+        `/repos/${mockRepo}/releases/tags/release%2F2.10.0`,
+      );
+
+      expect(result.tag_name).toBe("release/2.10.0");
+    });
   });
 
   describe("create", () => {

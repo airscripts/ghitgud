@@ -1,5 +1,6 @@
 import { Command } from "commander";
 
+import parse from "@/core/parse";
 import prompt from "@/core/prompt";
 import command from "@/core/command";
 import prService from "@/services/pr";
@@ -53,7 +54,10 @@ Examples:
       }
 
       await command.run(() =>
-        prService.push(parseInt(prNum, 10), options?.force ?? false),
+        prService.push(
+          parse.parsePositiveInt(prNum, "PR number"),
+          options?.force ?? false,
+        ),
       );
     });
 

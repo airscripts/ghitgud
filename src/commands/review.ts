@@ -1,5 +1,6 @@
 import { Command } from "commander";
 
+import parse from "@/core/parse";
 import prompt from "@/core/prompt";
 import command from "@/core/command";
 import reviewService from "@/services/review";
@@ -42,19 +43,26 @@ const promptNumber = async (
   value: string | undefined,
   message: string,
   options: PromptOptions,
-): Promise<number> => parseInt(await promptValue(value, message, options), 10);
+  label: string,
+): Promise<number> =>
+  parse.parsePositiveInt(await promptValue(value, message, options), label);
 
 const promptPr = (value: string | undefined): Promise<number> =>
-  promptNumber(value, "Enter the PR number:", { placeholder: "42" });
+  promptNumber(value, "Enter the PR number:", { placeholder: "42" }, "PR");
 
 const promptThreadId = (value: string | undefined): Promise<number> =>
-  promptNumber(value, "Enter the thread ID:", { placeholder: "123456" });
+  promptNumber(
+    value,
+    "Enter the thread ID:",
+    { placeholder: "123456" },
+    "thread id",
+  );
 
 const promptFile = (value: string | undefined): Promise<string> =>
   promptValue(value, "Enter the file path:", { placeholder: "src/main.ts" });
 
 const promptLine = (value: string | undefined): Promise<number> =>
-  promptNumber(value, "Enter the line number:", { placeholder: "10" });
+  promptNumber(value, "Enter the line number:", { placeholder: "10" }, "line");
 
 const promptCommentBody = (value: string | undefined): Promise<string> =>
   promptValue(value, "Enter the comment body:", {

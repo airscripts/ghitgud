@@ -1,8 +1,28 @@
 import { Command } from "commander";
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi, beforeEach } from "vitest";
+
+import service from "@/services/notifications";
 import notificationsCommand from "@/commands/notifications";
 
+vi.mock("@/services/notifications", () => ({
+  default: {
+    list: vi.fn(),
+    markRead: vi.fn(),
+    markDone: vi.fn(),
+  },
+}));
+
+vi.mock("@/core/command", () => ({
+  default: {
+    run: (task: () => unknown) => task(),
+  },
+}));
+
 describe("notifications command", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
   it("should register notifications with subcommands", () => {
     const program = new Command();
     notificationsCommand.register(program);
@@ -16,5 +36,24 @@ describe("notifications command", () => {
     expect(subcommands).toContain("list");
     expect(subcommands).toContain("read");
     expect(subcommands).toContain("done");
+  });
+
+  it("should reject invalid limits before calling service", async () => {
+    const program = new Command();
+    program.exitOverride();
+    notificationsCommand.register(program);
+
+    await expect(
+      program.parseAsync([
+        "node",
+        "test",
+        "notifications",
+        "list",
+        "--limit",
+        "10abc",
+      ]),
+    ).rejects.toThrow("Invalid limit: 10abc.");
+
+    expect(service.list).not.toHaveBeenCalled();
   });
 });
