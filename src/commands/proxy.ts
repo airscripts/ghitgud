@@ -4,6 +4,7 @@ import { spawn } from "child_process";
 import type { ChildProcess } from "child_process";
 
 import output from "@/core/output";
+import { GhitgudError } from "@/core/errors";
 
 type SpawnGh = (args: string[]) => ChildProcess;
 
@@ -85,11 +86,11 @@ const runProxyCapture = (
 
     child.on("error", (error: { code?: string }) => {
       if (error.code === "ENOENT") {
-        reject(new Error(GH_INSTALL_HINT));
+        reject(new GhitgudError(GH_INSTALL_HINT));
         return;
       }
 
-      reject(new Error(String(error)));
+      reject(new GhitgudError(String(error)));
     });
 
     child.on("close", (code) => {

@@ -8,7 +8,7 @@ import output from "@/core/output";
 import logger from "@/core/logger";
 import config from "@/core/config";
 import template from "@/core/template";
-import { NotFoundError } from "@/core/errors";
+import { GhitgudError, NotFoundError } from "@/core/errors";
 
 import {
   TEMPLATES_DIR,
@@ -139,13 +139,13 @@ const changelog = async (options: ChangelogOptions) => {
 
 const bump = async (options: BumpOptions) => {
   if (options.create && !git.isInsideRepo()) {
-    throw new Error(
+    throw new GhitgudError(
       "Cannot create tag outside of a git repository. Use --repo with a local clone.",
     );
   }
 
   if (options.push && !options.create) {
-    throw new Error("--push requires --create.");
+    throw new GhitgudError("--push requires --create.");
   }
 
   const latestTag = getLatestTag();
@@ -296,7 +296,7 @@ const notes = async (options: NotesOptions) => {
 const draft = async (options: DraftOptions) => {
   const repo = config.getRepoOptional();
   if (!repo) {
-    throw new Error("Repository is required.");
+    throw new GhitgudError("Repository is required.");
   }
 
   const latestTag = getLatestTag();

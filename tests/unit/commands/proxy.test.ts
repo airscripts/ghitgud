@@ -5,6 +5,7 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 
 import output from "@/core/output";
 import proxyCommand from "@/commands/proxy";
+import { GhitgudError } from "@/core/errors";
 
 vi.mock("@/core/output", () => ({
   default: {
@@ -129,5 +130,18 @@ describe("proxy command", () => {
     );
 
     expect(process.exitCode).toBe(1);
+  });
+
+  it("rejects capture with domain error when gh is missing", async () => {
+    const child = createChildProcess();
+    const spawnGh = vi.fn(() => child);
+    const result = proxyCommand.runProxyCapture(["status"], spawnGh);
+
+    child.emit("error", { code: "ENOENT" });
+    await expect(result).rejects.toThrow(GhitgudError);
+
+    await expect(result).rejects.toThrow(
+      "gh CLI is not installed. Install it from https://cli.github.com.",
+    );
   });
 });

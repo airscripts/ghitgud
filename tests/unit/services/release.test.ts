@@ -68,6 +68,7 @@ import git from "@/core/git";
 import api from "@/api/releases";
 import config from "@/core/config";
 import logger from "@/core/logger";
+import { GhitgudError } from "@/core/errors";
 import releaseService from "@/services/release";
 
 describe("release service", () => {
@@ -166,6 +167,16 @@ describe("release service", () => {
 
       await expect(releaseService.bump({ create: true })).rejects.toThrow(
         "Cannot create tag outside of a git repository",
+      );
+
+      await expect(releaseService.bump({ create: true })).rejects.toThrow(
+        GhitgudError,
+      );
+    });
+
+    it("should throw domain error when push is used without create", async () => {
+      await expect(releaseService.bump({ push: true })).rejects.toThrow(
+        GhitgudError,
       );
     });
   });

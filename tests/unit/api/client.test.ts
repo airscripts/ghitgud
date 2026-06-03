@@ -1,5 +1,6 @@
 import client from "@/api/client";
-import { GhitgudError } from "@/core/errors";
+import config from "@/core/config";
+import { GhitgudError, RateLimitError } from "@/core/errors";
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 
 vi.mock("@/core/config", () => ({
@@ -113,6 +114,79 @@ describe("client", () => {
       await expect(client.get("/test")).rejects.toThrow(GhitgudError);
     });
 
+    it("should wrap network failures in GhitgudError", async () => {
+      mockFetch().mockRejectedValue(new TypeError("fetch failed"));
+
+      await expect(client.get("/test")).rejects.toThrow(
+        "Network request failed: fetch failed",
+      );
+
+      await expect(client.get("/test")).rejects.toThrow(GhitgudError);
+    });
+
+    it("should throw RateLimitError with valid rate-limit headers", async () => {
+      mockFetch().mockResolvedValue({
+        status: 403,
+
+        headers: {
+          get: vi.fn((header: string) => {
+            const headers: Record<string, string> = {
+              "x-ratelimit-limit": "5000",
+              "x-ratelimit-remaining": "0",
+              "x-ratelimit-reset": "1767225600",
+            };
+
+            return headers[header] ?? null;
+          }),
+        },
+      });
+
+      await expect(client.get("/test")).rejects.toThrow(RateLimitError);
+      await expect(client.get("/test")).rejects.toMatchObject({
+        limit: 5000,
+        remaining: 0,
+        resetAt: new Date(1767225600 * 1000),
+      });
+    });
+
+    it("should ignore malformed rate-limit headers", async () => {
+      mockFetch().mockResolvedValue({
+        status: 403,
+
+        headers: {
+          get: vi.fn((header: string) => {
+            const headers: Record<string, string> = {
+              "x-ratelimit-limit": "bad",
+              "x-ratelimit-remaining": "0",
+              "x-ratelimit-reset": "bad",
+            };
+
+            return headers[header] ?? null;
+          }),
+        },
+      });
+
+      await expect(client.get("/test")).rejects.toThrow(
+        "Unexpected status code.: 403",
+      );
+    });
+
+    it("should allow explicit token for token-required requests", async () => {
+      vi.mocked(config.getTokenOptional).mockReturnValue("");
+      mockFetch().mockResolvedValue({ status: 200 });
+
+      await client.validateToken("explicit-token");
+
+      expect(global.fetch).toHaveBeenCalledWith(
+        "https://api.github.com/user",
+        expect.objectContaining({
+          headers: expect.objectContaining({
+            Authorization: "Bearer explicit-token",
+          }),
+        }),
+      );
+    });
+
     it("should include auth and api headers", async () => {
       mockFetch().mockResolvedValue({ status: 200 });
 
@@ -142,6 +216,7 @@ describe("client", () => {
         .mockResolvedValueOnce({
           status: 200,
           json: () => Promise.resolve([{ id: 1 }]),
+
           headers: {
             get: vi.fn(
               () => '<https://api.github.com/test?page=2>; rel="next"',
@@ -150,8 +225,8 @@ describe("client", () => {
         })
         .mockResolvedValueOnce({
           status: 200,
-          json: () => Promise.resolve([{ id: 2 }]),
           headers: { get: vi.fn(() => null) },
+          json: () => Promise.resolve([{ id: 2 }]),
         });
 
       const result = await client.getPaginated<{ id: number }>("/test?page=1");

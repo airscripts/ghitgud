@@ -53,6 +53,10 @@ interface RateLimitInfo {
   remaining: number;
 }
 
+function isValidRateLimitValue(value: number): boolean {
+  return Number.isFinite(value) && value >= 0;
+}
+
 function parseRateLimitHeaders(response: Response): RateLimitInfo | null {
   const limit = response.headers.get("x-ratelimit-limit");
   const remaining = response.headers.get("x-ratelimit-remaining");
@@ -60,10 +64,22 @@ function parseRateLimitHeaders(response: Response): RateLimitInfo | null {
 
   if (!limit || !remaining || !reset) return null;
 
+  const parsedLimit = Number(limit);
+  const parsedRemaining = Number(remaining);
+  const parsedReset = Number(reset);
+
+  if (
+    !isValidRateLimitValue(parsedLimit) ||
+    !isValidRateLimitValue(parsedRemaining) ||
+    !isValidRateLimitValue(parsedReset)
+  ) {
+    return null;
+  }
+
   return {
-    limit: Number(limit),
-    remaining: Number(remaining),
-    resetAt: new Date(Number(reset) * 1000),
+    limit: parsedLimit,
+    remaining: parsedRemaining,
+    resetAt: new Date(parsedReset * 1000),
   };
 }
 
@@ -155,7 +171,7 @@ async function requestUrl(
   options: RequestOptions = {},
   token?: string,
 ): Promise<Response> {
-  if (options.tokenRequired && !config.getTokenOptional()) {
+  if (options.tokenRequired && !(token ?? config.getTokenOptional())) {
     throw new TokenRequiredError(
       "This operation requires a token with appropriate scopes.",
     );
@@ -172,7 +188,18 @@ async function requestUrl(
     fetchOptions.body = JSON.stringify(options.body);
   }
 
-  const response = await fetch(url, fetchOptions);
+  let response: Response;
+
+  try {
+    response = await fetch(url, fetchOptions);
+  } catch (error) {
+    const message =
+      error instanceof Error && error.message
+        ? `Network request failed: ${error.message}`
+        : "Network request failed.";
+
+    throw new GhitgudError(message);
+  }
 
   if (isSuccessful(response.status)) return response;
   handleError(response.status, response, options.tokenRequired);

@@ -31,6 +31,15 @@ describe("labels api", () => {
     expect(client.get).toHaveBeenCalledWith("/repos/owner/repo/labels/bug");
   });
 
+  it("should encode label names in path segments", async () => {
+    (client.get as Mock).mockResolvedValue({ status: 200 });
+    await labels.get("needs review/a+b");
+
+    expect(client.get).toHaveBeenCalledWith(
+      "/repos/owner/repo/labels/needs%20review%2Fa%2Bb",
+    );
+  });
+
   it("should call client.post for create", async () => {
     (client.post as Mock).mockResolvedValue({ status: 201 });
     const label = {
@@ -64,9 +73,37 @@ describe("labels api", () => {
     });
   });
 
+  it("should encode label names when patching", async () => {
+    (client.patch as Mock).mockResolvedValue({ status: 200 });
+    const label = {
+      color: "d73a4a",
+      name: "needs review/a+b",
+      description: "Needs review",
+    };
+
+    await labels.patch(label);
+    expect(client.patch).toHaveBeenCalledWith(
+      "/repos/owner/repo/labels/needs%20review%2Fa%2Bb",
+      {
+        color: "d73a4a",
+        description: "Needs review",
+        new_name: "needs review/a+b",
+      },
+    );
+  });
+
   it("should call client.delete for delete", async () => {
     (client.delete as Mock).mockResolvedValue({ status: 204 });
     await labels.delete("bug");
     expect(client.delete).toHaveBeenCalledWith("/repos/owner/repo/labels/bug");
+  });
+
+  it("should encode label names when deleting", async () => {
+    (client.delete as Mock).mockResolvedValue({ status: 204 });
+    await labels.delete("needs review/a+b");
+
+    expect(client.delete).toHaveBeenCalledWith(
+      "/repos/owner/repo/labels/needs%20review%2Fa%2Bb",
+    );
   });
 });

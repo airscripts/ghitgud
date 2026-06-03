@@ -2,7 +2,7 @@ import io from "@/core/io";
 import api from "@/api/labels";
 import logger from "@/core/logger";
 import labelsService from "@/services/labels";
-import { NotFoundError } from "@/core/errors";
+import { GhitgudError, NotFoundError } from "@/core/errors";
 import { describe, it, expect, vi, Mock, beforeEach, afterEach } from "vitest";
 
 vi.mock("@/api/labels", () => ({
@@ -152,6 +152,8 @@ describe("labels", () => {
     await expect(labelsService.push()).rejects.toThrow(
       "No metadata file found.",
     );
+
+    await expect(labelsService.push()).rejects.toThrow(GhitgudError);
   });
 
   it("should throw when no metadata file for prune", async () => {
@@ -181,6 +183,10 @@ describe("labels", () => {
     ).rejects.toThrow(
       'Template "nonexistent" not found at /mock/templates/nonexistent.json.',
     );
+
+    await expect(
+      labelsService.pullTemplate("nonexistent", "/mock/templates"),
+    ).rejects.toThrow(GhitgudError);
   });
 
   it("should push from template", async () => {

@@ -3,8 +3,8 @@ import io from "@/core/io";
 import api from "@/api/labels";
 import output from "@/core/output";
 import logger from "@/core/logger";
-import { NotFoundError } from "@/core/errors";
 import { Label, normalizeLabel } from "@/types";
+import { GhitgudError, NotFoundError } from "@/core/errors";
 
 import {
   PING_RESPONSE,
@@ -35,14 +35,16 @@ const loadLabelsFromTemplate = (templateName: string, templatesDir: string) => {
   const templatePath = getTemplatePath(templateName, templatesDir);
 
   if (!io.fileExists(templatePath)) {
-    throw new Error(`Template "${templateName}" not found at ${templatePath}.`);
+    throw new GhitgudError(
+      `Template "${templateName}" not found at ${templatePath}.`,
+    );
   }
 
   return loadLabelsFromPath(templatePath);
 };
 
 const loadLabelsFromMetadata = (metadataPath = METADATA_FILE_PATH) => {
-  if (!io.fileExists(metadataPath)) throw new Error(ERROR_NO_METADATA);
+  if (!io.fileExists(metadataPath)) throw new GhitgudError(ERROR_NO_METADATA);
   return loadLabelsFromPath(metadataPath);
 };
 

@@ -5,6 +5,7 @@ import runService from "@/services/run";
 import cacheService from "@/services/cache";
 import issueService from "@/services/issue";
 import stackService from "@/services/stack";
+import { GhitgudError } from "@/core/errors";
 import labelsService from "@/services/labels";
 import configService from "@/services/config";
 import reviewService from "@/services/review";
@@ -65,13 +66,13 @@ const text = (values: TuiInputValues, key: string): string | undefined => {
 
 const requiredText = (values: TuiInputValues, key: string): string => {
   const value = text(values, key);
-  if (!value) throw new Error(`Missing required input: ${key}.`);
+  if (!value) throw new GhitgudError(`Missing required input: ${key}.`);
   return value;
 };
 
 const numberValue = (values: TuiInputValues, key: string): number => {
   const value = Number(values[key]);
-  if (Number.isNaN(value)) throw new Error(`Invalid number: ${key}.`);
+  if (Number.isNaN(value)) throw new GhitgudError(`Invalid number: ${key}.`);
   return value;
 };
 
