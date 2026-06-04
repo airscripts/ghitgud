@@ -13,6 +13,7 @@ import insightsOperations from "./insights";
 import workflowOperations from "./workflow";
 import dashboardOperations from "./dashboard";
 import milestoneOperations from "./milestones";
+import discussionOperations from "./discussions";
 import repositoryOperations from "./repositories";
 import notificationOperations from "./notifications";
 
@@ -36,6 +37,7 @@ const operations: TuiOperation[] = [
   ...configOperations,
   ...utilityOperations,
   ...releaseOperations,
+  ...discussionOperations,
 ];
 
 const workspaces = Array.from(new Set(operations.map((op) => op.workspace)));

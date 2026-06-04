@@ -325,5 +325,10 @@ export type { ProjectBoardItem };
 export type { ReviewApplyResult };
 export type { MilestoneProgress };
 export type { ProjectBoardColumn };
+export type { Discussion } from "./discussions";
+export type { DiscussionComment } from "./discussions";
+export type { DiscussionCategory } from "./discussions";
+export type { DiscussionCreateInput } from "./discussions";
+export type { DiscussionCommentInput } from "./discussions";
 
 export { normalizeLabel };

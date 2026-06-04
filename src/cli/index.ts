@@ -24,11 +24,12 @@ import releaseCommand from "@/commands/release";
 import insightsCommand from "@/commands/insights";
 import mentionsCommand from "@/commands/mentions";
 import workflowCommand from "@/commands/workflow";
-import { ERROR_NO_TOKEN } from "@/core/constants";
 import activityCommand from "@/commands/activity";
+import { ERROR_NO_TOKEN } from "@/core/constants";
 import milestoneCommand from "@/commands/milestone";
 import dependabotCommand from "@/commands/dependabot";
 import complianceCommand from "@/commands/compliance";
+import discussionCommand from "@/commands/discussion";
 import { setTheme, initializeTheme } from "@/core/theme";
 import notificationsCommand from "@/commands/notifications";
 
@@ -86,6 +87,7 @@ if (!proxyCommand.runProxyFromArgv()) {
   secretsCommand.register(program);
   dependabotCommand.register(program);
   complianceCommand.register(program);
+  discussionCommand.register(program);
 
   program
     .command("version")
