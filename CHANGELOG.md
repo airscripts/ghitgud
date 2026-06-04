@@ -5,6 +5,28 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.10.1] - 2026-06-04
+
+### Fixed
+
+- Windows CI compatibility: fixed path separator assertions in `labels` service tests, skipped POSIX file permission check on Windows in `config` tests, and normalized `resolveInsideRoot` test expectations
+- Type errors in `tests/unit/tui/operations.test.ts` and `tests/unit/tui/state.test.ts`
+
+### Changed
+
+- Refactored `src/tui/operations.ts` into `src/tui/operations/` workspace modules
+- Raised coverage thresholds to 85/80/75/85 (statements/branches/functions/lines)
+- CI now runs `pnpm test:coverage` with threshold enforcement
+- CI matrix expanded to `ubuntu-latest`, `macos-latest`, `windows-latest`
+- Coverage reports uploaded as artifacts via `actions/upload-artifact@v6`
+
+### Added
+
+- Renovate configuration for daily dependency updates at ~2am
+- `CODEOWNERS` file with `@airscripts`
+- Coverage badge in README
+- 141 new tests bringing total to 594 (from 453)
+
 ## [2.10.0] - 2026-06-04
 
 ### Added
