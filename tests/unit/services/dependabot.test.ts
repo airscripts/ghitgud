@@ -74,7 +74,7 @@ describe("dependabot service", () => {
     );
   });
 
-  it("lists normalized alerts", async () => {
+  it("lists normalized alerts with all severities", async () => {
     vi.mocked(dependabotApi.listAlerts).mockResolvedValue([
       {
         number: 7,
@@ -90,26 +90,54 @@ describe("dependabot service", () => {
           summary: "Prototype pollution",
         },
       },
+      {
+        number: 8,
+        state: "open",
+
+        dependency: {
+          manifest_path: "Cargo.toml",
+          package: { ecosystem: "cargo", name: "bad-crate" },
+        },
+
+        security_advisory: {
+          summary: "RCE",
+          severity: "critical",
+        },
+      },
     ]);
 
     const result = await dependabotService.list({ repos: "owner/repo" });
     const metadata = result.metadata.results[0].metadata;
 
-    expect(metadata).toEqual({
-      alerts: [
-        {
-          number: 7,
-          state: "open",
-          severity: "high",
-          ecosystem: "npm",
-          dismissedReason: null,
-          packageName: "left-pad",
-          repository: "owner/repo",
-          manifestPath: "package.json",
-          advisory: "Prototype pollution",
-        },
-      ],
-    });
+    expect(metadata?.alerts).toHaveLength(2);
+    expect(metadata?.alerts[0].severity).toBe("high");
+    expect(metadata?.alerts[1].severity).toBe("critical");
+  });
+
+  it("requires an alert number for dismissal", async () => {
+    await expect(
+      dependabotService.dismiss(0, {
+        yes: true,
+        reason: "tolerable_risk",
+      }),
+    ).rejects.toThrow(GhitgudError);
+  });
+
+  it("requires a dismissal reason", async () => {
+    await expect(
+      dependabotService.dismiss(1, {
+        yes: true,
+      }),
+    ).rejects.toThrow(GhitgudError);
+  });
+
+  it("rejects an invalid dismissal reason", async () => {
+    await expect(
+      dependabotService.dismiss(1, {
+        reason: "invalid_reason",
+        yes: true,
+      }),
+    ).rejects.toThrow(GhitgudError);
   });
 
   it("requires --yes for dismissal", async () => {

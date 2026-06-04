@@ -33,7 +33,13 @@ describe("audit service", () => {
     await expect(auditService.list({})).rejects.toThrow(GhitgudError);
   });
 
-  it("normalizes audit events", async () => {
+  it("rejects an invalid limit", async () => {
+    await expect(
+      auditService.list({ org: "owner", limit: "abc" }),
+    ).rejects.toThrow(GhitgudError);
+  });
+
+  it("normalizes audit events with numeric timestamps", async () => {
     vi.mocked(auditApi.list).mockResolvedValue([
       {
         actor: "octocat",
@@ -63,5 +69,34 @@ describe("audit service", () => {
         },
       },
     ]);
+  });
+
+  it("normalizes audit events with string timestamps", async () => {
+    vi.mocked(auditApi.list).mockResolvedValue([
+      {
+        _document_id: "2",
+        action: "repo.delete",
+        "@timestamp": "2026-02-01T00:00:00Z",
+      },
+    ]);
+
+    const result = await auditService.list({ org: "owner", limit: "5" });
+    expect(result.metadata.events[0].createdAt).toBe("2026-02-01T00:00:00Z");
+  });
+
+  it("normalizes audit events with missing fields", async () => {
+    vi.mocked(auditApi.list).mockResolvedValue([
+      {
+        actor_login: "admin",
+        repository: "owner/repo2",
+      },
+    ]);
+
+    const result = await auditService.list({ enterprise: "acme" });
+    const event = result.metadata.events[0];
+
+    expect(event.id).toBe("");
+    expect(event.action).toBe("unknown");
+    expect(event.createdAt).toBeNull();
   });
 });

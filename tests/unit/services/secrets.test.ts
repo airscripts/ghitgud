@@ -73,6 +73,49 @@ describe("secrets service", () => {
     expect(finding.match).toContain("[redacted]");
   });
 
+  it("respects a custom limit and falls back on invalid input", async () => {
+    fs.writeFileSync(
+      path.join(tempDir, "a.txt"),
+      "ghp_abcdefghijklmnopqrstuvwxyz123456\n",
+    );
+
+    fs.writeFileSync(
+      path.join(tempDir, "b.txt"),
+      "ghp_abcdefghijklmnopqrstuvwxyz123456\n",
+    );
+
+    vi.mocked(execFileSync).mockReturnValue("a.txt\nb.txt\n");
+    const limited = await secretsService.scan({ limit: 1 });
+    expect(limited.metadata.findings).toHaveLength(1);
+
+    const invalid = await secretsService.scan({ limit: "bad" });
+    expect(invalid.metadata.findings.length).toBeLessThanOrEqual(100);
+  });
+
+  it("skips missing and non-text files", async () => {
+    fs.writeFileSync(path.join(tempDir, "safe.txt"), "hello world\n");
+
+    fs.writeFileSync(
+      path.join(tempDir, "big.bin"),
+      Buffer.alloc(1024 * 1024 + 1),
+    );
+
+    vi.mocked(execFileSync).mockReturnValue("safe.txt\nbig.bin\nmissing.txt\n");
+    const result = await secretsService.scan();
+    expect(result.metadata.findings).toHaveLength(0);
+  });
+
+  it("falls back to git history when no tracked-file findings", async () => {
+    fs.writeFileSync(path.join(tempDir, "clean.txt"), "nothing here\n");
+
+    vi.mocked(execFileSync)
+      .mockReturnValueOnce("clean.txt\n")
+      .mockReturnValueOnce("ghp_abcdefghijklmnopqrstuvwxyz123456\n");
+
+    const result = await secretsService.scan({ limit: 5 });
+    expect(result.metadata.findings.length).toBeGreaterThan(0);
+  });
+
   it("lists normalized secret scanning alerts", async () => {
     vi.mocked(repoService.resolveTargets).mockResolvedValue([
       {

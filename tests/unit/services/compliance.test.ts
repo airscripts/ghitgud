@@ -43,19 +43,6 @@ describe("compliance service", () => {
   beforeEach(() => {
     vi.clearAllMocks();
 
-    vi.mocked(repoService.resolveTargets).mockResolvedValue([
-      {
-        id: 1,
-        fork: false,
-        name: "repo",
-        pushedAt: null,
-        private: false,
-        archived: false,
-        defaultBranch: "main",
-        fullName: "owner/repo",
-      },
-    ]);
-
     vi.mocked(repoService.runBulk).mockImplementation(
       async (repos, handler) => {
         const metadata = await handler(repos[0]);
@@ -73,7 +60,62 @@ describe("compliance service", () => {
     );
   });
 
-  it("scores compliance checks", async () => {
+  it("scores compliance checks with failures and unknowns", async () => {
+    vi.mocked(repoService.resolveTargets).mockResolvedValue([
+      {
+        id: 1,
+        fork: false,
+        name: "repo",
+        pushedAt: null,
+        private: false,
+        archived: true,
+        defaultBranch: "",
+        fullName: "owner/repo",
+      },
+    ]);
+
+    vi.mocked(inspectService.inspectRepo).mockResolvedValue({
+      score: 0,
+      missing: ["README", "LICENSE", "SECURITY.md", "CODEOWNERS"],
+      present: [],
+    });
+
+    vi.mocked(reposApi.getBranchProtection).mockRejectedValue(new Error("404"));
+    vi.mocked(rulesetsApi.list).mockRejectedValue(new Error("403"));
+    vi.mocked(reposApi.get).mockResolvedValue({
+      id: 1,
+      fork: false,
+      name: "repo",
+      private: false,
+      archived: true,
+      pushed_at: null,
+      default_branch: "",
+      full_name: "owner/repo",
+      has_vulnerability_alerts: false,
+    });
+
+    const result = await complianceService.check({ repos: "owner/repo" });
+    const metadata = result.metadata.results[0].metadata;
+
+    expect(metadata?.score).toBe(0);
+    expect(metadata?.checks).toHaveLength(9);
+    expect(metadata?.remediation.length).toBeGreaterThan(0);
+  });
+
+  it("scores a fully compliant repository", async () => {
+    vi.mocked(repoService.resolveTargets).mockResolvedValue([
+      {
+        id: 1,
+        fork: false,
+        name: "repo",
+        pushedAt: null,
+        private: false,
+        archived: false,
+        defaultBranch: "main",
+        fullName: "owner/repo",
+      },
+    ]);
+
     vi.mocked(inspectService.inspectRepo).mockResolvedValue({
       score: 100,
       missing: [],
