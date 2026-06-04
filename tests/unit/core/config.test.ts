@@ -115,6 +115,10 @@ describe("config", () => {
       const { default: config } = await import("@/core/config");
       config.write("token", "test-token");
 
+      if (process.platform === "win32") {
+        return;
+      }
+
       const mode = fs.statSync(credentialsPath).mode & 0o777;
       expect(mode).toBe(0o600);
     });

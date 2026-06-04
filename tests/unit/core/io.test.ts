@@ -76,7 +76,7 @@ describe("io", () => {
   describe("resolveInsideRoot", () => {
     it("resolves relative paths inside the root", () => {
       expect(io.resolveInsideRoot("/repo", "src/main.ts")).toBe(
-        "/repo/src/main.ts",
+        path.resolve("/repo", "src/main.ts"),
       );
     });
 

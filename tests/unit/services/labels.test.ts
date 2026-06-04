@@ -181,7 +181,7 @@ describe("labels", () => {
     await expect(
       labelsService.pullTemplate("nonexistent", "/mock/templates"),
     ).rejects.toThrow(
-      'Template "nonexistent" not found at /mock/templates/nonexistent.json.',
+      /Template "nonexistent" not found at .*mock.*templates.*nonexistent\.json\./,
     );
 
     await expect(
@@ -217,7 +217,7 @@ describe("labels", () => {
     await expect(
       labelsService.pushTemplate("nonexistent", "/mock/templates"),
     ).rejects.toThrow(
-      'Template "nonexistent" not found at /mock/templates/nonexistent.json.',
+      /Template "nonexistent" not found at .*mock.*templates.*nonexistent\.json\./,
     );
   });
 });
