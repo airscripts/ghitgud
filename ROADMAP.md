@@ -2,23 +2,6 @@
 
 ---
 
-## v2.11.0 — Enterprise Security & Compliance
-
-**Why gh doesn't have it:** Enterprise audit logs are API-only. No secret scanning management in CLI. Dependabot alerts require browser. Platform engineers need terminal access for compliance workflows.
-
-**Commands:**
-
-- `ghg audit` — query enterprise audit events with filters (actor, action, repo, date range)
-- `ghg secrets scan` — scan repo history for leaked secrets (integrate with GitHub secret scanning API)
-- `ghg secrets alerts` — list secret scanning alerts per repo
-- `ghg dependabot list` — list Dependabot alerts with severity
-- `ghg dependabot dismiss <alert> --reason <reason>`
-- `ghg compliance check` — repo health score (license, README, CODEOWNERS, 2FA required, branch protection)
-
-**Value:** Turns ghg into a security and compliance Swiss army knife for platform teams. This is where enterprise budget lives.
-
----
-
 ## v2.12.0 — GitHub Discussions
 
 **Why gh doesn't have it:** `gh` has no `discussion` command family. Discussions are API-only and require extensions like `gh discussions` for terminal access.

@@ -29,6 +29,65 @@ interface RepoInspectResult {
   missing: string[];
 }
 
+interface AuditEvent {
+  id: string;
+  action: string;
+  repo: string | null;
+  actor: string | null;
+  createdAt: string | null;
+  raw: Record<string, unknown>;
+}
+
+type SecretScanConfidence = "high" | "medium" | "low";
+
+interface SecretScanFinding {
+  file: string;
+  rule: string;
+  match: string;
+  line?: number;
+  confidence: SecretScanConfidence;
+}
+
+interface SecretScanningAlert {
+  url: string;
+  state: string;
+  number: number;
+  createdAt: string;
+  secretType: string;
+  repository: string;
+  resolution: string | null;
+  resolvedAt: string | null;
+  secretTypeDisplayName: string;
+}
+
+interface DependabotAlert {
+  state: string;
+  number: number;
+  severity: string;
+  advisory: string;
+  ecosystem: string;
+  repository: string;
+  packageName: string;
+  manifestPath: string;
+  dismissedReason: string | null;
+}
+
+type ComplianceCheckStatus = "pass" | "fail" | "unknown";
+
+interface ComplianceCheck {
+  id: string;
+  label: string;
+  message: string;
+  status: ComplianceCheckStatus;
+}
+
+interface ComplianceResult {
+  repo: string;
+  score: number;
+  remediation: string[];
+  checks: ComplianceCheck[];
+}
+
 interface BulkRepoResult<T = unknown> {
   repo: string;
   metadata?: T;
@@ -230,32 +289,41 @@ const normalizeLabel = (label: Label) => ({
 
 export type { Label };
 export type { Profile };
-export type { CredentialsFile };
-export type { ProfileRcFile };
-export type { RepoTargetOptions };
+export type { AuditEvent };
 export type { RepoSummary };
-export type { RepoInspectResult };
-export type { BulkRepoResult };
-export type { BulkRepoMetadata };
 export type { RulesetInput };
-export type { WorkflowValidationIssue };
+export type { ProfileRcFile };
+export type { BulkRepoResult };
+export type { CredentialsFile };
+export type { DependabotAlert };
+export type { ComplianceCheck };
+export type { ComplianceResult };
+export type { BulkRepoMetadata };
+export type { RepoTargetOptions };
+export type { RepoInspectResult };
+export type { SecretScanFinding };
+export type { SecretScanningAlert };
+export type { SecretScanConfidence };
+export type { ComplianceCheckStatus };
 export type { WorkflowValidateResult };
-export type { WorkflowDryRunJob };
-export type { WorkflowDryRunResult };
-export type { ActionsCacheEntry };
+export type { WorkflowValidationIssue };
 export type { RunDebugJob };
-export type { RunDebugArtifact };
-export type { RunDebugResult };
-export type { ReviewComment };
+export type { WorkflowDryRunJob };
+export type { ActionsCacheEntry };
+export type { WorkflowDryRunResult };
 export type { ReviewThread };
+export type { ReviewComment };
+export type { RunDebugResult };
+export type { RunDebugArtifact };
 export type { ReviewSuggestion };
-export type { ReviewApplyResult };
 export type { Milestone };
-export type { MilestoneState };
-export type { MilestoneProgress };
 export type { IssueSummary };
-export type { SubIssueSummary };
 export type { ProjectBoard };
-export type { ProjectBoardColumn };
+export type { MilestoneState };
+export type { SubIssueSummary };
 export type { ProjectBoardItem };
+export type { ReviewApplyResult };
+export type { MilestoneProgress };
+export type { ProjectBoardColumn };
+
 export { normalizeLabel };

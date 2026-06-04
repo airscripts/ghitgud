@@ -12,12 +12,14 @@ import issueCommand from "@/commands/issue";
 import proxyCommand from "@/commands/proxy";
 import reposCommand from "@/commands/repos";
 import cacheCommand from "@/commands/cache";
+import auditCommand from "@/commands/audit";
 import labelsCommand from "@/commands/labels";
 import outputState from "@/core/output-state";
 import configCommand from "@/commands/config";
 import reviewCommand from "@/commands/review";
 import projectCommand from "@/commands/project";
 import profileCommand from "@/commands/profile";
+import secretsCommand from "@/commands/secrets";
 import releaseCommand from "@/commands/release";
 import insightsCommand from "@/commands/insights";
 import mentionsCommand from "@/commands/mentions";
@@ -25,6 +27,8 @@ import workflowCommand from "@/commands/workflow";
 import { ERROR_NO_TOKEN } from "@/core/constants";
 import activityCommand from "@/commands/activity";
 import milestoneCommand from "@/commands/milestone";
+import dependabotCommand from "@/commands/dependabot";
+import complianceCommand from "@/commands/compliance";
 import { setTheme, initializeTheme } from "@/core/theme";
 import notificationsCommand from "@/commands/notifications";
 
@@ -78,6 +82,10 @@ if (!proxyCommand.runProxyFromArgv()) {
   cacheCommand.register(program);
   runCommand.register(program);
   releaseCommand.register(program);
+  auditCommand.register(program);
+  secretsCommand.register(program);
+  dependabotCommand.register(program);
+  complianceCommand.register(program);
 
   program
     .command("version")
@@ -110,6 +118,10 @@ Examples:
   ghg release changelog
   ghg release bump --create --push
   ghg release draft --level minor
+  ghg audit --org airscripts --actor octocat
+  ghg secrets alerts --repos owner/repo
+  ghg dependabot list --severity high
+  ghg compliance check --org airscripts
 `,
   );
 

@@ -58,6 +58,17 @@ export const ERROR_MUTATION_REQUIRES_YES =
   "This operation changes repositories. Re-run with --yes to apply.";
 
 export const ERROR_RULESET_REQUIRED = "Ruleset file is required.";
+export const ERROR_AUDIT_TARGET_REQUIRED =
+  "Either --org or --enterprise must be provided.";
+
+export const ERROR_DEPENDABOT_ALERT_REQUIRED =
+  "Dependabot alert number is required.";
+
+export const ERROR_DEPENDABOT_DISMISS_REASON_REQUIRED =
+  "Dependabot dismiss reason is required.";
+
+export const ERROR_INVALID_DEPENDABOT_DISMISS_REASON =
+  "Invalid Dependabot dismiss reason.";
 
 export const ERROR_LABEL_SOURCE_REQUIRED =
   "Either --template or --metadata must be provided.";
@@ -95,6 +106,24 @@ export const CODEOWNERS_PATHS = [
 ] as const;
 
 export const GOVERNANCE_CHECK_COUNT = 4;
+export const COMPLIANCE_CHECK_COUNT = 9;
+
+export const DEPENDABOT_DISMISS_REASONS = [
+  "fix_started",
+  "inaccurate",
+  "no_bandwidth",
+  "not_used",
+  "tolerable_risk",
+] as const;
+
+export const SECRET_SCAN_RULE_IDS = [
+  "github-token",
+  "classic-github-token",
+  "aws-access-key",
+  "private-key",
+  "generic-api-key",
+  "high-entropy-assignment",
+] as const;
 
 export const SUPPORTED_CONFIG_KEYS = ["token", "repo"] as const;
 export type SupportedKey = (typeof SUPPORTED_CONFIG_KEYS)[number];

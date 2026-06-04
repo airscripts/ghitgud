@@ -10,6 +10,7 @@ interface GitHubRepoResponse {
   full_name: string;
   default_branch: string;
   pushed_at: string | null;
+  has_vulnerability_alerts?: boolean;
 }
 
 const normalizeRepo = (repo: GitHubRepoResponse): RepoSummary => ({
@@ -30,6 +31,18 @@ const repos = {
     );
 
     return data.map(normalizeRepo);
+  },
+
+  get: async (repo: string): Promise<GitHubRepoResponse> => {
+    const response = await client.get(`/repos/${repo}`);
+    return (await response.json()) as GitHubRepoResponse;
+  },
+
+  getBranchProtection: async (
+    repo: string,
+    branch: string,
+  ): Promise<Response> => {
+    return client.get(`/repos/${repo}/branches/${branch}/protection`);
   },
 
   archive: async (repo: string): Promise<Response> => {
