@@ -5,6 +5,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.12.1] - 2026-06-05
+
+### Fixed
+
+- GraphQL Discussions schema alignment: replaced invalid `filterBy` argument with `categoryId` on `discussions`, removed non-existent `state` and `pinned` fields in favor of `closed`, and removed non-existent `pinDiscussion`/`unpinDiscussion` mutations
+- Discussion commands updated: removed `pin` and `unpin` subcommands, `state` now derived from `closed` field
+- README, TUI, types, and tests updated to reflect the corrected Discussion surface
+
 ## [2.12.0] - 2026-06-05
 
 ### Added
