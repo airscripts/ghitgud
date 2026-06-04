@@ -83,6 +83,7 @@ Every command reads from `src/core/config.ts`, which resolves values in this ord
 - **Milestone Management** — track sprint progress with create, list, close, and progress commands
 - **Project Boards** — render an ASCII kanban board for any GitHub Project v2
 - **Issue Subtasks** — create, link, and organize sub-issues with parent support
+- **Security & Compliance** — audit enterprise and organization activity, scan repositories for leaked secrets, triage Dependabot and secret scanning alerts, and run compliance checks across repository hygiene, branch protection, and rulesets
 
 ---
 
@@ -291,6 +292,18 @@ ghg issue subtasks <issue> --link <sub-issue>
 ghg issue parent <child> --parent <parent>
 ```
 
+### Security & Compliance
+
+```bash
+ghg audit --org <org>
+ghg audit --enterprise <slug> --actor <actor> --action <action>
+ghg compliance check --org <org>
+ghg dependabot list --org <org> --severity critical
+ghg dependabot dismiss <alert> --repo owner/repo --reason fix_started --yes
+ghg secrets scan --limit 50
+ghg secrets alerts --org <org> --state open
+```
+
 ---
 
 ## PR Workflow
@@ -419,8 +432,11 @@ src/
     ascii.ts            # Figlet banner for help output.
   commands/
     activity.ts         # ghg activity.
+    audit.ts            # ghg audit.
     cache.ts            # ghg cache <inspect|download>.
+    compliance.ts       # ghg compliance <check>.
     config.ts           # ghg config <get|set>.
+    dependabot.ts       # ghg dependabot <list|dismiss>.
     insights.ts         # ghg insights <traffic|contributors|commits|frequency|popularity|participation>.
     issue.ts            # ghg issue <subtasks|parent>.
     labels.ts           # ghg labels <list|pull|push|prune>.
@@ -435,6 +451,7 @@ src/
     repos.ts            # ghg repos <inspect|govern|label|retire|report>.
     review.ts           # ghg review <comment|threads|resolve|suggest|apply>.
     run.ts              # ghg run <debug>.
+    secrets.ts          # ghg secrets <scan|alerts>.
     workflow.ts         # ghg workflow <validate|preview>.
   services/
     labels.ts           # Label business logic.

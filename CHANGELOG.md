@@ -5,6 +5,19 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.11.0] - 2026-06-04
+
+### Added
+
+- Enterprise security and compliance suite for platform teams
+- Audit log querying for organizations and enterprises with actor, action, repo, and date range filters
+- Repository compliance scoring across README, LICENSE, SECURITY.md, CODEOWNERS, branch protection, rulesets, vulnerability alerts, and archive status with percentage score and remediation guidance
+- Dependabot alert listing with severity, ecosystem, package, and scope filters across single or multiple repositories
+- Dependabot alert dismissal with validated reasons and optional comment, gated behind an explicit confirmation flag
+- Local secret scanning across tracked files and recent git history with regex-based detection for tokens, keys, and high-entropy strings, with automatic value redaction in output
+- GitHub secret scanning alert listing with state, type, resolution, and date range filters across repositories
+- Full API, service, command, and test coverage for the new security modules
+
 ## [2.10.1] - 2026-06-04
 
 ### Fixed
