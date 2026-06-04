@@ -901,6 +901,7 @@ const renderApp = (
       renderOverlay(
         ctx,
         layout,
+
         renderCommandPalette(
           ctx,
           layout,
@@ -915,4 +916,13 @@ const renderApp = (
   return renderNormalView(ctx, props);
 };
 
-export { renderApp };
+const __testing = {
+  wrapText,
+  segmentLine,
+  asValueString,
+  jsonLineColor,
+  sliceSegments,
+};
+
+export { __testing, renderApp };
+export type { AppRenderProps };

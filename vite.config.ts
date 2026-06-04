@@ -53,5 +53,25 @@ export default defineConfig({
 
   test: {
     include: ["tests/**/*.test.ts"],
+
+    coverage: {
+      all: true,
+      include: ["src/**/*.ts"],
+
+      exclude: [
+        "src/**/*.d.ts",
+        "src/env.d.ts",
+        "src/tui/app.ts",
+        "src/tui/index.ts",
+        "src/tui/types.ts",
+      ],
+
+      thresholds: {
+        lines: 80,
+        branches: 70,
+        functions: 70,
+        statements: 80,
+      },
+    },
   },
 });
