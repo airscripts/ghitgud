@@ -3,14 +3,6 @@
   "schedule": ["before 3am"],
   "extends": ["config:recommended"],
 
-  "packageRules": [
-    {
-      "groupSlug": "all-deps",
-      "matchPackagePatterns": ["*"],
-      "groupName": "all dependencies"
-    }
-  ],
-
   "prHourlyLimit": 5,
   "rebaseWhen": "behind-base-branch"
 }
