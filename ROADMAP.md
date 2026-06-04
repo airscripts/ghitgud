@@ -2,23 +2,6 @@
 
 ---
 
-## v2.12.0 — GitHub Discussions
-
-**Why gh doesn't have it:** `gh` has no `discussion` command family. Discussions are API-only and require extensions like `gh discussions` for terminal access.
-
-**Commands:**
-
-- `ghg discussion list` — list discussions by category
-- `ghg discussion create --title <name> --category <name> --body <text>`
-- `ghg discussion view <number>`
-- `ghg discussion comment <number> --body <text>`
-- `ghg discussion close/pin <number>`
-- `ghg discussion categories` — list available categories
-
-**Value:** Many OSS projects route Q&A and feature requests through Discussions. Maintainers can triage and respond without leaving the terminal.
-
----
-
 ## v2.13.0 — Variables & Environments
 
 **Why gh doesn't have it:** `gh secret` exists but environment scoping and repository variables are API-only. Teams managing staging/production/development need browser access or raw `gh api` calls.

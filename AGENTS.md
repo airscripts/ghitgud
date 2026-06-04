@@ -283,6 +283,18 @@ Other prefixes appear occasionally, but the dominant pattern is:
 
 The repository history is rebase-oriented and generally avoids merge commits.
 
+### Version Bump Procedure
+
+When a feature milestone is complete and ready to ship, perform these steps in order:
+
+1. **Update `VERSION`** — Set the file contents to the new version string (e.g., `2.12.0`).
+2. **Update `package.json`** — Bump the `version` field to match.
+3. **Update `CITATION.cff`** — Bump `version` and set `date-released` to today.
+4. **Update `CHANGELOG.md`** — Add a new section for the release at the top of the file, following the Keep a Changelog format. Summarize the additions, changes, and fixes from the milestone.
+5. **Update `ROADMAP.md`** — Remove the completed version section so the next planned version becomes the first entry.
+6. **Update `README.md`** — Add new features/commands to the features list, commands table, and repository structure tree.
+7. **Verify** — Run `pnpm typecheck`, `pnpm lint`, `pnpm format:check`, and `pnpm test:coverage` to confirm everything is clean and coverage meets the 80% threshold before the release commit.
+
 ## 12. Dependencies and Tooling
 
 Primary runtime and UX dependencies:
