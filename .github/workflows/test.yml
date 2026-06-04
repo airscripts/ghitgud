@@ -6,7 +6,12 @@ on:
 jobs:
   cli:
     name: CLI
-    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+
+    runs-on: ${{ matrix.os }}
 
     steps:
       - uses: actions/checkout@v6
@@ -28,5 +33,12 @@ jobs:
       - run: pnpm install
         name: Install Dependencies
 
-      - run: pnpm test -- --run
-        name: Run Tests
+      - run: pnpm test:coverage
+        name: Run Tests with Coverage
+
+      - uses: actions/upload-artifact@v6
+        name: Upload Coverage Report
+
+        with:
+          name: coverage-report-${{ matrix.os }}
+          path: coverage/

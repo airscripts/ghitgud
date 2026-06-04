@@ -72,6 +72,35 @@ src/
   types/
     index.ts
     notifications.ts
+  tui/
+    app.ts            # Full-screen TUI runtime
+    index.ts          # TUI entry and renderer wiring
+    types.ts          # TUI-specific types
+    operations/       # Workspace operation definitions
+      index.ts        # Concatenates all workspace arrays
+      shared.ts       # Input helpers (text, numberValue, targetOptions, etc.)
+      dashboard.ts
+      notifications.ts
+      labels.ts
+      prs.ts
+      review.ts
+      milestones.ts
+      projects.ts
+      issues.ts
+      repositories.ts
+      insights.ts
+      workflow.ts
+      cache.ts
+      run.ts
+      profile.ts
+      config.ts
+      utility.ts
+      release.ts
+    layout.ts         # Screen layout calculations
+    mouse.ts          # Mouse event parsing
+    render.ts         # Ink-based rendering
+    state.ts          # Dashboard and context state
+    status.ts         # Status bar items
   env.d.ts
 templates/
   base.json

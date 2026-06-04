@@ -20,6 +20,23 @@ vi.mock("@/core/command", () => ({
   },
 }));
 
+vi.mock("@/core/prompt", () => ({
+  default: {
+    text: vi.fn((message: string, options: { placeholder?: string }) => {
+      if (options?.placeholder === "42") return "42";
+      if (options?.placeholder === "123456") return "123456";
+      if (options?.placeholder === "10") return "10";
+      if (options?.placeholder === "src/main.ts") return "src/main.ts";
+
+      if (options?.placeholder === "Consider using a constant here.")
+        return "Consider using a constant here.";
+
+      if (options?.placeholder === "const x = 1;") return "const x = 1;";
+      return "mocked";
+    }),
+  },
+}));
+
 describe("review command", () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -77,5 +94,127 @@ describe("review command", () => {
     ).rejects.toThrow("Invalid line: 7x.");
 
     expect(reviewService.comment).not.toHaveBeenCalled();
+  });
+
+  it("should call threads service with valid PR", async () => {
+    const program = new Command();
+    program.exitOverride();
+    reviewCommand.register(program);
+
+    await program.parseAsync(["node", "test", "review", "threads", "42"]);
+    expect(reviewService.threads).toHaveBeenCalledWith(42, undefined);
+  });
+
+  it("should call threads service with repo option", async () => {
+    const program = new Command();
+    program.exitOverride();
+    reviewCommand.register(program);
+
+    await program.parseAsync([
+      "node",
+      "test",
+      "review",
+      "threads",
+      "42",
+      "--repo",
+      "owner/repo",
+    ]);
+
+    expect(reviewService.threads).toHaveBeenCalledWith(42, "owner/repo");
+  });
+
+  it("should call resolve service with valid args", async () => {
+    const program = new Command();
+    program.exitOverride();
+    reviewCommand.register(program);
+
+    await program.parseAsync([
+      "node",
+      "test",
+      "review",
+      "resolve",
+      "123456",
+      "42",
+    ]);
+
+    expect(reviewService.resolve).toHaveBeenCalledWith(123456, undefined, 42);
+  });
+
+  it("should call suggest service with valid args", async () => {
+    const program = new Command();
+    program.exitOverride();
+    reviewCommand.register(program);
+
+    await program.parseAsync([
+      "node",
+      "test",
+      "review",
+      "suggest",
+      "42",
+      "--file",
+      "src/main.ts",
+      "--line",
+      "10",
+      "--replace",
+      "const x = 1;",
+    ]);
+
+    expect(reviewService.suggest).toHaveBeenCalledWith({
+      pr: 42,
+      line: 10,
+      repo: undefined,
+      file: "src/main.ts",
+      replace: "const x = 1;",
+    });
+  });
+
+  it("should call apply service with valid args", async () => {
+    const program = new Command();
+    program.exitOverride();
+    reviewCommand.register(program);
+
+    await program.parseAsync([
+      "node",
+      "test",
+      "review",
+      "apply",
+      "42",
+      "--repo",
+      "owner/repo",
+      "--push",
+    ]);
+
+    expect(reviewService.apply).toHaveBeenCalledWith(42, "owner/repo", true);
+  });
+
+  it("should call comment service with all args", async () => {
+    const program = new Command();
+    program.exitOverride();
+    reviewCommand.register(program);
+
+    await program.parseAsync([
+      "node",
+      "test",
+      "review",
+      "comment",
+      "42",
+      "--file",
+      "src/main.ts",
+      "--line",
+      "10",
+      "--body",
+      "Looks good.",
+      "--side",
+      "LEFT",
+    ]);
+
+    expect(reviewService.comment).toHaveBeenCalledWith({
+      pr: 42,
+      line: 10,
+      side: "LEFT",
+      repo: undefined,
+      file: "src/main.ts",
+      body: "Looks good.",
+    });
   });
 });

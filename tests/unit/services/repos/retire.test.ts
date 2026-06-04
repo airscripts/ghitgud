@@ -89,6 +89,111 @@ describe("repo retire service", () => {
     );
   });
 
+  it("should skip forks when not including forks", async () => {
+    (service.resolveTargets as Mock).mockResolvedValue([
+      {
+        id: 1,
+        fork: true,
+        name: "repo",
+        private: false,
+        archived: false,
+        defaultBranch: "main",
+        fullName: "owner/repo",
+        pushedAt: "2024-01-10T00:00:00Z",
+      },
+    ]);
+
+    const result = await retireService.retire({
+      dryRun: true,
+      repos: "owner/repo",
+    });
+
+    expect(result.metadata.results[0].metadata!.action).toBe("skipped_fork");
+  });
+
+  it("should include forks when includeForks is true", async () => {
+    (service.resolveTargets as Mock).mockResolvedValue([
+      {
+        id: 1,
+        fork: true,
+        name: "repo",
+        private: false,
+        archived: false,
+        defaultBranch: "main",
+        fullName: "owner/repo",
+        pushedAt: "2024-01-10T00:00:00Z",
+      },
+    ]);
+
+    (service.getInactiveMonths as Mock).mockReturnValue(18);
+
+    const result = await retireService.retire({
+      dryRun: true,
+      repos: "owner/repo",
+      includeForks: true,
+    });
+
+    expect(result.metadata.results[0].metadata!.action).toBe("would_retire");
+  });
+
+  it("should skip private repos when not including private", async () => {
+    (service.resolveTargets as Mock).mockResolvedValue([
+      {
+        id: 1,
+        fork: false,
+        name: "repo",
+        private: true,
+        archived: false,
+        defaultBranch: "main",
+        fullName: "owner/repo",
+        pushedAt: "2024-01-10T00:00:00Z",
+      },
+    ]);
+
+    const result = await retireService.retire({
+      dryRun: true,
+      repos: "owner/repo",
+    });
+
+    expect(result.metadata.results[0].metadata!.action).toBe("skipped_private");
+  });
+
+  it("should include private repos when includePrivate is true", async () => {
+    (service.resolveTargets as Mock).mockResolvedValue([
+      {
+        id: 1,
+        fork: false,
+        name: "repo",
+        private: true,
+        archived: false,
+        defaultBranch: "main",
+        fullName: "owner/repo",
+        pushedAt: "2024-01-10T00:00:00Z",
+      },
+    ]);
+
+    (service.getInactiveMonths as Mock).mockReturnValue(18);
+
+    const result = await retireService.retire({
+      dryRun: true,
+      repos: "owner/repo",
+      includePrivate: true,
+    });
+
+    expect(result.metadata.results[0].metadata!.action).toBe("would_retire");
+  });
+
+  it("should skip recent repos", async () => {
+    (service.getInactiveMonths as Mock).mockReturnValue(3);
+
+    const result = await retireService.retire({
+      dryRun: true,
+      repos: "owner/repo",
+    });
+
+    expect(result.metadata.results[0].metadata!.action).toBe("skipped_recent");
+  });
+
   it("should archive when confirmed", async () => {
     await retireService.retire({
       yes: true,
@@ -96,5 +201,15 @@ describe("repo retire service", () => {
     });
 
     expect(reposApi.archive).toHaveBeenCalledWith("owner/repo");
+  });
+
+  it("should pass custom months threshold", async () => {
+    await retireService.retire({
+      months: 6,
+      dryRun: true,
+      repos: "owner/repo",
+    });
+
+    expect(service.parseMonths).toHaveBeenCalledWith(6, 12);
   });
 });

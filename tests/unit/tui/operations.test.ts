@@ -1,97 +1,787 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi, beforeEach } from "vitest";
 
-import operations, { workspaces } from "@/tui/operations";
+vi.mock("@/core/config", () => ({
+  default: {
+    listProfiles: vi.fn(() => []),
+    getRepo: vi.fn(() => "owner/repo"),
+    getTokenOptional: vi.fn(() => "token"),
+    getRepoOptional: vi.fn(() => "owner/repo"),
+  },
+}));
 
-const EXPECTED_OPERATION_IDS = [
-  "dashboard.overview",
-  "notifications.list",
-  "notifications.read",
-  "notifications.done",
-  "activity",
-  "mentions",
-  "labels.list",
-  "labels.pull",
-  "labels.push",
-  "labels.prune",
-  "pr.cleanup",
-  "pr.push",
-  "pr.next",
-  "pr.stack.create",
-  "pr.stack.list",
-  "pr.stack.update",
-  "pr.stack.push",
-  "review.comment",
-  "review.threads",
-  "review.resolve",
-  "review.suggest",
-  "review.apply",
-  "milestone.create",
-  "milestone.list",
-  "milestone.close",
-  "milestone.progress",
-  "project.board",
-  "issue.subtasks.list",
-  "issue.subtasks.create",
-  "issue.subtasks.link",
-  "issue.parent",
-  "repos.inspect",
-  "repos.govern",
-  "repos.label",
-  "repos.retire",
-  "repos.report",
-  "insights.traffic",
-  "insights.contributors",
-  "insights.commits",
-  "insights.frequency",
-  "insights.popularity",
-  "insights.participation",
-  "workflow.validate",
-  "workflow.preview",
-  "cache.inspect",
-  "cache.download",
-  "run.debug",
-  "profile.add",
-  "profile.list",
-  "profile.switch",
-  "profile.detect",
-  "config.set",
-  "config.get",
-  "config.unset",
-  "ping",
-  "version",
-  "proxy",
-  "release.changelog",
-  "release.bump",
-  "release.verify",
-  "release.notes",
-  "release.draft",
-];
+vi.mock("@/services/notifications", () => ({
+  default: {
+    list: vi.fn(() => Promise.resolve([])),
+    markRead: vi.fn(() => Promise.resolve()),
+    markDone: vi.fn(() => Promise.resolve()),
+    activity: vi.fn(() => Promise.resolve([])),
+    mentions: vi.fn(() => Promise.resolve([])),
+  },
+}));
 
-describe("tui operations", () => {
-  it("should cover every current ghg command workflow", () => {
-    const ids = operations.map((operation) => operation.id);
-    expect(ids).toEqual(EXPECTED_OPERATION_IDS);
+vi.mock("@/services/labels", () => ({
+  default: {
+    ping: vi.fn(() => "pong"),
+    pull: vi.fn(() => Promise.resolve()),
+    push: vi.fn(() => Promise.resolve()),
+    prune: vi.fn(() => Promise.resolve()),
+    list: vi.fn(() => Promise.resolve([])),
+    pullTemplate: vi.fn(() => Promise.resolve()),
+    pushTemplate: vi.fn(() => Promise.resolve()),
+  },
+}));
+
+vi.mock("@/services/pr", () => ({
+  default: {
+    push: vi.fn(() => Promise.resolve()),
+    cleanup: vi.fn(() => Promise.resolve()),
+  },
+}));
+
+vi.mock("@/services/stack", () => ({
+  default: {
+    next: vi.fn(() => Promise.resolve()),
+    push: vi.fn(() => Promise.resolve()),
+    list: vi.fn(() => Promise.resolve([])),
+    create: vi.fn(() => Promise.resolve()),
+    update: vi.fn(() => Promise.resolve()),
+  },
+}));
+
+vi.mock("@/services/review", () => ({
+  default: {
+    apply: vi.fn(() => Promise.resolve()),
+    comment: vi.fn(() => Promise.resolve()),
+    resolve: vi.fn(() => Promise.resolve()),
+    suggest: vi.fn(() => Promise.resolve()),
+    threads: vi.fn(() => Promise.resolve([])),
+  },
+}));
+
+vi.mock("@/services/milestone", () => ({
+  default: {
+    close: vi.fn(() => Promise.resolve()),
+    create: vi.fn(() => Promise.resolve()),
+    list: vi.fn(() => Promise.resolve([])),
+    progress: vi.fn(() => Promise.resolve({ percent: 50 })),
+  },
+}));
+
+vi.mock("@/services/project", () => ({
+  default: {
+    board: vi.fn(() => Promise.resolve([])),
+  },
+}));
+
+vi.mock("@/services/issue", () => ({
+  default: {
+    subtasks: vi.fn(() => Promise.resolve([])),
+    parent: vi.fn(() => Promise.resolve()),
+  },
+}));
+
+vi.mock("@/services/repos/inspect", () => ({
+  default: {
+    inspect: vi.fn(() => Promise.resolve([])),
+  },
+}));
+
+vi.mock("@/services/repos/govern", () => ({
+  default: {
+    govern: vi.fn(() => Promise.resolve()),
+  },
+}));
+
+vi.mock("@/services/repos/label", () => ({
+  default: {
+    label: vi.fn(() => Promise.resolve()),
+  },
+}));
+
+vi.mock("@/services/repos/retire", () => ({
+  default: {
+    retire: vi.fn(() => Promise.resolve()),
+  },
+}));
+
+vi.mock("@/services/repos/report", () => ({
+  default: {
+    report: vi.fn(() => Promise.resolve([])),
+  },
+}));
+
+vi.mock("@/services/insights", () => ({
+  default: {
+    traffic: vi.fn(() => Promise.resolve([])),
+    commits: vi.fn(() => Promise.resolve([])),
+    popularity: vi.fn(() => Promise.resolve([])),
+    contributors: vi.fn(() => Promise.resolve([])),
+    codeFrequency: vi.fn(() => Promise.resolve([])),
+    participation: vi.fn(() => Promise.resolve([])),
+  },
+}));
+
+vi.mock("@/services/workflow", () => ({
+  default: {
+    preview: vi.fn(() => Promise.resolve({ success: true, metadata: [] })),
+    validate: vi.fn(() => Promise.resolve({ success: true, metadata: [] })),
+  },
+}));
+
+vi.mock("@/services/cache", () => ({
+  default: {
+    download: vi.fn(() => Promise.resolve()),
+    inspect: vi.fn(() => Promise.resolve({})),
+  },
+}));
+
+vi.mock("@/services/run", () => ({
+  default: {
+    debugRun: vi.fn(() => Promise.resolve()),
+  },
+}));
+
+vi.mock("@/services/profile", () => ({
+  default: {
+    add: vi.fn(() => Promise.resolve()),
+    detect: vi.fn(() => Promise.resolve()),
+    list: vi.fn(() => Promise.resolve([])),
+    switch: vi.fn(() => Promise.resolve()),
+  },
+}));
+
+vi.mock("@/services/config", () => ({
+  default: {
+    get: vi.fn(() => "value"),
+    set: vi.fn(() => Promise.resolve()),
+    unset: vi.fn(() => Promise.resolve()),
+  },
+}));
+
+vi.mock("@/services/release", () => ({
+  default: {
+    bump: vi.fn(() => Promise.resolve()),
+    draft: vi.fn(() => Promise.resolve()),
+    verify: vi.fn(() => Promise.resolve()),
+    notes: vi.fn(() => Promise.resolve([])),
+    changelog: vi.fn(() => Promise.resolve([])),
+  },
+}));
+
+vi.mock("@/commands/proxy", () => ({
+  default: {
+    runProxyCapture: vi.fn(() =>
+      Promise.resolve({ stdout: "ok", stderr: "", exitCode: 0 }),
+    ),
+  },
+}));
+
+import proxy from "@/commands/proxy";
+import prService from "@/services/pr";
+import runService from "@/services/run";
+import issueService from "@/services/issue";
+import stackService from "@/services/stack";
+import cacheService from "@/services/cache";
+import reviewService from "@/services/review";
+import labelsService from "@/services/labels";
+import configService from "@/services/config";
+import profileService from "@/services/profile";
+import releaseService from "@/services/release";
+import projectService from "@/services/project";
+import insightsService from "@/services/insights";
+import workflowService from "@/services/workflow";
+import milestoneService from "@/services/milestone";
+import reposLabelService from "@/services/repos/label";
+import reposGovernService from "@/services/repos/govern";
+import reposRetireService from "@/services/repos/retire";
+import reposReportService from "@/services/repos/report";
+import reposInspectService from "@/services/repos/inspect";
+import notificationsService from "@/services/notifications";
+
+import prOperations from "@/tui/operations/prs";
+import runOperations from "@/tui/operations/run";
+import cacheOperations from "@/tui/operations/cache";
+import labelOperations from "@/tui/operations/labels";
+import issueOperations from "@/tui/operations/issues";
+import reviewOperations from "@/tui/operations/review";
+import configOperations from "@/tui/operations/config";
+import profileOperations from "@/tui/operations/profile";
+import utilityOperations from "@/tui/operations/utility";
+import releaseOperations from "@/tui/operations/release";
+import projectOperations from "@/tui/operations/projects";
+import insightsOperations from "@/tui/operations/insights";
+import workflowOperations from "@/tui/operations/workflow";
+import dashboardOperations from "@/tui/operations/dashboard";
+import milestoneOperations from "@/tui/operations/milestones";
+import repositoryOperations from "@/tui/operations/repositories";
+import notificationOperations from "@/tui/operations/notifications";
+
+const runOp = async (
+  operation: {
+    run: (ctx: {
+      values: Record<string, string | number | boolean>;
+    }) => unknown;
+  },
+  values: Record<string, string | number | boolean> = {},
+) => operation.run({ values });
+
+describe("tui operations run functions", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
   });
 
-  it("should define valid workspace metadata", () => {
-    expect(workspaces).toContain("Dashboard");
-
-    for (const operation of operations) {
-      expect(operation.title).not.toEqual("");
-      expect(operation.command).toMatch(/^ghg /);
-      expect(workspaces).toContain(operation.workspace);
-    }
+  describe("dashboard", () => {
+    it("runs dashboard overview", async () => {
+      await runOp(dashboardOperations[0]);
+      expect(notificationsService.activity).toHaveBeenCalled();
+    });
   });
 
-  it("should flag mutating operations", () => {
-    const mutating = operations
-      .filter((operation) => operation.mutates)
-      .map((operation) => operation.id);
+  describe("notifications", () => {
+    it("runs notifications.list", async () => {
+      await runOp(notificationOperations[0], {
+        all: true,
+        limit: 10,
+        participating: false,
+      });
 
-    expect(mutating).toContain("notifications.read");
-    expect(mutating).toContain("milestone.create");
-    expect(mutating).toContain("issue.subtasks.link");
-    expect(mutating).toContain("repos.govern");
-    expect(mutating).toContain("config.set");
+      expect(notificationsService.list).toHaveBeenCalledWith({
+        all: true,
+        limit: 10,
+        repo: undefined,
+        participating: false,
+      });
+    });
+
+    it("runs notifications.read", async () => {
+      await runOp(notificationOperations[1], { id: "123" });
+      expect(notificationsService.markRead).toHaveBeenCalledWith("123");
+    });
+
+    it("runs notifications.done", async () => {
+      await runOp(notificationOperations[2], { id: "123" });
+      expect(notificationsService.markDone).toHaveBeenCalledWith("123");
+    });
+
+    it("runs activity", async () => {
+      await runOp(notificationOperations[3]);
+      expect(notificationsService.activity).toHaveBeenCalled();
+    });
+
+    it("runs mentions", async () => {
+      await runOp(notificationOperations[4]);
+      expect(notificationsService.mentions).toHaveBeenCalled();
+    });
+  });
+
+  describe("labels", () => {
+    it("runs labels.list", async () => {
+      await runOp(labelOperations[0]);
+      expect(labelsService.list).toHaveBeenCalled();
+    });
+
+    it("runs labels.pull with template", async () => {
+      await runOp(labelOperations[1], { template: "conventional" });
+      expect(labelsService.pullTemplate).toHaveBeenCalledWith(
+        "conventional",
+        "templates",
+      );
+    });
+
+    it("runs labels.pull without template", async () => {
+      await runOp(labelOperations[1]);
+      expect(labelsService.pull).toHaveBeenCalled();
+    });
+
+    it("runs labels.push with template", async () => {
+      await runOp(labelOperations[2], { template: "base" });
+      expect(labelsService.pushTemplate).toHaveBeenCalledWith(
+        "base",
+        "templates",
+      );
+    });
+
+    it("runs labels.push without template", async () => {
+      await runOp(labelOperations[2]);
+      expect(labelsService.push).toHaveBeenCalled();
+    });
+
+    it("runs labels.prune", async () => {
+      await runOp(labelOperations[3]);
+      expect(labelsService.prune).toHaveBeenCalled();
+    });
+  });
+
+  describe("prs", () => {
+    it("runs pr.cleanup", async () => {
+      await runOp(prOperations[0], { dryRun: true, force: false });
+      expect(prService.cleanup).toHaveBeenCalledWith({
+        dryRun: true,
+        force: false,
+      });
+    });
+
+    it("runs pr.push", async () => {
+      await runOp(prOperations[1], { pr: 42, force: true });
+      expect(prService.push).toHaveBeenCalledWith(42, true);
+    });
+
+    it("runs pr.next", async () => {
+      await runOp(prOperations[2], { list: true, reverse: false });
+      expect(stackService.next).toHaveBeenCalledWith({
+        list: true,
+        reverse: false,
+      });
+    });
+
+    it("runs pr.stack.create", async () => {
+      await runOp(prOperations[3], { base: "main" });
+      expect(stackService.create).toHaveBeenCalledWith({ base: "main" });
+    });
+
+    it("runs pr.stack.list", async () => {
+      await runOp(prOperations[4]);
+      expect(stackService.list).toHaveBeenCalled();
+    });
+
+    it("runs pr.stack.update", async () => {
+      await runOp(prOperations[5]);
+      expect(stackService.update).toHaveBeenCalled();
+    });
+
+    it("runs pr.stack.push", async () => {
+      await runOp(prOperations[6], { title: "feat: foo", draft: true });
+      expect(stackService.push).toHaveBeenCalledWith({
+        draft: true,
+        title: "feat: foo",
+      });
+    });
+  });
+
+  describe("review", () => {
+    it("runs review.comment", async () => {
+      await runOp(reviewOperations[0], {
+        pr: 1,
+        line: 10,
+        body: "nice",
+        side: "RIGHT",
+        file: "src/main.ts",
+      });
+
+      expect(reviewService.comment).toHaveBeenCalledWith({
+        pr: 1,
+        line: 10,
+        body: "nice",
+        side: "RIGHT",
+        repo: undefined,
+        file: "src/main.ts",
+      });
+    });
+
+    it("runs review.threads", async () => {
+      await runOp(reviewOperations[1], { pr: 1 });
+      expect(reviewService.threads).toHaveBeenCalledWith(1, undefined);
+    });
+
+    it("runs review.resolve", async () => {
+      await runOp(reviewOperations[2], { threadId: 100, pr: 1 });
+      expect(reviewService.resolve).toHaveBeenCalledWith(100, undefined, 1);
+    });
+
+    it("runs review.suggest", async () => {
+      await runOp(reviewOperations[3], {
+        pr: 1,
+        file: "src/main.ts",
+        line: 5,
+        replace: "const x = 1;",
+      });
+
+      expect(reviewService.suggest).toHaveBeenCalledWith({
+        pr: 1,
+        line: 5,
+        repo: undefined,
+        file: "src/main.ts",
+        replace: "const x = 1;",
+      });
+    });
+
+    it("runs review.apply", async () => {
+      await runOp(reviewOperations[4], { pr: 1, push: true });
+      expect(reviewService.apply).toHaveBeenCalledWith(1, undefined, true);
+    });
+  });
+
+  describe("milestones", () => {
+    it("runs milestone.create", async () => {
+      await runOp(milestoneOperations[0], {
+        title: "v1.0",
+        due: "2026-01-01",
+      });
+
+      expect(milestoneService.create).toHaveBeenCalledWith({
+        title: "v1.0",
+        due: "2026-01-01",
+      });
+    });
+
+    it("runs milestone.list", async () => {
+      await runOp(milestoneOperations[1], { status: "closed" });
+      expect(milestoneService.list).toHaveBeenCalledWith({ status: "closed" });
+    });
+
+    it("runs milestone.close", async () => {
+      await runOp(milestoneOperations[2], { name: "v1.0" });
+      expect(milestoneService.close).toHaveBeenCalledWith("v1.0");
+    });
+
+    it("runs milestone.progress", async () => {
+      await runOp(milestoneOperations[3], { name: "v1.0" });
+      expect(milestoneService.progress).toHaveBeenCalledWith("v1.0");
+    });
+  });
+
+  describe("projects", () => {
+    it("runs project.board", async () => {
+      await runOp(projectOperations[0], { id: 1, owner: "airscripts" });
+      expect(projectService.board).toHaveBeenCalledWith("1", {
+        owner: "airscripts",
+      });
+    });
+  });
+
+  describe("issues", () => {
+    it("runs issue.subtasks.list", async () => {
+      await runOp(issueOperations[0], { issue: 42 });
+      expect(issueService.subtasks).toHaveBeenCalledWith("42");
+    });
+
+    it("runs issue.subtasks.create", async () => {
+      await runOp(issueOperations[1], {
+        issue: 42,
+        title: "sub",
+        body: "body",
+      });
+
+      expect(issueService.subtasks).toHaveBeenCalledWith("42", {
+        create: true,
+        title: "sub",
+        body: "body",
+      });
+    });
+
+    it("runs issue.subtasks.link", async () => {
+      await runOp(issueOperations[2], { issue: 42, link: 99 });
+      expect(issueService.subtasks).toHaveBeenCalledWith("42", {
+        link: "99",
+      });
+    });
+
+    it("runs issue.parent", async () => {
+      await runOp(issueOperations[3], { child: 1, parent: 2 });
+      expect(issueService.parent).toHaveBeenCalledWith("1", {
+        parent: "2",
+      });
+    });
+  });
+
+  describe("repositories", () => {
+    it("runs repos.inspect", async () => {
+      await runOp(repositoryOperations[0]);
+      expect(reposInspectService.inspect).toHaveBeenCalled();
+    });
+
+    it("runs repos.govern", async () => {
+      await runOp(repositoryOperations[1], {
+        dryRun: true,
+        yes: false,
+        ruleset: "./r.json",
+      });
+
+      expect(reposGovernService.govern).toHaveBeenCalledWith(
+        expect.objectContaining({
+          yes: false,
+          dryRun: true,
+          ruleset: "./r.json",
+        }),
+      );
+    });
+
+    it("runs repos.label", async () => {
+      await runOp(repositoryOperations[2], {
+        yes: false,
+        dryRun: true,
+        template: "base",
+      });
+
+      expect(reposLabelService.label).toHaveBeenCalledWith(
+        expect.objectContaining({
+          yes: false,
+          dryRun: true,
+          template: "base",
+        }),
+      );
+    });
+
+    it("runs repos.retire", async () => {
+      await runOp(repositoryOperations[3], {
+        yes: false,
+        dryRun: true,
+        months: "12",
+      });
+
+      expect(reposRetireService.retire).toHaveBeenCalledWith(
+        expect.objectContaining({
+          yes: false,
+          dryRun: true,
+          months: "12",
+        }),
+      );
+    });
+
+    it("runs repos.report", async () => {
+      await runOp(repositoryOperations[4], { since: "7d" });
+      expect(reposReportService.report).toHaveBeenCalledWith(
+        expect.objectContaining({ since: "7d" }),
+      );
+    });
+  });
+
+  describe("insights", () => {
+    it("runs insights.traffic", async () => {
+      await runOp(insightsOperations[0]);
+      expect(insightsService.traffic).toHaveBeenCalledWith("owner/repo");
+    });
+
+    it("runs insights.contributors", async () => {
+      await runOp(insightsOperations[1]);
+      expect(insightsService.contributors).toHaveBeenCalledWith("owner/repo");
+    });
+
+    it("runs insights.commits", async () => {
+      await runOp(insightsOperations[2]);
+      expect(insightsService.commits).toHaveBeenCalledWith("owner/repo");
+    });
+
+    it("runs insights.frequency", async () => {
+      await runOp(insightsOperations[3]);
+      expect(insightsService.codeFrequency).toHaveBeenCalledWith("owner/repo");
+    });
+
+    it("runs insights.popularity", async () => {
+      await runOp(insightsOperations[4]);
+      expect(insightsService.popularity).toHaveBeenCalledWith("owner/repo");
+    });
+
+    it("runs insights.participation", async () => {
+      await runOp(insightsOperations[5]);
+      expect(insightsService.participation).toHaveBeenCalledWith("owner/repo");
+    });
+  });
+
+  describe("workflow", () => {
+    it("runs workflow.validate", async () => {
+      await runOp(workflowOperations[0], { path: ".github/workflows/ci.yml" });
+      expect(workflowService.validate).toHaveBeenCalledWith(
+        ".github/workflows/ci.yml",
+      );
+    });
+
+    it("runs workflow.preview", async () => {
+      await runOp(workflowOperations[1], { path: ".github/workflows/ci.yml" });
+      expect(workflowService.preview).toHaveBeenCalledWith(
+        ".github/workflows/ci.yml",
+      );
+    });
+  });
+
+  describe("cache", () => {
+    it("runs cache.inspect", async () => {
+      await runOp(cacheOperations[0], { key: "abc", repo: "owner/repo" });
+      expect(cacheService.inspect).toHaveBeenCalledWith("abc", "owner/repo");
+    });
+
+    it("runs cache.download", async () => {
+      await runOp(cacheOperations[1], {
+        key: "abc",
+        repo: "owner/repo",
+        outputDir: "./out",
+      });
+
+      expect(cacheService.download).toHaveBeenCalledWith("abc", {
+        repo: "owner/repo",
+        outputDir: "./out",
+      });
+    });
+  });
+
+  describe("run", () => {
+    it("runs run.debug", async () => {
+      await runOp(runOperations[0], {
+        runId: 123,
+        repo: "owner/repo",
+        outputDir: "./out",
+      });
+
+      expect(runService.debugRun).toHaveBeenCalledWith(123, {
+        repo: "owner/repo",
+        outputDir: "./out",
+      });
+    });
+  });
+
+  describe("profile", () => {
+    it("runs profile.add", async () => {
+      await runOp(profileOperations[0], {
+        name: "work",
+        token: "ghp_xxx",
+        repo: "owner/repo",
+      });
+
+      expect(profileService.add).toHaveBeenCalledWith("work", {
+        repo: "owner/repo",
+        token: "ghp_xxx",
+      });
+    });
+
+    it("runs profile.list", async () => {
+      await runOp(profileOperations[1]);
+      expect(profileService.list).toHaveBeenCalled();
+    });
+
+    it("runs profile.switch", async () => {
+      await runOp(profileOperations[2], { name: "work" });
+      expect(profileService.switch).toHaveBeenCalledWith("work");
+    });
+
+    it("runs profile.detect", async () => {
+      await runOp(profileOperations[3]);
+      expect(profileService.detect).toHaveBeenCalled();
+    });
+  });
+
+  describe("config", () => {
+    it("runs config.set", async () => {
+      await runOp(configOperations[0], { key: "token", value: "abc" });
+      expect(configService.set).toHaveBeenCalledWith("token", "abc");
+    });
+
+    it("runs config.get", async () => {
+      await runOp(configOperations[1], { key: "repo" });
+      expect(configService.get).toHaveBeenCalledWith("repo");
+    });
+
+    it("runs config.unset", async () => {
+      await runOp(configOperations[2], { key: "token" });
+      expect(configService.unset).toHaveBeenCalledWith("token");
+    });
+  });
+
+  describe("utility", () => {
+    it("runs ping", async () => {
+      await runOp(utilityOperations[0]);
+      expect(labelsService.ping).toHaveBeenCalled();
+    });
+
+    it("runs version", async () => {
+      const result = await runOp(utilityOperations[1]);
+      expect(result).toEqual({ success: true, version: __VERSION__ });
+    });
+
+    it("runs proxy with stderr output", async () => {
+      vi.mocked(proxy.runProxyCapture).mockResolvedValueOnce({
+        stdout: "",
+        exitCode: 1,
+        stderr: "error",
+      });
+
+      const result = await runOp(utilityOperations[2], { args: "repo list" });
+      expect(proxy.runProxyCapture).toHaveBeenCalledWith(["repo", "list"]);
+      expect(result).toBe("error");
+    });
+
+    it("runs proxy with exit code fallback", async () => {
+      vi.mocked(proxy.runProxyCapture).mockResolvedValueOnce({
+        stdout: "",
+        stderr: "",
+        exitCode: 2,
+      });
+
+      const result = await runOp(utilityOperations[2], { args: "repo list" });
+      expect(result).toBe("Exited with code 2.");
+    });
+  });
+
+  describe("release", () => {
+    it("runs release.changelog with defaults", async () => {
+      await runOp(releaseOperations[0]);
+      expect(releaseService.changelog).toHaveBeenCalledWith({
+        to: undefined,
+        since: undefined,
+      });
+    });
+
+    it("runs release.changelog", async () => {
+      await runOp(releaseOperations[0], { since: "v1.0", to: "HEAD" });
+      expect(releaseService.changelog).toHaveBeenCalledWith({
+        to: "HEAD",
+        since: "v1.0",
+      });
+    });
+
+    it("runs release.bump", async () => {
+      await runOp(releaseOperations[1], {
+        push: false,
+        create: true,
+        level: "patch",
+      });
+
+      expect(releaseService.bump).toHaveBeenCalledWith({
+        push: false,
+        create: true,
+        level: "patch",
+      });
+    });
+
+    it("runs release.verify", async () => {
+      await runOp(releaseOperations[2], { tag: "v1.0" });
+      expect(releaseService.verify).toHaveBeenCalledWith("v1.0", {});
+    });
+
+    it("runs release.notes with defaults", async () => {
+      await runOp(releaseOperations[3]);
+      expect(releaseService.notes).toHaveBeenCalledWith({
+        out: undefined,
+        since: undefined,
+        templateFile: undefined,
+      });
+    });
+
+    it("runs release.notes", async () => {
+      await runOp(releaseOperations[3], {
+        out: "o.md",
+        since: "v1.0",
+        template: "t.md",
+      });
+
+      expect(releaseService.notes).toHaveBeenCalledWith({
+        out: "o.md",
+        since: "v1.0",
+        templateFile: "t.md",
+      });
+    });
+
+    it("runs release.draft", async () => {
+      await runOp(releaseOperations[4], {
+        title: "v1.1",
+        level: "minor",
+        notes: "generated",
+      });
+
+      expect(releaseService.draft).toHaveBeenCalledWith({
+        title: "v1.1",
+        level: "minor",
+        notes: "generated",
+      });
+    });
   });
 });

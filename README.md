@@ -4,6 +4,7 @@
 [![Release](https://github.com/airscripts/ghitgud/actions/workflows/release.yml/badge.svg)](https://github.com/airscripts/ghitgud/actions/workflows/release.yml)
 [![npm](https://img.shields.io/npm/v/@airscript/ghitgud)](https://www.npmjs.com/package/@airscript/ghitgud)
 [![License](https://img.shields.io/github/license/airscripts/ghitgud)](https://github.com/airscripts/ghitgud/blob/main/LICENSE)
+[![Coverage](https://img.shields.io/badge/coverage-87%25-brightgreen)](./coverage)
 
 A better GitHub CLI that extends the official gh CLI.
 

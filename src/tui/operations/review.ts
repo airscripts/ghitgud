@@ -1,0 +1,128 @@
+import type { TuiOperation } from "../types";
+import reviewService from "@/services/review";
+
+import {
+  text,
+  repoInput,
+  numberValue,
+  booleanValue,
+  requiredText,
+} from "./shared";
+
+const reviewOperations: TuiOperation[] = [
+  {
+    mutates: true,
+    workspace: "Review",
+    id: "review.comment",
+    title: "Review Comment",
+    command: "ghg review comment <pr>",
+    description: "Create a line review comment.",
+
+    inputs: [
+      { key: "pr", label: "PR number", type: "number", required: true },
+      { key: "file", label: "File", type: "string", required: true },
+      { key: "line", label: "Line", type: "number", required: true },
+      { key: "body", label: "Body", type: "string", required: true },
+      { key: "side", label: "Side", type: "string", defaultValue: "RIGHT" },
+      repoInput,
+    ],
+
+    run: ({ values }) =>
+      reviewService.comment({
+        repo: text(values, "repo"),
+        pr: numberValue(values, "pr"),
+        line: numberValue(values, "line"),
+        file: requiredText(values, "file"),
+        body: requiredText(values, "body"),
+        side: requiredText(values, "side") as "LEFT" | "RIGHT",
+      }),
+  },
+
+  {
+    workspace: "Review",
+    id: "review.threads",
+    title: "Review Threads",
+    command: "ghg review threads <pr>",
+    description: "List review threads for a PR.",
+
+    inputs: [
+      { key: "pr", label: "PR number", type: "number", required: true },
+      repoInput,
+    ],
+
+    run: ({ values }) =>
+      reviewService.threads(numberValue(values, "pr"), text(values, "repo")),
+  },
+
+  {
+    mutates: true,
+    workspace: "Review",
+    id: "review.resolve",
+    title: "Resolve Review Thread",
+    command: "ghg review resolve <thread-id> <pr>",
+    description: "Mark a review thread as resolved.",
+
+    inputs: [
+      { key: "threadId", label: "Thread ID", type: "number", required: true },
+      { key: "pr", label: "PR number", type: "number", required: true },
+      repoInput,
+    ],
+
+    run: ({ values }) =>
+      reviewService.resolve(
+        numberValue(values, "threadId"),
+        text(values, "repo"),
+        numberValue(values, "pr"),
+      ),
+  },
+
+  {
+    mutates: true,
+    workspace: "Review",
+    id: "review.suggest",
+    title: "Review Suggestion",
+    command: "ghg review suggest <pr>",
+    description: "Create a single-line suggestion.",
+
+    inputs: [
+      { key: "pr", label: "PR number", type: "number", required: true },
+      { key: "file", label: "File", type: "string", required: true },
+      { key: "line", label: "Line", type: "number", required: true },
+      { key: "replace", label: "Replacement", type: "string", required: true },
+      repoInput,
+    ],
+
+    run: ({ values }) =>
+      reviewService.suggest({
+        repo: text(values, "repo"),
+        pr: numberValue(values, "pr"),
+        line: numberValue(values, "line"),
+        file: requiredText(values, "file"),
+        replace: requiredText(values, "replace"),
+      }),
+  },
+
+  {
+    mutates: true,
+    id: "review.apply",
+    workspace: "Review",
+    title: "Apply Suggestions",
+    command: "ghg review apply <pr>",
+    description: "Apply review suggestions locally.",
+
+    inputs: [
+      { key: "pr", label: "PR number", type: "number", required: true },
+      repoInput,
+      { key: "push", label: "Push", type: "boolean" },
+    ],
+
+    run: ({ values }) =>
+      reviewService.apply(
+        numberValue(values, "pr"),
+        text(values, "repo"),
+        booleanValue(values, "push"),
+      ),
+  },
+];
+
+export default reviewOperations;
