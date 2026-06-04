@@ -1,4 +1,5 @@
 import client from "./client";
+import { ConfigError } from "@/core/errors";
 
 const LIST_DISCUSSIONS_QUERY = `
   query ListDiscussions($owner: String!, $name: String!, $first: Int!, $categoryId: ID) {
@@ -141,9 +142,11 @@ const UNPIN_DISCUSSION_MUTATION = `
 
 function parseRepo(repo: string): { owner: string; name: string } {
   const [owner, name] = repo.split("/");
+
   if (!owner || !name) {
-    throw new Error(`Invalid repo format: ${repo}`);
+    throw new ConfigError(`Invalid repo format: ${repo}`);
   }
+
   return { owner, name };
 }
 

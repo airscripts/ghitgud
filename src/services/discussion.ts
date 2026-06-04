@@ -372,12 +372,12 @@ const create = async (options: {
 
   // Repository id must be resolved via a lightweight GraphQL query because
   // the createDiscussion mutation expects a repository node id, not owner/name.
-  const repoIdResponse = (await client.graphqlTokenRequired(
+  const repoIdResponse = await client.graphqlTokenRequired(
     `query RepoId($owner: String!, $name: String!) {
       repository(owner: $owner, name: $name) { id }
     }`,
     { owner, name },
-  )) as Response;
+  );
 
   const repoIdPayload = (await repoIdResponse.json()) as {
     errors?: Array<{ message: string }>;

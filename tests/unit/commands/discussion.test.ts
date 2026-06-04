@@ -24,4 +24,21 @@ describe("discussion command", () => {
       "categories",
     ]);
   });
+
+  it("rejects non-numeric --limit", async () => {
+    const program = new Command();
+    program.exitOverride();
+    discussionCommand.register(program);
+
+    await expect(
+      program.parseAsync([
+        "node",
+        "test",
+        "discussion",
+        "list",
+        "--limit",
+        "abc",
+      ]),
+    ).rejects.toThrow("Invalid limit: abc");
+  });
 });
