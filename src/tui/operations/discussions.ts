@@ -9,12 +9,10 @@ const discussionOperations: TuiOperation[] = [
     title: "List Discussions",
     command: "ghg discussion list",
     description: "List discussions with optional category filter.",
-
     inputs: [
       { key: "category", label: "Category", type: "string" },
       { key: "limit", label: "Limit", type: "number", defaultValue: 30 },
     ],
-
     run: ({ values }) =>
       discussionService.list({
         category: text(values, "category"),
@@ -28,16 +26,14 @@ const discussionOperations: TuiOperation[] = [
     title: "View Discussion",
     command: "ghg discussion view <number>",
     description: "View a discussion and its comments.",
-
     inputs: [
       {
         key: "number",
         type: "number",
         required: true,
-        label: "Discussion number",
+        label: "Discussion",
       },
     ],
-
     run: ({ values }) =>
       discussionService.view(String(numberValue(values, "number"))),
   },
@@ -55,7 +51,6 @@ const discussionOperations: TuiOperation[] = [
       { key: "category", label: "Category", type: "string", required: true },
       { key: "body", label: "Body", type: "string" },
     ],
-
     run: ({ values }) =>
       discussionService.create({
         body: text(values, "body"),
@@ -75,14 +70,12 @@ const discussionOperations: TuiOperation[] = [
     inputs: [
       {
         key: "number",
+        label: "Discussion",
         type: "number",
         required: true,
-        label: "Discussion number",
       },
-
       { key: "body", label: "Body", type: "string", required: true },
     ],
-
     run: ({ values }) =>
       discussionService.comment(
         String(numberValue(values, "number")),
@@ -103,54 +96,11 @@ const discussionOperations: TuiOperation[] = [
         key: "number",
         type: "number",
         required: true,
-        label: "Discussion number",
+        label: "Discussion",
       },
     ],
-
     run: ({ values }) =>
       discussionService.close(String(numberValue(values, "number"))),
-  },
-
-  {
-    mutates: true,
-    id: "discussion.pin",
-    title: "Pin Discussion",
-    workspace: "Discussions",
-    description: "Pin a discussion.",
-    command: "ghg discussion pin <number>",
-
-    inputs: [
-      {
-        key: "number",
-        type: "number",
-        required: true,
-        label: "Discussion number",
-      },
-    ],
-
-    run: ({ values }) =>
-      discussionService.pin(String(numberValue(values, "number"))),
-  },
-
-  {
-    mutates: true,
-    id: "discussion.unpin",
-    workspace: "Discussions",
-    title: "Unpin Discussion",
-    description: "Unpin a discussion.",
-    command: "ghg discussion unpin <number>",
-
-    inputs: [
-      {
-        key: "number",
-        type: "number",
-        required: true,
-        label: "Discussion number",
-      },
-    ],
-
-    run: ({ values }) =>
-      discussionService.unpin(String(numberValue(values, "number"))),
   },
 
   {

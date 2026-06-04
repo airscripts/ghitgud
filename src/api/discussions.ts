@@ -4,7 +4,7 @@ import { ConfigError } from "@/core/errors";
 const LIST_DISCUSSIONS_QUERY = `
   query ListDiscussions($owner: String!, $name: String!, $first: Int!, $categoryId: ID) {
     repository(owner: $owner, name: $name) {
-      discussions(first: $first, filterBy: { categoryId: $categoryId }) {
+      discussions(first: $first, categoryId: $categoryId) {
         nodes {
           id
           number
@@ -15,8 +15,7 @@ const LIST_DISCUSSIONS_QUERY = `
           category {
             name
           }
-          state
-          pinned
+          closed
           createdAt
           updatedAt
           comments {
@@ -43,8 +42,7 @@ const GET_DISCUSSION_QUERY = `
         category {
           name
         }
-        state
-        pinned
+        closed
         createdAt
         updatedAt
         comments(first: 100) {
@@ -110,31 +108,7 @@ const CLOSE_DISCUSSION_MUTATION = `
       discussion {
         id
         number
-        state
-      }
-    }
-  }
-`;
-
-const PIN_DISCUSSION_MUTATION = `
-  mutation PinDiscussion($discussionId: ID!) {
-    pinDiscussion(input: { discussionId: $discussionId }) {
-      discussion {
-        id
-        number
-        pinned
-      }
-    }
-  }
-`;
-
-const UNPIN_DISCUSSION_MUTATION = `
-  mutation UnpinDiscussion($discussionId: ID!) {
-    unpinDiscussion(input: { discussionId: $discussionId }) {
-      discussion {
-        id
-        number
-        pinned
+        closed
       }
     }
   }
@@ -142,11 +116,9 @@ const UNPIN_DISCUSSION_MUTATION = `
 
 function parseRepo(repo: string): { owner: string; name: string } {
   const [owner, name] = repo.split("/");
-
   if (!owner || !name) {
     throw new ConfigError(`Invalid repo format: ${repo}`);
   }
-
   return { owner, name };
 }
 
@@ -191,34 +163,22 @@ const discussions = {
     body?: string,
   ): Promise<Response> => {
     return client.graphqlTokenRequired(CREATE_DISCUSSION_MUTATION, {
-      title,
-      categoryId,
       repositoryId,
+      categoryId,
+      title,
       body: body ?? null,
     });
   },
 
   comment: async (discussionId: string, body: string): Promise<Response> => {
     return client.graphqlTokenRequired(ADD_COMMENT_MUTATION, {
-      body,
       discussionId,
+      body,
     });
   },
 
   close: async (discussionId: string): Promise<Response> => {
     return client.graphqlTokenRequired(CLOSE_DISCUSSION_MUTATION, {
-      discussionId,
-    });
-  },
-
-  pin: async (discussionId: string): Promise<Response> => {
-    return client.graphqlTokenRequired(PIN_DISCUSSION_MUTATION, {
-      discussionId,
-    });
-  },
-
-  unpin: async (discussionId: string): Promise<Response> => {
-    return client.graphqlTokenRequired(UNPIN_DISCUSSION_MUTATION, {
       discussionId,
     });
   },

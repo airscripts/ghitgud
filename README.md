@@ -84,7 +84,7 @@ Every command reads from `src/core/config.ts`, which resolves values in this ord
 - **Project Boards** — render an ASCII kanban board for any GitHub Project v2
 - **Issue Subtasks** — create, link, and organize sub-issues with parent support
 - **Security & Compliance** — audit enterprise and organization activity, scan repositories for leaked secrets, triage Dependabot and secret scanning alerts, and run compliance checks across repository hygiene, branch protection, and rulesets
-- **GitHub Discussions** — list, view, create, comment on, close, pin, and manage discussion categories entirely from the terminal
+- **GitHub Discussions** — list, view, create, comment on, close, and manage discussion categories entirely from the terminal
 
 ---
 
@@ -314,8 +314,6 @@ ghg discussion view <number>                # View a discussion and its comments
 ghg discussion create --title "Hello" --category "General" --body "Text"
 ghg discussion comment <number> --body "Nice post!"
 ghg discussion close <number>              # Close a discussion.
-ghg discussion pin <number>                # Pin a discussion.
-ghg discussion unpin <number>              # Unpin a discussion.
 ghg discussion categories                   # List available categories.
 ```
 
@@ -452,7 +450,7 @@ src/
     compliance.ts       # ghg compliance <check>.
     config.ts           # ghg config <get|set>.
     dependabot.ts       # ghg dependabot <list|dismiss>.
-    discussion.ts       # ghg discussion <list|view|create|comment|close|pin|unpin|categories>.
+    discussion.ts       # ghg discussion <list|view|create|comment|close|categories>.
     insights.ts         # ghg insights <traffic|contributors|commits|frequency|popularity|participation>.
     issue.ts            # ghg issue <subtasks|parent>.
     labels.ts           # ghg labels <list|pull|push|prune>.

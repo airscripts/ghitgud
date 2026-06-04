@@ -99,11 +99,12 @@ describe("discussions api", () => {
     } as Response);
 
     await discussions.comment("disc123", "Nice post");
+
     expect(client.graphqlTokenRequired).toHaveBeenCalledWith(
       expect.stringContaining("AddDiscussionComment"),
       {
-        body: "Nice post",
         discussionId: "disc123",
+        body: "Nice post",
       },
     );
   });
@@ -116,34 +117,6 @@ describe("discussions api", () => {
     await discussions.close("disc123");
     expect(client.graphqlTokenRequired).toHaveBeenCalledWith(
       expect.stringContaining("CloseDiscussion"),
-      {
-        discussionId: "disc123",
-      },
-    );
-  });
-
-  it("pins a discussion", async () => {
-    vi.mocked(client.graphqlTokenRequired).mockResolvedValue({
-      status: 200,
-    } as Response);
-
-    await discussions.pin("disc123");
-    expect(client.graphqlTokenRequired).toHaveBeenCalledWith(
-      expect.stringContaining("PinDiscussion"),
-      {
-        discussionId: "disc123",
-      },
-    );
-  });
-
-  it("unpins a discussion", async () => {
-    vi.mocked(client.graphqlTokenRequired).mockResolvedValue({
-      status: 200,
-    } as Response);
-
-    await discussions.unpin("disc123");
-    expect(client.graphqlTokenRequired).toHaveBeenCalledWith(
-      expect.stringContaining("UnpinDiscussion"),
       {
         discussionId: "disc123",
       },

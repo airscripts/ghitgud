@@ -3,10 +3,9 @@ interface Discussion {
   url: string;
   body: string;
   title: string;
-  state: string;
   number: number;
   author: string;
-  pinned: boolean;
+  closed: boolean;
   category: string;
   createdAt: string;
   updatedAt: string;

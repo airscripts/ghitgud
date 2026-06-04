@@ -17,10 +17,9 @@ interface GraphQlErrorResponse {
 interface DiscussionNode {
   id: string;
   url: string;
-  state: string;
   title: string;
+  closed: boolean;
   number: number;
-  pinned: boolean;
   createdAt: string;
   updatedAt: string;
   comments?: { totalCount: number };
@@ -50,11 +49,11 @@ interface GetResponse extends GraphQlErrorResponse {
     repository?: {
       discussion?: {
         id: string;
+        url: string;
         body: string;
         title: string;
-        state: string;
+        closed: boolean;
         number: number;
-        pinned: boolean;
         createdAt: string;
         updatedAt: string;
         author?: { login?: string } | null;
@@ -64,8 +63,6 @@ interface GetResponse extends GraphQlErrorResponse {
           totalCount: number;
           nodes?: CommentNode[];
         };
-
-        url: string;
       } | null;
     } | null;
   };
@@ -116,32 +113,8 @@ interface CloseResponse extends GraphQlErrorResponse {
     closeDiscussion?: {
       discussion?: {
         id: string;
-        state: string;
+        closed: boolean;
         number: number;
-      } | null;
-    } | null;
-  };
-}
-
-interface PinResponse extends GraphQlErrorResponse {
-  data?: {
-    pinDiscussion?: {
-      discussion?: {
-        id: string;
-        number: number;
-        pinned: boolean;
-      } | null;
-    } | null;
-  };
-}
-
-interface UnpinResponse extends GraphQlErrorResponse {
-  data?: {
-    unpinDiscussion?: {
-      discussion?: {
-        id: string;
-        number: number;
-        pinned: boolean;
       } | null;
     } | null;
   };
@@ -163,13 +136,12 @@ function handleGraphQlErrors(payload: GraphQlErrorResponse): void {
 
 function toDiscussion(node: DiscussionNode): Discussion {
   return {
-    body: "",
     id: node.id,
     url: node.url,
+    body: "",
     title: node.title,
-    state: node.state,
+    closed: node.closed,
     number: node.number,
-    pinned: node.pinned,
     createdAt: node.createdAt,
     updatedAt: node.updatedAt,
     category: node.category?.name ?? "-",
@@ -199,10 +171,9 @@ async function fetchDiscussion(
     id: raw.id,
     url: raw.url,
     body: raw.body,
-    state: raw.state,
     title: raw.title,
+    closed: raw.closed,
     number: raw.number,
-    pinned: raw.pinned,
     createdAt: raw.createdAt,
     updatedAt: raw.updatedAt,
     category: raw.category?.name ?? "-",
@@ -269,11 +240,10 @@ const list = async (options: ListOptions = {}) => {
     discussions.map((d) => ({
       url: d.url,
       title: d.title,
-      state: d.state,
       category: d.category,
       number: `#${d.number}`,
       comments: d.commentsCount,
-      pinned: d.pinned ? "yes" : "no",
+      state: d.closed ? "closed" : "open",
     })),
 
     { emptyMessage: "No discussions found." },
@@ -297,8 +267,7 @@ const view = async (numberValue: string) => {
     ["Title", discussion.title],
     ["Author", discussion.author],
     ["Category", discussion.category],
-    ["State", discussion.state],
-    ["Pinned", discussion.pinned ? "yes" : "no"],
+    ["State", discussion.closed ? "closed" : "open"],
     ["Comments", discussion.commentsCount],
     ["URL", discussion.url],
   ]);
@@ -370,8 +339,6 @@ const create = async (options: {
 
   logger.start(`Creating discussion in ${repo}.`);
 
-  // Repository id must be resolved via a lightweight GraphQL query because
-  // the createDiscussion mutation expects a repository node id, not owner/name.
   const repoIdResponse = await client.graphqlTokenRequired(
     `query RepoId($owner: String!, $name: String!) {
       repository(owner: $owner, name: $name) { id }
@@ -480,60 +447,16 @@ const close = async (numberValue: string) => {
   }
 
   logger.success(`Closed discussion #${result.number}.`);
-  return { success: true, number: result.number, state: result.state };
-};
-
-const pin = async (numberValue: string) => {
-  const number = Number(numberValue);
-  if (!Number.isInteger(number) || number <= 0) {
-    throw new GhitgudError(`Invalid discussion number: ${numberValue}`);
-  }
-
-  const { owner, name } = getRepoParts();
-  logger.start(`Pinning discussion #${number}.`);
-
-  const { discussion } = await fetchDiscussion(owner, name, number);
-  const response = await api.pin(discussion.id);
-  const payload = (await response.json()) as PinResponse;
-  handleGraphQlErrors(payload);
-
-  const result = payload.data?.pinDiscussion?.discussion;
-  if (!result) {
-    throw new GhitgudError("Pin discussion failed.");
-  }
-
-  logger.success(`Pinned discussion #${result.number}.`);
-  return { success: true, number: result.number, pinned: result.pinned };
-};
-
-const unpin = async (numberValue: string) => {
-  const number = Number(numberValue);
-  if (!Number.isInteger(number) || number <= 0) {
-    throw new GhitgudError(`Invalid discussion number: ${numberValue}`);
-  }
-
-  const { owner, name } = getRepoParts();
-  logger.start(`Unpinning discussion #${number}.`);
-
-  const { discussion } = await fetchDiscussion(owner, name, number);
-  const response = await api.unpin(discussion.id);
-  const payload = (await response.json()) as UnpinResponse;
-  handleGraphQlErrors(payload);
-
-  const result = payload.data?.unpinDiscussion?.discussion;
-  if (!result) {
-    throw new GhitgudError("Unpin discussion failed.");
-  }
-
-  logger.success(`Unpinned discussion #${result.number}.`);
-  return { success: true, number: result.number, pinned: result.pinned };
+  return {
+    success: true,
+    number: result.number,
+    closed: result.closed,
+  };
 };
 
 export default {
-  pin,
   list,
   view,
-  unpin,
   close,
   create,
   comment,

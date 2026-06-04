@@ -7,10 +7,8 @@ import discussionService from "@/services/discussion";
 vi.mock("@/api/discussions", () => ({
   default: {
     get: vi.fn(),
-    pin: vi.fn(),
     list: vi.fn(),
     close: vi.fn(),
-    unpin: vi.fn(),
     create: vi.fn(),
     comment: vi.fn(),
     categories: vi.fn(),
@@ -50,11 +48,10 @@ function buildDiscussionResponse(number: number) {
             discussion: {
               number,
               body: "Body",
-              state: "OPEN",
-              pinned: false,
+              closed: false,
               id: `D_${number}`,
-              updatedAt: "2026-01-02",
               createdAt: "2026-01-01",
+              updatedAt: "2026-01-02",
               title: `Title ${number}`,
               author: { login: "user" },
               category: { name: "General" },
@@ -118,8 +115,7 @@ describe("discussion service", () => {
     const node = {
       id: "D_1",
       number: 1,
-      state: "OPEN",
-      pinned: false,
+      closed: false,
       title: "Hello",
       createdAt: "2026-01-01",
       updatedAt: "2026-01-02",
@@ -159,6 +155,7 @@ describe("discussion service", () => {
     expect(api.get).toHaveBeenCalledWith("owner", "repo", 42);
     expect(result.success).toBe(true);
     expect(result.discussion.number).toBe(42);
+    expect(result.discussion.closed).toBe(false);
   });
 
   it("lists categories", async () => {
@@ -250,7 +247,7 @@ describe("discussion service", () => {
         Promise.resolve({
           data: {
             closeDiscussion: {
-              discussion: { id: "D_5", number: 5, state: "CLOSED" },
+              discussion: { id: "D_5", number: 5, closed: true },
             },
           },
         }),
@@ -259,45 +256,7 @@ describe("discussion service", () => {
     const result = await discussionService.close("5");
     expect(api.close).toHaveBeenCalledWith("D_5");
     expect(result.success).toBe(true);
-    expect(result.state).toBe("CLOSED");
-  });
-
-  it("pins a discussion", async () => {
-    (api.get as Mock).mockResolvedValue(buildDiscussionResponse(3));
-    (api.pin as Mock).mockResolvedValue({
-      json: () =>
-        Promise.resolve({
-          data: {
-            pinDiscussion: {
-              discussion: { id: "D_3", number: 3, pinned: true },
-            },
-          },
-        }),
-    });
-
-    const result = await discussionService.pin("3");
-    expect(api.pin).toHaveBeenCalledWith("D_3");
-    expect(result.success).toBe(true);
-    expect(result.pinned).toBe(true);
-  });
-
-  it("unpins a discussion", async () => {
-    (api.get as Mock).mockResolvedValue(buildDiscussionResponse(3));
-    (api.unpin as Mock).mockResolvedValue({
-      json: () =>
-        Promise.resolve({
-          data: {
-            unpinDiscussion: {
-              discussion: { id: "D_3", number: 3, pinned: false },
-            },
-          },
-        }),
-    });
-
-    const result = await discussionService.unpin("3");
-    expect(api.unpin).toHaveBeenCalledWith("D_3");
-    expect(result.success).toBe(true);
-    expect(result.pinned).toBe(false);
+    expect(result.closed).toBe(true);
   });
 
   it("rejects invalid discussion numbers", async () => {

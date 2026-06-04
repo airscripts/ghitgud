@@ -19,8 +19,6 @@ describe("discussion command", () => {
       "create",
       "comment",
       "close",
-      "pin",
-      "unpin",
       "categories",
     ]);
   });

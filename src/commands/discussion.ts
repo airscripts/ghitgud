@@ -67,22 +67,6 @@ const register = (program: Command) => {
     });
 
   discussion
-    .command("pin")
-    .description("Pin a discussion.")
-    .argument("<number>", "Discussion number")
-    .action(async (number: string) => {
-      await command.run(() => discussionService.pin(number));
-    });
-
-  discussion
-    .command("unpin")
-    .description("Unpin a discussion.")
-    .argument("<number>", "Discussion number")
-    .action(async (number: string) => {
-      await command.run(() => discussionService.unpin(number));
-    });
-
-  discussion
     .command("categories")
     .description("List available discussion categories.")
     .action(async () => {
