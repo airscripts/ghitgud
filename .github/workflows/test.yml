@@ -36,6 +36,9 @@ jobs:
       - run: pnpm test:coverage
         name: Run Tests with Coverage
 
+      - run: pnpm test:e2e
+        name: Run E2E Tests
+
       - uses: actions/upload-artifact@v6
         name: Upload Coverage Report
 

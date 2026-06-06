@@ -34,6 +34,7 @@
   "scripts": {
     "test": "vitest",
     "test:coverage": "vitest run --coverage",
+    "test:e2e": "vitest run --config tests/e2e/vitest.config.ts",
     "build": "rm -rf dist && vite build && cp -r templates dist/",
     "start": "node dist/index.js",
     "typecheck": "tsc --noEmit",
