@@ -34,6 +34,9 @@ importers:
       ink:
         specifier: ^5.2.1
         version: 5.2.1(@types/react@18.3.29)(react@18.3.1)
+      libsodium-wrappers:
+        specifier: ^0.8.4
+        version: 0.8.4
       ora:
         specifier: ^8.0.0
         version: 8.2.0
@@ -1892,6 +1895,18 @@ packages:
       }
     engines: { node: ">= 0.8.0" }
 
+  libsodium-wrappers@0.8.4:
+    resolution:
+      {
+        integrity: sha512-mu8aAWucZjTB5O/BtGXtW4e1agy7uHxNYG7zPthmmD1jU43LCDmSWZLN4JhflbdPXj3yDO4lxM1O9hLDgIOXDw==,
+      }
+
+  libsodium@0.8.4:
+    resolution:
+      {
+        integrity: sha512-lMcYaRi0zcs7tarATsQUYC7rstliIXZuoq0c6zXSgNtSNtdvBgkSegjWhpMJAXzKX3SUSwIp7+zEsob+j3LuRw==,
+      }
+
   lightningcss-android-arm64@1.32.0:
     resolution:
       {
@@ -3710,6 +3725,12 @@ snapshots:
     dependencies:
       prelude-ls: 1.2.1
       type-check: 0.4.0
+
+  libsodium-wrappers@0.8.4:
+    dependencies:
+      libsodium: 0.8.4
+
+  libsodium@0.8.4: {}
 
   lightningcss-android-arm64@1.32.0:
     optional: true

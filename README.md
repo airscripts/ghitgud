@@ -85,6 +85,8 @@ Every command reads from `src/core/config.ts`, which resolves values in this ord
 - **Issue Subtasks** — create, link, and organize sub-issues with parent support
 - **Security & Compliance** — audit enterprise and organization activity, scan repositories for leaked secrets, triage Dependabot and secret scanning alerts, and run compliance checks across repository hygiene, branch protection, and rulesets
 - **GitHub Discussions** — list, view, create, comment on, close, and manage discussion categories entirely from the terminal
+- **Variables & Environments** — list, set, and delete repository, environment, and organization variables; create environments and manage protection rules
+- **Secrets** — list, set, and delete encrypted repository, environment, and organization secrets with libsodium public-key encryption
 
 ---
 
@@ -301,8 +303,8 @@ ghg audit --enterprise <slug> --actor <actor> --action <action>
 ghg compliance check --org <org>
 ghg dependabot list --org <org> --severity critical
 ghg dependabot dismiss <alert> --repo owner/repo --reason fix_started --yes
-ghg secrets scan --limit 50
-ghg secrets alerts --org <org> --state open
+ghg leaks scan --limit 50
+ghg leaks alerts --org <org> --state open
 ```
 
 ### Discussions
@@ -315,6 +317,40 @@ ghg discussion create --title "Hello" --category "General" --body "Text"
 ghg discussion comment <number> --body "Nice post!"
 ghg discussion close <number>              # Close a discussion.
 ghg discussion categories                   # List available categories.
+```
+
+### Variables
+
+```bash
+ghg variable list                          # List repository variables.
+ghg variable list --env <name>             # List environment variables.
+ghg variable list --org <org>             # List organization variables.
+ghg variable set --name <key> --value <val>
+ghg variable set --name <key> --value <val> --env <name>
+ghg variable set --name <key> --value <val> --org <org>
+ghg variable delete --name <key>
+```
+
+### Environments
+
+```bash
+ghg environment list                       # List configured environments.
+ghg environment create --name <name> [--wait-timer <seconds>]
+ghg environment protection list --env <name>
+ghg environment protection add --env <name> --type <type> --value <json>
+ghg environment protection remove --env <name> --rule-id <id>
+```
+
+### Secrets
+
+```bash
+ghg secret list                            # List repository secrets.
+ghg secret list --env <name>              # List environment secrets.
+ghg secret list --org <org>               # List organization secrets.
+ghg secret set --name <key> --value <val>
+ghg secret set --name <key> --value <val> --env <name>
+ghg secret set --name <key> --value <val> --org <org> [--visibility <all|private|selected>]
+ghg secret delete --name <key>
 ```
 
 ---
@@ -465,7 +501,9 @@ src/
     repos.ts            # ghg repos <inspect|govern|label|retire|report>.
     review.ts           # ghg review <comment|threads|resolve|suggest|apply>.
     run.ts              # ghg run <debug>.
-    secrets.ts          # ghg secrets <scan|alerts>.
+    secrets.ts          # ghg secret <list|set|delete>.
+    variable.ts         # ghg variable <list|set|delete>.
+    environment.ts      # ghg environment <list|create|protection>.
     workflow.ts         # ghg workflow <validate|preview>.
   services/
     labels.ts           # Label business logic.
@@ -483,6 +521,9 @@ src/
     run.ts              # Workflow run debugging business logic.
     project.ts          # Project board business logic.
     workflow.ts         # Workflow validation and preview business logic.
+    secrets.ts          # Repository, environment, and organization secrets business logic.
+    variables.ts        # Repository, environment, and organization variables business logic.
+    environments.ts     # Environment and protection rules business logic.
     repos/
       govern.ts         # Repository rulesets.
       index.ts          # Repos services index.
@@ -504,6 +545,10 @@ src/
     pulls.ts            # Pulls API.
     repos.ts            # Repositories API.
     rulesets.ts         # Rulesets API.
+    secrets.ts          # Repository, environment, and organization secrets API.
+    variables.ts        # Repository, environment, and organization variables API.
+    environments.ts     # Environment and protection rules API.
+    leaks.ts            # Secret scanning alerts API.
   core/
     command.ts          # Shared command runner.
     config.ts           # Config resolver — env vars, profiles, credentials file.

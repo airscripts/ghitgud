@@ -5,6 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.13.0] - 2026-06-06
+
+### Added
+
+- Variables command family: list, set, and delete repository, environment, and organization variables
+- Environments command family: list, create, and manage protection rules (reviewers, branch policies, wait timers)
+- Secrets command family: list, set, and delete encrypted repository, environment, and organization secrets with libsodium public-key encryption
+- Renamed `ghg secrets scan` and `ghg secrets alerts` to `ghg leaks` to free the `secret` command surface for repository secrets
+- Full API, service, command, and test coverage for the new variables, environments, and secrets modules
+- TUI integration for Variables, Environments, and Secrets workspaces with full CRUD operations
+
 ## [2.12.1] - 2026-06-05
 
 ### Fixed

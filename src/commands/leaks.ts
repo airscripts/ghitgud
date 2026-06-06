@@ -1,7 +1,7 @@
 import { Command } from "commander";
 
 import command from "@/core/command";
-import secretsService from "@/services/secrets";
+import leaksService from "@/services/leaks";
 
 const addTargetOptions = (command: Command) => {
   return command
@@ -12,22 +12,20 @@ const addTargetOptions = (command: Command) => {
 };
 
 const register = (program: Command) => {
-  const secrets = program
-    .command("secrets")
+  const leaks = program
+    .command("leaks")
     .description("Scan for secrets and inspect secret scanning alerts.");
 
-  secrets
+  leaks
     .command("scan")
     .description("Run a local read-only scan for likely leaked secrets.")
     .option("--limit <number>", "Maximum findings to render")
     .action(async (options) => {
-      await command.run(() => secretsService.scan(options));
+      await command.run(() => leaksService.scan(options));
     });
 
   addTargetOptions(
-    secrets
-      .command("alerts")
-      .description("List GitHub secret scanning alerts."),
+    leaks.command("alerts").description("List GitHub secret scanning alerts."),
   )
     .option("--state <state>", "Alert state")
     .option("--secret-type <type>", "Secret type")
@@ -35,7 +33,7 @@ const register = (program: Command) => {
     .option("--after <date>", "Alerts after an ISO date")
     .option("--before <date>", "Alerts before an ISO date")
     .action(async (options) => {
-      await command.run(() => secretsService.alerts(options));
+      await command.run(() => leaksService.alerts(options));
     });
 };
 

@@ -61,3 +61,10 @@ export class TokenRequiredError extends GhitgudError {
     this.scopes = scopes;
   }
 }
+
+export class SecretEncryptionError extends GhitgudError {
+  constructor(message: string) {
+    super(message);
+    this.name = "SecretEncryptionError";
+  }
+}

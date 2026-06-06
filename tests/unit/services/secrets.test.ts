@@ -1,181 +1,175 @@
-import fs from "fs";
-import os from "os";
-import path from "path";
-import { execFileSync } from "child_process";
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { describe, it, expect, vi, beforeEach } from "vitest";
 
-import git from "@/core/git";
+import config from "@/core/config";
+import reposApi from "@/api/repos";
 import secretsApi from "@/api/secrets";
-import repoService from "@/services/repos";
+import { encryptSecret } from "@/core/secrets";
 import secretsService from "@/services/secrets";
-
-vi.mock("child_process", () => ({
-  execFileSync: vi.fn(),
-}));
-
-vi.mock("@/core/git", () => ({
-  default: {
-    getRepoRoot: vi.fn(),
-  },
-}));
 
 vi.mock("@/api/secrets", () => ({
   default: {
-    listAlerts: vi.fn(),
+    setEnv: vi.fn(),
+    setOrg: vi.fn(),
+    listOrg: vi.fn(),
+    listEnv: vi.fn(),
+    setRepo: vi.fn(),
+    listRepo: vi.fn(),
+    deleteOrg: vi.fn(),
+    deleteEnv: vi.fn(),
+    deleteRepo: vi.fn(),
+    getOrgPublicKey: vi.fn(),
+    getEnvPublicKey: vi.fn(),
+    getRepoPublicKey: vi.fn(),
   },
+}));
+
+vi.mock("@/api/repos", () => ({
+  default: {
+    get: vi.fn(),
+  },
+}));
+
+vi.mock("@/core/secrets", () => ({
+  encryptSecret: vi.fn(() => "encrypted"),
+}));
+
+vi.mock("@/core/config", () => ({
+  default: { getRepo: vi.fn() },
 }));
 
 vi.mock("@/core/output", () => ({
-  default: {
-    renderTable: vi.fn(),
-    renderSummary: vi.fn(),
-  },
+  default: { renderTable: vi.fn(), renderSummary: vi.fn(), log: vi.fn() },
 }));
 
 vi.mock("@/core/logger", () => ({
-  default: {
-    start: vi.fn(),
-    success: vi.fn(),
-  },
-}));
-
-vi.mock("@/services/repos", () => ({
-  default: {
-    runBulk: vi.fn(),
-    resolveTargets: vi.fn(),
-    renderBulkResults: vi.fn(),
-  },
+  default: { start: vi.fn(), success: vi.fn() },
 }));
 
 describe("secrets service", () => {
-  let tempDir: string;
-
   beforeEach(() => {
     vi.clearAllMocks();
-    tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "ghg-secrets-"));
-    vi.mocked(git.getRepoRoot).mockReturnValue(tempDir);
+    vi.mocked(config.getRepo).mockReturnValue("owner/repo");
   });
 
-  afterEach(() => {
-    fs.rmSync(tempDir, { recursive: true, force: true });
-  });
-
-  it("scans tracked files and redacts findings", async () => {
-    const token = "ghp_abcdefghijklmnopqrstuvwxyz123456";
-    fs.writeFileSync(path.join(tempDir, "config.txt"), `TOKEN="${token}"`);
-    vi.mocked(execFileSync).mockReturnValue("config.txt\n");
-
-    const result = await secretsService.scan();
-    const finding = result.metadata.findings[0];
-
-    expect(finding.rule).toBe("classic-github-token");
-    expect(finding.match).not.toContain(token);
-    expect(finding.match).toContain("[redacted]");
-  });
-
-  it("respects a custom limit and falls back on invalid input", async () => {
-    fs.writeFileSync(
-      path.join(tempDir, "a.txt"),
-      "ghp_abcdefghijklmnopqrstuvwxyz123456\n",
+  const mockResponse = (body: unknown) =>
+    Promise.resolve(
+      new Response(JSON.stringify(body), {
+        headers: { "content-type": "application/json" },
+      }),
     );
 
-    fs.writeFileSync(
-      path.join(tempDir, "b.txt"),
-      "ghp_abcdefghijklmnopqrstuvwxyz123456\n",
+  it("lists repo secrets", async () => {
+    vi.mocked(secretsApi.listRepo).mockReturnValue(
+      mockResponse({ total_count: 0, secrets: [] }),
     );
-
-    vi.mocked(execFileSync).mockReturnValue("a.txt\nb.txt\n");
-    const limited = await secretsService.scan({ limit: 1 });
-    expect(limited.metadata.findings).toHaveLength(1);
-
-    const invalid = await secretsService.scan({ limit: "bad" });
-    expect(invalid.metadata.findings.length).toBeLessThanOrEqual(100);
+    const result = await secretsService.list({});
+    expect(result.success).toBe(true);
   });
 
-  it("skips missing and non-text files", async () => {
-    fs.writeFileSync(path.join(tempDir, "safe.txt"), "hello world\n");
-
-    fs.writeFileSync(
-      path.join(tempDir, "big.bin"),
-      Buffer.alloc(1024 * 1024 + 1),
+  it("lists org secrets", async () => {
+    vi.mocked(secretsApi.listOrg).mockReturnValue(
+      mockResponse({ total_count: 0, secrets: [] }),
     );
-
-    vi.mocked(execFileSync).mockReturnValue("safe.txt\nbig.bin\nmissing.txt\n");
-    const result = await secretsService.scan();
-    expect(result.metadata.findings).toHaveLength(0);
+    const result = await secretsService.list({ org: "my-org" });
+    expect(result.success).toBe(true);
   });
 
-  it("falls back to git history when no tracked-file findings", async () => {
-    fs.writeFileSync(path.join(tempDir, "clean.txt"), "nothing here\n");
-
-    vi.mocked(execFileSync)
-      .mockReturnValueOnce("clean.txt\n")
-      .mockReturnValueOnce("ghp_abcdefghijklmnopqrstuvwxyz123456\n");
-
-    const result = await secretsService.scan({ limit: 5 });
-    expect(result.metadata.findings.length).toBeGreaterThan(0);
-  });
-
-  it("lists normalized secret scanning alerts", async () => {
-    vi.mocked(repoService.resolveTargets).mockResolvedValue([
-      {
-        id: 1,
-        fork: false,
-        name: "repo",
-        private: false,
-        pushedAt: null,
-        archived: false,
-        defaultBranch: "main",
-        fullName: "owner/repo",
-      },
-    ]);
-
-    vi.mocked(repoService.runBulk).mockImplementation(
-      async (repos, handler) => {
-        const metadata = await handler(repos[0]);
-
-        return {
-          success: true,
-
-          metadata: {
-            failed: 0,
-            completed: 1,
-            results: [{ repo: repos[0].fullName, success: true, metadata }],
-          },
-        };
-      },
+  it("lists environment secrets", async () => {
+    vi.mocked(secretsApi.listEnv).mockReturnValue(
+      mockResponse({ total_count: 0, secrets: [] }),
     );
 
-    vi.mocked(secretsApi.listAlerts).mockResolvedValue([
-      {
-        number: 3,
-        state: "open",
-        resolution: null,
-        resolved_at: null,
-        secret_type: "github_token",
-        created_at: "2026-01-01T00:00:00Z",
-        secret_type_display_name: "GitHub Token",
-        html_url: "https://github.com/owner/repo/security/secret-scanning/3",
-      },
-    ]);
+    const result = await secretsService.list({ env: "prod" });
+    expect(result.success).toBe(true);
+  });
 
-    const result = await secretsService.alerts({ repos: "owner/repo" });
-    const metadata = result.metadata.results[0].metadata;
+  it("sets repo secret", async () => {
+    vi.mocked(secretsApi.getRepoPublicKey).mockReturnValue(
+      mockResponse({ key_id: "key-1", key: "bXlrZXk=" }),
+    );
+    vi.mocked(secretsApi.setRepo).mockResolvedValue(new Response("{}"));
+    const result = await secretsService.set({ name: "FOO", value: "bar" });
+    expect(result.success).toBe(true);
+    expect(encryptSecret).toHaveBeenCalled();
+  });
 
-    expect(metadata).toEqual({
-      alerts: [
-        {
-          number: 3,
-          state: "open",
-          resolution: null,
-          resolvedAt: null,
-          repository: "owner/repo",
-          secretType: "github_token",
-          createdAt: "2026-01-01T00:00:00Z",
-          secretTypeDisplayName: "GitHub Token",
-          url: "https://github.com/owner/repo/security/secret-scanning/3",
-        },
-      ],
+  it("sets environment secret", async () => {
+    vi.mocked(secretsApi.getEnvPublicKey).mockReturnValue(
+      mockResponse({ key_id: "key-2", key: "bXlrZXk=" }),
+    );
+
+    vi.mocked(secretsApi.setEnv).mockResolvedValue(new Response("{}"));
+
+    const result = await secretsService.set({
+      name: "FOO",
+      env: "prod",
+      value: "bar",
     });
+
+    expect(result.success).toBe(true);
+    expect(secretsApi.setEnv).toHaveBeenCalled();
+  });
+
+  it("sets org secret", async () => {
+    vi.mocked(secretsApi.getOrgPublicKey).mockReturnValue(
+      mockResponse({ key_id: "key-3", key: "bXlrZXk=" }),
+    );
+
+    vi.mocked(reposApi.get).mockResolvedValue({
+      id: 123,
+      name: "a",
+      fork: false,
+      private: false,
+      archived: false,
+      pushed_at: null,
+      full_name: "owner/a",
+      default_branch: "main",
+    });
+
+    vi.mocked(secretsApi.setOrg).mockResolvedValue(new Response("{}"));
+    const result = await secretsService.set({
+      name: "FOO",
+      value: "bar",
+      org: "my-org",
+      visibility: "selected",
+      repos: "owner/a,owner/b",
+    });
+
+    expect(result.success).toBe(true);
+    expect(secretsApi.setOrg).toHaveBeenCalled();
+  });
+
+  it("deletes repo secret", async () => {
+    vi.mocked(secretsApi.deleteRepo).mockResolvedValue(new Response("{}"));
+    const result = await secretsService.remove({ name: "FOO" });
+    expect(result.success).toBe(true);
+  });
+
+  it("deletes org secret", async () => {
+    vi.mocked(secretsApi.deleteOrg).mockResolvedValue(new Response("{}"));
+    const result = await secretsService.remove({ name: "FOO", org: "my-org" });
+    expect(result.success).toBe(true);
+  });
+
+  it("deletes environment secret", async () => {
+    vi.mocked(secretsApi.deleteEnv).mockResolvedValue(new Response("{}"));
+    const result = await secretsService.remove({
+      name: "FOO",
+      env: "prod",
+    });
+
+    expect(result.success).toBe(true);
+  });
+
+  it("throws when name is missing", async () => {
+    await expect(
+      secretsService.set({ name: "", value: "bar" }),
+    ).rejects.toThrow("Secret name is required.");
+  });
+
+  it("throws when value is missing", async () => {
+    await expect(
+      secretsService.set({ name: "FOO", value: "" }),
+    ).rejects.toThrow("Secret value is required.");
   });
 });

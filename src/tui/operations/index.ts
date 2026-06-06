@@ -1,6 +1,8 @@
 import prOperations from "./prs";
 import runOperations from "./run";
 import cacheOperations from "./cache";
+import auditOperations from "./audit";
+import leaksOperations from "./leaks";
 import labelOperations from "./labels";
 import issueOperations from "./issues";
 import reviewOperations from "./review";
@@ -8,13 +10,18 @@ import configOperations from "./config";
 import profileOperations from "./profile";
 import utilityOperations from "./utility";
 import releaseOperations from "./release";
+import secretsOperations from "./secrets";
 import projectOperations from "./projects";
 import insightsOperations from "./insights";
 import workflowOperations from "./workflow";
+import variableOperations from "./variables";
 import dashboardOperations from "./dashboard";
 import milestoneOperations from "./milestones";
+import dependabotOperations from "./dependabot";
+import complianceOperations from "./compliance";
 import discussionOperations from "./discussions";
 import repositoryOperations from "./repositories";
+import environmentOperations from "./environments";
 import notificationOperations from "./notifications";
 
 import type { TuiOperation } from "../types";
@@ -38,6 +45,13 @@ const operations: TuiOperation[] = [
   ...utilityOperations,
   ...releaseOperations,
   ...discussionOperations,
+  ...dependabotOperations,
+  ...complianceOperations,
+  ...auditOperations,
+  ...leaksOperations,
+  ...variableOperations,
+  ...secretsOperations,
+  ...environmentOperations,
 ];
 
 const workspaces = Array.from(new Set(operations.map((op) => op.workspace)));

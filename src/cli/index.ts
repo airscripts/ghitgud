@@ -13,23 +13,26 @@ import proxyCommand from "@/commands/proxy";
 import reposCommand from "@/commands/repos";
 import cacheCommand from "@/commands/cache";
 import auditCommand from "@/commands/audit";
+import leaksCommand from "@/commands/leaks";
 import labelsCommand from "@/commands/labels";
 import outputState from "@/core/output-state";
 import configCommand from "@/commands/config";
+import secretCommand from "@/commands/secret";
 import reviewCommand from "@/commands/review";
 import projectCommand from "@/commands/project";
 import profileCommand from "@/commands/profile";
-import secretsCommand from "@/commands/secrets";
 import releaseCommand from "@/commands/release";
 import insightsCommand from "@/commands/insights";
 import mentionsCommand from "@/commands/mentions";
 import workflowCommand from "@/commands/workflow";
 import activityCommand from "@/commands/activity";
 import { ERROR_NO_TOKEN } from "@/core/constants";
+import variableCommand from "@/commands/variable";
 import milestoneCommand from "@/commands/milestone";
 import dependabotCommand from "@/commands/dependabot";
 import complianceCommand from "@/commands/compliance";
 import discussionCommand from "@/commands/discussion";
+import environmentCommand from "@/commands/environment";
 import { setTheme, initializeTheme } from "@/core/theme";
 import notificationsCommand from "@/commands/notifications";
 
@@ -84,10 +87,13 @@ if (!proxyCommand.runProxyFromArgv()) {
   runCommand.register(program);
   releaseCommand.register(program);
   auditCommand.register(program);
-  secretsCommand.register(program);
+  leaksCommand.register(program);
   dependabotCommand.register(program);
   complianceCommand.register(program);
   discussionCommand.register(program);
+  variableCommand.register(program);
+  secretCommand.register(program);
+  environmentCommand.register(program);
 
   program
     .command("version")
@@ -121,9 +127,12 @@ Examples:
   ghg release bump --create --push
   ghg release draft --level minor
   ghg audit --org airscripts --actor octocat
-  ghg secrets alerts --repos owner/repo
+  ghg leaks alerts --repos owner/repo
   ghg dependabot list --severity high
   ghg compliance check --org airscripts
+  ghg variable list --env production
+  ghg secret set --name API_KEY --value abc123
+  ghg environment create --name staging
 `,
   );
 

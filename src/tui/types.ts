@@ -18,7 +18,11 @@ type TuiWorkspace =
   | "Config"
   | "Utility"
   | "Release"
-  | "Discussions";
+  | "Discussions"
+  | "Variables"
+  | "Secrets"
+  | "Environments"
+  | "Security";
 
 type TuiInputType = "string" | "number" | "boolean";
 

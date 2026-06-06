@@ -1,249 +1,237 @@
-import fs from "fs";
-import path from "path";
-import { execFileSync } from "child_process";
-
-import git from "@/core/git";
 import output from "@/core/output";
 import logger from "@/core/logger";
-import repoService from "@/services/repos";
-import secretsApi, { SecretAlertsOptions } from "@/api/secrets";
+import config from "@/core/config";
+import reposApi from "@/api/repos";
+import secretsApi from "@/api/secrets";
+import { GhitgudError } from "@/core/errors";
+import { encryptSecret } from "@/core/secrets";
 
 import {
-  RepoTargetOptions,
-  SecretScanFinding,
-  SecretScanningAlert,
+  ERROR_SECRET_NAME_REQUIRED,
+  ERROR_SECRET_VALUE_REQUIRED,
+} from "@/core/constants";
+
+import {
+  OrgSecret,
+  RepoSecret,
+  EnvironmentSecret,
+  SecretListResponse,
 } from "@/types";
 
-interface ScanOptions {
-  limit?: number | string;
+function extractOwnerRepo(): [string, string] {
+  const repo = config.getRepo();
+  const parts = repo.split("/");
+  if (parts.length < 2) throw new GhitgudError("Invalid repository format.");
+  return [parts[0], parts[1]];
 }
 
-interface AlertOptions extends RepoTargetOptions, SecretAlertsOptions {}
+async function getPublicKey(
+  scope: "repo" | "org" | "env",
+  ownerOrOrg: string,
+  repo?: string,
+  env?: string,
+): Promise<{ keyId: string; key: string }> {
+  let response: Response;
 
-interface SecretRule {
-  id: string;
-  pattern: RegExp;
-  confidence: SecretScanFinding["confidence"];
-}
-
-const SECRET_RULES: SecretRule[] = [
-  {
-    id: "github-token",
-    confidence: "high",
-    pattern: /\bgithub_pat_[A-Za-z0-9_]{20,}\b/g,
-  },
-
-  {
-    confidence: "high",
-    id: "classic-github-token",
-    pattern: /\bgh[pousr]_[A-Za-z0-9_]{20,}\b/g,
-  },
-
-  {
-    confidence: "high",
-    id: "aws-access-key",
-    pattern: /\bAKIA[0-9A-Z]{16}\b/g,
-  },
-
-  {
-    id: "private-key",
-    confidence: "high",
-    pattern: /-----BEGIN (?:RSA |DSA |EC |OPENSSH )?PRIVATE KEY-----/g,
-  },
-
-  {
-    confidence: "medium",
-    id: "generic-api-key",
-    pattern: /\b(?:api[_-]?key|token|secret)\s*[:=]\s*["'][^"']{16,}["']/gi,
-  },
-
-  {
-    confidence: "low",
-    id: "high-entropy-assignment",
-
-    pattern:
-      /\b[A-Z0-9_]*(?:TOKEN|SECRET|KEY)[A-Z0-9_]*\s*=\s*[A-Za-z0-9+/=_-]{32,}/g,
-  },
-];
-
-function parseLimit(limit?: number | string): number {
-  if (limit === undefined) return 100;
-  const value = Number(limit);
-
-  if (!Number.isSafeInteger(value) || value <= 0) {
-    return 100;
+  if (scope === "org") {
+    response = await secretsApi.getOrgPublicKey(ownerOrOrg);
+  } else if (scope === "env" && repo && env) {
+    response = await secretsApi.getEnvPublicKey(ownerOrOrg, repo, env);
+  } else {
+    response = await secretsApi.getRepoPublicKey(ownerOrOrg, repo!);
   }
 
-  return value;
+  const data = (await response.json()) as { key_id: string; key: string };
+  return { keyId: data.key_id, key: data.key };
 }
 
-function redact(value: string): string {
-  const trimmed = value.trim();
-  if (trimmed.length <= 8) return "[redacted]";
+async function resolveRepoIds(repoNames: string): Promise<number[]> {
+  const names = repoNames.split(",").map((r) => r.trim());
 
-  return `${trimmed.slice(0, 4)}...[redacted]...${trimmed.slice(-4)}`;
-}
+  const ids = await Promise.all(
+    names.map(async (name) => {
+      if (!name.includes("/")) return undefined;
 
-function collectFindings(
-  file: string,
-  content: string,
-  limit: number,
-): SecretScanFinding[] {
-  const findings: SecretScanFinding[] = [];
-  const lines = content.split("\n");
-
-  lines.forEach((line, index) => {
-    for (const rule of SECRET_RULES) {
-      const matches = line.matchAll(rule.pattern);
-
-      for (const match of matches) {
-        findings.push({
-          file,
-          rule: rule.id,
-          line: index + 1,
-          match: redact(match[0]),
-          confidence: rule.confidence,
-        });
-
-        if (findings.length >= limit) return;
+      try {
+        const repo = await reposApi.get(name);
+        return repo.id;
+      } catch {
+        return undefined;
       }
-    }
-  });
-
-  return findings;
-}
-
-function listTrackedFiles(repoRoot: string): string[] {
-  const outputValue = execFileSync("git", ["ls-files"], {
-    cwd: repoRoot,
-    encoding: "utf8",
-  });
-
-  return outputValue.trim().split("\n").filter(Boolean);
-}
-
-function readRecentHistory(repoRoot: string): string {
-  try {
-    return execFileSync(
-      "git",
-      ["log", "--all", "--max-count=200", "--patch", "--no-ext-diff"],
-
-      {
-        cwd: repoRoot,
-        encoding: "utf8",
-        maxBuffer: 10 * 1024 * 1024,
-      },
-    );
-  } catch {
-    return "";
-  }
-}
-
-function isReadableTextFile(filePath: string): boolean {
-  const stat = fs.statSync(filePath);
-  if (!stat.isFile() || stat.size > 1024 * 1024) return false;
-
-  const sample = fs.readFileSync(filePath);
-  return !sample.includes(0);
-}
-
-const scan = async (options: ScanOptions = {}) => {
-  logger.start("Scanning repository for likely secrets.");
-  const repoRoot = git.getRepoRoot();
-  const limit = parseLimit(options.limit);
-  const findings: SecretScanFinding[] = [];
-
-  for (const file of listTrackedFiles(repoRoot)) {
-    if (findings.length >= limit) break;
-
-    const absolutePath = path.join(repoRoot, file);
-    if (!fs.existsSync(absolutePath) || !isReadableTextFile(absolutePath)) {
-      continue;
-    }
-
-    const content = fs.readFileSync(absolutePath, "utf8");
-    findings.push(...collectFindings(file, content, limit - findings.length));
-  }
-
-  if (findings.length < limit) {
-    findings.push(
-      ...collectFindings(
-        "git-history",
-        readRecentHistory(repoRoot),
-        limit - findings.length,
-      ),
-    );
-  }
-
-  output.renderTable(
-    findings.map((finding) => ({
-      file: finding.file,
-      rule: finding.rule,
-      match: finding.match,
-      line: finding.line ?? "-",
-      confidence: finding.confidence,
-    })),
-
-    { emptyMessage: "No likely secrets found." },
-  );
-
-  output.renderSummary("Secret Scan", [["Findings", findings.length]]);
-  logger.success("Secret scan completed.");
-
-  return { success: true, metadata: { findings } };
-};
-
-function normalizeAlert(
-  repo: string,
-  alert: {
-    state: string;
-    number: number;
-    html_url?: string;
-    created_at: string;
-    secret_type: string;
-    resolution: string | null;
-    resolved_at: string | null;
-    secret_type_display_name: string;
-  },
-): SecretScanningAlert {
-  return {
-    repository: repo,
-    state: alert.state,
-    number: alert.number,
-    url: alert.html_url ?? "",
-    createdAt: alert.created_at,
-    resolution: alert.resolution,
-    secretType: alert.secret_type,
-    resolvedAt: alert.resolved_at,
-    secretTypeDisplayName: alert.secret_type_display_name,
-  };
-}
-
-const alerts = async (options: AlertOptions = {}) => {
-  logger.start("Loading secret scanning alerts.");
-  const repos = await repoService.resolveTargets(options);
-
-  const result = await repoService.runBulk<{
-    alerts: SecretScanningAlert[];
-  }>(repos, async (repo) => {
-    const alertsResult = await secretsApi.listAlerts(repo.fullName, options);
-
-    return {
-      alerts: alertsResult.map((alert) => normalizeAlert(repo.fullName, alert)),
-    };
-  });
-
-  repoService.renderBulkResults(
-    "Secret Scanning Alerts",
-    result,
-
-    (_repo, metadata) => ({
-      alerts: metadata.alerts.length,
-      open: metadata.alerts.filter((alert) => alert.state === "open").length,
     }),
   );
 
-  return result;
+  return ids.filter((id): id is number => id !== undefined);
+}
+
+const list = async (options: {
+  env?: string;
+  org?: string;
+}): Promise<{ success: boolean; secrets: unknown[] }> => {
+  if (options.org) {
+    logger.start(`Loading organization secrets for ${options.org}.`);
+    const response = await secretsApi.listOrg(options.org);
+    const data = (await response.json()) as SecretListResponse<OrgSecret>;
+    const secrets = data.secrets ?? [];
+
+    output.renderTable(
+      secrets.map((s) => ({
+        name: s.name,
+        updated: s.updatedAt,
+        visibility: s.visibility,
+      })),
+
+      { emptyMessage: "No organization secrets found." },
+    );
+
+    logger.success(`Loaded ${secrets.length} organization secrets.`);
+    return { success: true, secrets };
+  }
+
+  const [owner, repo] = extractOwnerRepo();
+
+  if (options.env) {
+    logger.start(
+      `Loading environment secrets for ${owner}/${repo} (${options.env}).`,
+    );
+
+    const response = await secretsApi.listEnv(owner, repo, options.env);
+
+    const data =
+      (await response.json()) as SecretListResponse<EnvironmentSecret>;
+
+    const secrets = data.secrets ?? [];
+
+    output.renderTable(
+      secrets.map((s) => ({
+        name: s.name,
+        updated: s.updatedAt,
+      })),
+
+      { emptyMessage: `No secrets found for environment ${options.env}.` },
+    );
+
+    logger.success(`Loaded ${secrets.length} environment secrets.`);
+    return { success: true, secrets };
+  }
+
+  logger.start(`Loading repository secrets for ${owner}/${repo}.`);
+  const response = await secretsApi.listRepo(owner, repo);
+  const data = (await response.json()) as SecretListResponse<RepoSecret>;
+  const secrets = data.secrets ?? [];
+
+  output.renderTable(
+    secrets.map((s) => ({
+      name: s.name,
+      updated: s.updatedAt,
+    })),
+    { emptyMessage: "No repository secrets found." },
+  );
+
+  logger.success(`Loaded ${secrets.length} repository secrets.`);
+  return { success: true, secrets };
 };
 
-export default { scan, alerts };
+const set = async (options: {
+  name: string;
+  value: string;
+  env?: string;
+  org?: string;
+  visibility?: string;
+  repos?: string;
+}): Promise<{ success: boolean }> => {
+  if (!options.name) throw new GhitgudError(ERROR_SECRET_NAME_REQUIRED);
+  if (!options.value) throw new GhitgudError(ERROR_SECRET_VALUE_REQUIRED);
+
+  let encryptedValue: string;
+
+  if (options.org) {
+    logger.start(`Setting organization secret ${options.name}.`);
+    const { keyId, key } = await getPublicKey("org", options.org);
+    encryptedValue = await encryptSecret(options.value, key);
+
+    const selectedRepos = options.repos
+      ? await resolveRepoIds(options.repos)
+      : undefined;
+
+    const isSelected = options.visibility === "selected";
+    const hasSelectedRepos = selectedRepos && selectedRepos.length > 0;
+
+    if (isSelected && !hasSelectedRepos) {
+      throw new GhitgudError(
+        "At least one valid repository is required when visibility is selected.",
+      );
+    }
+
+    await secretsApi.setOrg(
+      options.org,
+      options.name,
+      encryptedValue,
+      keyId,
+      (options.visibility as "all" | "private" | "selected") ?? "all",
+      selectedRepos,
+    );
+
+    logger.success(`Set organization secret ${options.name}.`);
+    return { success: true };
+  }
+
+  const [owner, repo] = extractOwnerRepo();
+
+  if (options.env) {
+    logger.start(`Setting environment secret ${options.name}.`);
+    const { keyId, key } = await getPublicKey("env", owner, repo, options.env);
+    encryptedValue = await encryptSecret(options.value, key);
+
+    await secretsApi.setEnv(
+      owner,
+      repo,
+      options.env,
+      options.name,
+      encryptedValue,
+      keyId,
+    );
+
+    logger.success(`Set environment secret ${options.name}.`);
+    return { success: true };
+  }
+
+  logger.start(`Setting repository secret ${options.name}.`);
+  const { keyId, key } = await getPublicKey("repo", owner, repo);
+  encryptedValue = await encryptSecret(options.value, key);
+
+  await secretsApi.setRepo(owner, repo, options.name, encryptedValue, keyId);
+  logger.success(`Set repository secret ${options.name}.`);
+  return { success: true };
+};
+
+const remove = async (options: {
+  name: string;
+  env?: string;
+  org?: string;
+}): Promise<{ success: boolean }> => {
+  if (!options.name) throw new GhitgudError(ERROR_SECRET_NAME_REQUIRED);
+
+  if (options.org) {
+    logger.start(`Deleting organization secret ${options.name}.`);
+    await secretsApi.deleteOrg(options.org, options.name);
+    logger.success(`Deleted organization secret ${options.name}.`);
+    return { success: true };
+  }
+
+  const [owner, repo] = extractOwnerRepo();
+
+  if (options.env) {
+    logger.start(`Deleting environment secret ${options.name}.`);
+    await secretsApi.deleteEnv(owner, repo, options.env, options.name);
+    logger.success(`Deleted environment secret ${options.name}.`);
+    return { success: true };
+  }
+
+  logger.start(`Deleting repository secret ${options.name}.`);
+  await secretsApi.deleteRepo(owner, repo, options.name);
+  logger.success(`Deleted repository secret ${options.name}.`);
+  return { success: true };
+};
+
+export default { list, set, remove };

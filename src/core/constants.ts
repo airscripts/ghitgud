@@ -87,6 +87,13 @@ export const ERROR_WORKFLOW_INVALID_YAML =
 export const ERROR_RUN_ID_REQUIRED = "Run id is required.";
 export const ERROR_CACHE_KEY_REQUIRED = "Cache key is required.";
 
+export const ERROR_VARIABLE_NAME_REQUIRED = "Variable name is required.";
+export const ERROR_VARIABLE_VALUE_REQUIRED = "Variable value is required.";
+export const ERROR_SECRET_NAME_REQUIRED = "Secret name is required.";
+export const ERROR_SECRET_VALUE_REQUIRED = "Secret value is required.";
+export const ERROR_ENVIRONMENT_NAME_REQUIRED = "Environment name is required.";
+export const ERROR_SECRET_ENCRYPTION_FAILED = "Failed to encrypt secret value.";
+
 export const INFO_CACHE_METADATA_ONLY =
   "Cache metadata found, but cache byte download is not available through the official API.";
 
@@ -114,15 +121,6 @@ export const DEPENDABOT_DISMISS_REASONS = [
   "no_bandwidth",
   "not_used",
   "tolerable_risk",
-] as const;
-
-export const SECRET_SCAN_RULE_IDS = [
-  "github-token",
-  "classic-github-token",
-  "aws-access-key",
-  "private-key",
-  "generic-api-key",
-  "high-entropy-assignment",
 ] as const;
 
 export const SUPPORTED_CONFIG_KEYS = ["token", "repo"] as const;

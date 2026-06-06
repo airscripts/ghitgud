@@ -2,23 +2,6 @@
 
 ---
 
-## v2.13.0 — Variables & Environments
-
-**Why gh doesn't have it:** `gh secret` exists but environment scoping and repository variables are API-only. Teams managing staging/production/development need browser access or raw `gh api` calls.
-
-**Commands:**
-
-- `ghg variable list --env <name>` — list repo variables with environment scoping
-- `ghg variable set --env <name> --name <key> --value <val>`
-- `ghg variable delete --env <name> --name <key>`
-- `ghg environment list` — list configured environments
-- `ghg environment create --name <name> --waittimer <seconds>`
-- `ghg environment protection` — configure protection rules
-
-**Value:** Teams managing multi environment CI/CD pipelines can inspect and modify configuration entirely from the terminal.
-
----
-
 ## v2.14.0 — Organization & Team Management
 
 **Why gh doesn't have it:** No `gh org` or `gh team` commands. Collaborator and team access management requires scripting with `gh api` (issue #12529).

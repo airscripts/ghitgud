@@ -331,4 +331,21 @@ export type { DiscussionCategory } from "./discussions";
 export type { DiscussionCreateInput } from "./discussions";
 export type { DiscussionCommentInput } from "./discussions";
 
+export type { OrgVariable } from "./variables";
+export type { RepoVariable } from "./variables";
+export type { EnvironmentVariable } from "./variables";
+export type { VariableListResponse } from "./variables";
+
+export type { Environment } from "./environments";
+export type { EnvironmentListResponse } from "./environments";
+export type { EnvironmentProtectionRule } from "./environments";
+
+export type { OrgSecret } from "./secrets";
+export type { RepoSecret } from "./secrets";
+export type { SecretVisibility } from "./secrets";
+export type { EnvironmentSecret } from "./secrets";
+export type { PublicKeyResponse } from "./secrets";
+export type { SecretListResponse } from "./secrets";
+export type { EncryptedSecretInput } from "./secrets";
+
 export { normalizeLabel };

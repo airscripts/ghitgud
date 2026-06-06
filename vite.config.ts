@@ -25,6 +25,7 @@ export default defineConfig({
         "dotenv",
         "figlet",
         "ink",
+        "libsodium-wrappers",
         "ora",
         "picocolors",
         "react",
