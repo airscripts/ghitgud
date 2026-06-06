@@ -26,7 +26,7 @@ Examples:
     .option("-o, --org <name>", "Organization name")
     .action(async (options) => {
       const orgName = options.org || (await prompt.text("Organization name:"));
-      void command.run(() => teamService.list(orgName));
+      await command.run(() => teamService.list(orgName));
     });
 
   team
@@ -47,7 +47,7 @@ Examples:
       const description =
         options.description || (await prompt.text("Team description:"));
 
-      void command.run(() =>
+      await command.run(() =>
         teamService.create(orgName, name, description, options.privacy),
       );
     });
@@ -64,7 +64,7 @@ Examples:
       const teamSlug = options.team || (await prompt.text("Team slug:"));
       const username = options.user || (await prompt.text("Username:"));
 
-      void command.run(() =>
+      await command.run(() =>
         teamService.addMember(orgName, teamSlug, username, options.role),
       );
     });
@@ -80,7 +80,7 @@ Examples:
       const teamSlug = options.team || (await prompt.text("Team slug:"));
       const username = options.user || (await prompt.text("Username:"));
 
-      void command.run(() =>
+      await command.run(() =>
         teamService.removeMember(orgName, teamSlug, username),
       );
     });

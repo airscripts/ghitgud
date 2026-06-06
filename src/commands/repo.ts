@@ -56,7 +56,7 @@ Examples:
       const { owner, repo: repoName } = parseRepo(options.repo);
       const username = options.user || (await prompt.text("Username:"));
 
-      void command.run(() =>
+      await command.run(() =>
         inviteService.invite(owner, repoName, username, options.role),
       );
     });
@@ -75,7 +75,7 @@ Examples:
       const { owner, repo: repoName } = parseRepo(options.repo);
       const teamSlug = options.team || (await prompt.text("Team slug:"));
 
-      void command.run(() =>
+      await command.run(() =>
         inviteService.grant(owner, repoName, teamSlug, options.role),
       );
     });

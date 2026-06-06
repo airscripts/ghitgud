@@ -7,7 +7,9 @@ const register = (program: Command) => {
   program
     .command("mentions")
     .description("Find recent @mentions of you.")
-    .action(() => void command.run(() => service.mentions()));
+    .action(async () => {
+      await command.run(() => service.mentions());
+    });
 };
 
 export default { register };

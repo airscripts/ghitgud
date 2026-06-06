@@ -113,7 +113,8 @@ const runProxyFromArgv = (
     return false;
   }
 
-  runProxy(argv.slice(commandIndex + 1), spawnCommand);
+  const args = argv.slice(commandIndex + 1).filter((arg) => arg !== "--json");
+  runProxy(args, spawnCommand);
   return true;
 };
 

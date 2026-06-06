@@ -15,11 +15,29 @@ describe("e2e > labels", () => {
   it("lists labels from a real public repository via the GitHub API", async () => {
     await run(["config", "set", "repo", "vim/vim"], { home: tempHome });
 
-    const { stdout } = await run(["labels", "list", "--json"], {
-      home: tempHome,
-    });
+    let output: string;
 
-    const result = JSON.parse(stdout);
+    try {
+      const result = await run(["labels", "list", "--json"], {
+        home: tempHome,
+      });
+
+      output = result.stdout;
+    } catch (error: unknown) {
+      const execError = error as { stdout?: string; stderr?: string };
+
+      output = execError.stdout || execError.stderr || "";
+    }
+
+    const result = JSON.parse(output);
+
+    if (
+      result.success === false &&
+      result.error?.includes("Rate limit reached")
+    ) {
+      expect(result).toHaveProperty("hint");
+      return;
+    }
 
     expect(result).toMatchObject({
       success: true,

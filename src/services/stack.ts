@@ -116,6 +116,12 @@ function createStackEntry(branch: string, baseBranch: string): void {
 }
 
 const create = async (options: { base?: string }) => {
+  if (!git.isInsideRepo()) {
+    throw new GhitgudError(
+      "Not in a git repository. Run this command from inside a git repo.",
+    );
+  }
+
   const branch = git.getCurrentBranch();
   const defaultBranch = git.getDefaultBranch();
   const baseBranch = options.base || "auto";
@@ -134,6 +140,12 @@ const create = async (options: { base?: string }) => {
 };
 
 const list = async () => {
+  if (!git.isInsideRepo()) {
+    throw new GhitgudError(
+      "Not in a git repository. Run this command from inside a git repo.",
+    );
+  }
+
   const data = getStackData();
   const branch = git.getCurrentBranch();
   const stack = data.stacks[branch];
@@ -172,6 +184,12 @@ const list = async () => {
 };
 
 const update = async () => {
+  if (!git.isInsideRepo()) {
+    throw new GhitgudError(
+      "Not in a git repository. Run this command from inside a git repo.",
+    );
+  }
+
   const data = getStackData();
   const branch = git.getCurrentBranch();
   const stack = data.stacks[branch];
@@ -218,6 +236,12 @@ const update = async () => {
 };
 
 const pushStack = async (options: { title?: string; draft: boolean }) => {
+  if (!git.isInsideRepo()) {
+    throw new GhitgudError(
+      "Not in a git repository. Run this command from inside a git repo.",
+    );
+  }
+
   const data = getStackData();
   const branch = git.getCurrentBranch();
   const stack = data.stacks[branch];
@@ -321,6 +345,12 @@ const pushStack = async (options: { title?: string; draft: boolean }) => {
 };
 
 const next = async (options: { reverse?: boolean; list?: boolean }) => {
+  if (!git.isInsideRepo()) {
+    throw new GhitgudError(
+      "Not in a git repository. Run this command from inside a git repo.",
+    );
+  }
+
   const data = getStackData();
   const branch = git.getCurrentBranch();
   const stack = data.stacks[branch];

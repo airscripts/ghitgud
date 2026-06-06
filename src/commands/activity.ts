@@ -7,7 +7,9 @@ const register = (program: Command) => {
   program
     .command("activity")
     .description("Show assigned issues, review requests, and mentions.")
-    .action(() => void command.run(() => service.activity()));
+    .action(async () => {
+      await command.run(() => service.activity());
+    });
 };
 
 export default { register };

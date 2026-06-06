@@ -49,71 +49,87 @@ const NAME = "ghg";
 const DESCRIPTION = "A better GitHub CLI that extends the official gh CLI.";
 
 if (!proxyCommand.runProxyFromArgv()) {
-  outputState.setJsonOutput(process.argv.includes("--json"));
+  (async () => {
+    outputState.setJsonOutput(process.argv.includes("--json"));
 
-  if (process.argv.includes("--theme=dark")) {
-    setTheme("dark");
-  } else if (process.argv.includes("--theme=light")) {
-    setTheme("light");
-  } else if (process.argv.includes("--theme=auto")) {
-    setTheme("auto");
-  } else {
-    initializeTheme();
-  }
+    process.stdout.on("error", (error: NodeJS.ErrnoException) => {
+      if (error.code === "EPIPE") {
+        process.exit(0);
+      }
+    });
 
-  program
-    .name(NAME)
-    .description(DESCRIPTION)
-    .version(__VERSION__)
-    .option("--json", "Output structured JSON")
-    .option("--theme <theme>", "Color theme (dark, light, auto)", "auto")
-    .showSuggestionAfterError();
-
-  proxyCommand.register(program);
-  notificationsCommand.register(program);
-  activityCommand.register(program);
-  mentionsCommand.register(program);
-  reposCommand.register(program);
-  insightsCommand.register(program);
-  pingCommand.register(program);
-  labelsCommand.register(program);
-  profileCommand.register(program);
-  configCommand.register(program);
-  prCommand.register(program);
-  issueCommand.register(program);
-  projectCommand.register(program);
-  milestoneCommand.register(program);
-  tuiCommand.register(program);
-  reviewCommand.register(program);
-  workflowCommand.register(program);
-  cacheCommand.register(program);
-  runCommand.register(program);
-  releaseCommand.register(program);
-  auditCommand.register(program);
-  leaksCommand.register(program);
-  dependabotCommand.register(program);
-  complianceCommand.register(program);
-  discussionCommand.register(program);
-  variableCommand.register(program);
-  secretCommand.register(program);
-  environmentCommand.register(program);
-  orgCommand.register(program);
-  teamCommand.register(program);
-  repoCommand.register(program);
-
-  program
-    .command("version")
-    .description("Show version number.")
-    .action(() => {
-      console.log(__VERSION__);
+    process.on("SIGPIPE", () => {
       process.exit(0);
     });
 
-  program.addHelpText("before", ascii);
+    if (process.argv.includes("--theme=dark")) {
+      setTheme("dark");
+    } else if (process.argv.includes("--theme=light")) {
+      setTheme("light");
+    } else if (process.argv.includes("--theme=auto")) {
+      setTheme("auto");
+    } else {
+      initializeTheme();
+    }
 
-  program.addHelpText(
-    "after",
-    `
+    program
+      .name(NAME)
+      .description(DESCRIPTION)
+      .version(__VERSION__)
+      .option("--json", "Output structured JSON")
+      .option("--theme <theme>", "Color theme (dark, light, auto)", "auto")
+      .showSuggestionAfterError();
+
+    proxyCommand.register(program);
+    notificationsCommand.register(program);
+    activityCommand.register(program);
+    mentionsCommand.register(program);
+    reposCommand.register(program);
+    insightsCommand.register(program);
+    pingCommand.register(program);
+    labelsCommand.register(program);
+    profileCommand.register(program);
+    configCommand.register(program);
+    prCommand.register(program);
+    issueCommand.register(program);
+    projectCommand.register(program);
+    milestoneCommand.register(program);
+    tuiCommand.register(program);
+    reviewCommand.register(program);
+    workflowCommand.register(program);
+    cacheCommand.register(program);
+    runCommand.register(program);
+    releaseCommand.register(program);
+    auditCommand.register(program);
+    leaksCommand.register(program);
+    dependabotCommand.register(program);
+    complianceCommand.register(program);
+    discussionCommand.register(program);
+    variableCommand.register(program);
+    secretCommand.register(program);
+    environmentCommand.register(program);
+    orgCommand.register(program);
+    teamCommand.register(program);
+    repoCommand.register(program);
+
+    program
+      .command("version")
+      .description("Show version number.")
+      .action(() => {
+        output.writeResult({ success: true, version: __VERSION__ });
+
+        if (!outputState.isJsonOutput()) {
+          console.log(__VERSION__);
+        }
+
+        process.exit(0);
+      });
+
+    program.addHelpText("before", ascii);
+
+    program.addHelpText(
+      "after",
+      `
 Examples:
   ghg notifications list
   ghg pr cleanup
@@ -144,60 +160,61 @@ Examples:
   ghg repo invite --user octocat --role push
   ghg repo grant --team ops --role admin
 `,
-  );
+    );
 
-  program.exitOverride();
+    program.exitOverride();
 
-  function handleError(error: unknown): never {
-    if (error instanceof TokenRequiredError) {
-      output.writeError(error.message, ERROR_NO_TOKEN);
-      process.exit(1);
+    function handleError(error: unknown): never {
+      if (error instanceof TokenRequiredError) {
+        output.writeError(error.message, ERROR_NO_TOKEN);
+        process.exit(1);
+      }
+
+      if (error instanceof RateLimitError) {
+        output.writeError(
+          error.message,
+          `Rate limit resets ${dates.formatRelative(error.resetAt)} (${dates.formatDateShort(error.resetAt)}).`,
+        );
+
+        process.exit(1);
+      }
+
+      if (error instanceof GhitgudError) {
+        output.writeError(error.message);
+        process.exit(1);
+      }
+
+      const commanderError = error as {
+        code?: string;
+        message?: string;
+        exitCode?: number;
+      };
+
+      if (commanderError.exitCode === 0) {
+        process.exit(0);
+      }
+
+      if (commanderError.code === "commander.unknownCommand") {
+        console.log();
+        console.log(program.helpInformation());
+        process.exit(1);
+      }
+
+      if (commanderError.code === "commander.help") {
+        process.exit(1);
+      }
+
+      throw error;
     }
 
-    if (error instanceof RateLimitError) {
-      output.writeError(
-        error.message,
-        `Rate limit resets ${dates.formatRelative(error.resetAt)} (${dates.formatDateShort(error.resetAt)}).`,
-      );
-
-      process.exit(1);
+    try {
+      await program.parseAsync(process.argv);
+    } catch (error) {
+      handleError(error);
     }
 
-    if (error instanceof GhitgudError) {
-      output.writeError(error.message);
-      process.exit(1);
-    }
-
-    const commanderError = error as {
-      code?: string;
-      message?: string;
-      exitCode?: number;
-    };
-
-    if (commanderError.exitCode === 0) {
-      process.exit(0);
-    }
-
-    if (commanderError.code === "commander.unknownCommand") {
-      console.log();
-      console.log(program.helpInformation());
-      process.exit(1);
-    }
-
-    if (commanderError.code === "commander.help") {
-      process.exit(1);
-    }
-
-    throw error;
-  }
-
-  try {
-    void program.parseAsync(process.argv).catch(handleError);
-  } catch (error) {
-    handleError(error);
-  }
-
-  process.on("unhandledRejection", (error: unknown) => {
-    handleError(error);
-  });
+    process.on("unhandledRejection", (error: unknown) => {
+      handleError(error);
+    });
+  })();
 }

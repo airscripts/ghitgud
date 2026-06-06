@@ -48,7 +48,7 @@ const register = (program: Command) => {
         });
       }
 
-      void command.run(() => configService.set(configKey, configValue));
+      await command.run(() => configService.set(configKey, configValue));
     });
 
   config
@@ -68,7 +68,7 @@ const register = (program: Command) => {
         );
       }
 
-      void command.run(() => configService.get(configKey));
+      await command.run(() => configService.get(configKey));
     });
 
   config
@@ -88,7 +88,7 @@ const register = (program: Command) => {
         );
       }
 
-      void command.run(() => configService.unset(configKey));
+      await command.run(() => configService.unset(configKey));
     });
 };
 

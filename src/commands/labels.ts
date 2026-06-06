@@ -23,7 +23,9 @@ Examples:
   labels
     .command("list")
     .description("List all labels for a repository.")
-    .action(() => void command.run(() => labelsService.list()));
+    .action(async () => {
+      await command.run(() => labelsService.list());
+    });
 
   labels
     .command("pull")
@@ -62,7 +64,9 @@ Examples:
   labels
     .command("prune")
     .description("Prune all related labels for a repository.")
-    .action(() => void command.run(() => labelsService.prune()));
+    .action(async () => {
+      await command.run(() => labelsService.prune());
+    });
 };
 
 export default { register };

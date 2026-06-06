@@ -38,14 +38,16 @@ Examples:
           );
         }
 
-        void command.run(() => profileService.add(profileName, options || {}));
+        await command.run(() => profileService.add(profileName, options || {}));
       },
     );
 
   profile
     .command("list")
     .description("List all configured profiles.")
-    .action(() => void command.run(() => profileService.list()));
+    .action(async () => {
+      await command.run(() => profileService.list());
+    });
 
   profile
     .command("switch")
@@ -80,7 +82,9 @@ Examples:
   profile
     .command("detect")
     .description("Detect the profile for the current repository.")
-    .action(() => void command.run(() => profileService.detect()));
+    .action(async () => {
+      await command.run(() => profileService.detect());
+    });
 };
 
 export default { register };

@@ -32,9 +32,9 @@ Examples:
     repos
       .command("inspect")
       .description("Inspect repository governance files."),
-  ).action(
-    (options) => void command.run(() => inspectService.inspect(options)),
-  );
+  ).action(async (options) => {
+    await command.run(() => inspectService.inspect(options));
+  });
 
   addTargetOptions(
     repos.command("govern").description("Apply repository rulesets."),
@@ -52,7 +52,7 @@ Examples:
         );
       }
 
-      void command.run(() => governService.govern({ ...options, ruleset }));
+      await command.run(() => governService.govern({ ...options, ruleset }));
     });
 
   addTargetOptions(
@@ -62,7 +62,9 @@ Examples:
     .option("--metadata <path>", "Label metadata JSON file")
     .option("--dry-run", "Preview changes without mutating", false)
     .option("--yes", "Apply changes", false)
-    .action((options) => void command.run(() => labelService.label(options)));
+    .action(async (options) => {
+      await command.run(() => labelService.label(options));
+    });
 
   addTargetOptions(
     repos
@@ -74,13 +76,17 @@ Examples:
     .option("--include-private", "Include private repositories", false)
     .option("--dry-run", "Preview changes without mutating", false)
     .option("--yes", "Archive matching repositories", false)
-    .action((options) => void command.run(() => retireService.retire(options)));
+    .action(async (options) => {
+      await command.run(() => retireService.retire(options));
+    });
 
   addTargetOptions(
     repos.command("report").description("Report repository metrics."),
   )
     .option("--since <period>", "Reporting window, for example 30d")
-    .action((options) => void command.run(() => reportService.report(options)));
+    .action(async (options) => {
+      await command.run(() => reportService.report(options));
+    });
 };
 
 export default { register };

@@ -25,7 +25,7 @@ Examples:
     .option("-o, --org <name>", "Organization name")
     .action(async (options) => {
       const orgName = options.org || (await prompt.text("Organization name:"));
-      void command.run(() => orgService.list(orgName));
+      await command.run(() => orgService.list(orgName));
     });
 
   org
@@ -44,7 +44,7 @@ Examples:
       const username =
         options.user || (await prompt.text("Username to invite:"));
 
-      void command.run(() => orgService.add(orgName, username, options.role));
+      await command.run(() => orgService.add(orgName, username, options.role));
     });
 
   org
@@ -58,7 +58,7 @@ Examples:
       const username =
         options.user || (await prompt.text("Username to remove:"));
 
-      void command.run(() => orgService.remove(orgName, username));
+      await command.run(() => orgService.remove(orgName, username));
     });
 };
 

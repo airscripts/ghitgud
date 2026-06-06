@@ -26,8 +26,8 @@ Examples:
     .option("-p, --participating", "Only participating notifications")
     .option("-r, --repo <owner/repo>", "Filter by repository")
     .option("-l, --limit <n>", "Max results")
-    .action((options) => {
-      void command.run(() =>
+    .action(async (options) => {
+      await command.run(() =>
         service.list({
           all: options.all,
           repo: options.repo,
@@ -54,7 +54,7 @@ Examples:
         );
       }
 
-      void command.run(() => service.markRead(notificationId));
+      await command.run(() => service.markRead(notificationId));
     });
 
   notifications
@@ -71,7 +71,7 @@ Examples:
         );
       }
 
-      void command.run(() => service.markDone(notificationId));
+      await command.run(() => service.markDone(notificationId));
     });
 };
 

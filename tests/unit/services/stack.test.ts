@@ -17,13 +17,14 @@ vi.mock("@/api/pr", () => ({
 
 vi.mock("@/core/git", () => ({
   default: {
+    pushBranch: vi.fn(),
+    listBranches: vi.fn(),
+    rebaseBranch: vi.fn(),
+    isInsideRepo: vi.fn(),
+    checkoutBranch: vi.fn(),
     getCurrentBranch: vi.fn(),
     getDefaultBranch: vi.fn(),
     branchExistsLocally: vi.fn(),
-    listBranches: vi.fn(),
-    rebaseBranch: vi.fn(),
-    pushBranch: vi.fn(),
-    checkoutBranch: vi.fn(),
   },
 }));
 
@@ -67,6 +68,7 @@ function mockPr(overrides: Record<string, unknown> = {}) {
 describe("stack service", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    (git.isInsideRepo as Mock).mockReturnValue(true);
   });
 
   describe("create", () => {
