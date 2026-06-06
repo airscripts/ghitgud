@@ -7,7 +7,10 @@ import output from "@/core/output";
 import prCommand from "@/commands/pr";
 import tuiCommand from "@/commands/tui";
 import runCommand from "@/commands/run";
+import orgCommand from "@/commands/org";
 import pingCommand from "@/commands/ping";
+import teamCommand from "@/commands/team";
+import repoCommand from "@/commands/repo";
 import issueCommand from "@/commands/issue";
 import proxyCommand from "@/commands/proxy";
 import reposCommand from "@/commands/repos";
@@ -94,6 +97,9 @@ if (!proxyCommand.runProxyFromArgv()) {
   variableCommand.register(program);
   secretCommand.register(program);
   environmentCommand.register(program);
+  orgCommand.register(program);
+  teamCommand.register(program);
+  repoCommand.register(program);
 
   program
     .command("version")
@@ -133,6 +139,10 @@ Examples:
   ghg variable list --env production
   ghg secret set --name API_KEY --value abc123
   ghg environment create --name staging
+  ghg org members --org airscripts
+  ghg team list --org airscripts
+  ghg repo invite --user octocat --role push
+  ghg repo grant --team ops --role admin
 `,
   );
 

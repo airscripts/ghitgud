@@ -2,26 +2,6 @@
 
 ---
 
-## v2.14.0 — Organization & Team Management
-
-**Why gh doesn't have it:** No `gh org` or `gh team` commands. Collaborator and team access management requires scripting with `gh api` (issue #12529).
-
-**Commands:**
-
-- `ghg org listmembers` — list organization members
-- `ghg org addmember --user <name> --role <role>`
-- `ghg org removemember --user <name>`
-- `ghg team list` — list teams in org
-- `ghg team create --name <name> --description <desc>`
-- `ghg team addmember --team <name> --user <name>`
-- `ghg team removemember --team <name> --user <name>`
-- `ghg repo invite <user> --role <role>`
-- `ghg repo grant <team> --role <role>`
-
-**Value:** Platform teams can provision repositories and manage access at scale without browser automation.
-
----
-
 ## v2.15.0 — GitHub Pages & Wiki
 
 **Why gh doesn't have it:** No `gh pages` or `gh wiki` commands. Pages deployments and wiki edits require the web UI or Actions.

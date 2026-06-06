@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.14.0] - 2026-06-06
+
+### Added
+
+- Organization command family: `ghg org members`, `ghg org invite`, and `ghg org remove` for managing organization membership
+- Team command family: `ghg team list`, `ghg team create`, `ghg team add`, and `ghg team remove` for managing organization teams and team membership
+- Repository collaborator invitation with `ghg repo invite --user <name> --role <role>`
+- Repository team access granting with `ghg repo grant --team <name> --role <role>`
+- Full API wrappers for organization members, teams, and repository invites in `src/api/orgs.ts`, `src/api/teams.ts`, and `src/api/invites.ts`
+- Full services and command coverage with interactive prompts for missing arguments
+- TUI integration placeholders for Organization and Team workspaces
+
 ## [2.13.0] - 2026-06-06
 
 ### Added

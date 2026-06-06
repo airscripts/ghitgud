@@ -87,6 +87,7 @@ Every command reads from `src/core/config.ts`, which resolves values in this ord
 - **GitHub Discussions** — list, view, create, comment on, close, and manage discussion categories entirely from the terminal
 - **Variables & Environments** — list, set, and delete repository, environment, and organization variables; create environments and manage protection rules
 - **Secrets** — list, set, and delete encrypted repository, environment, and organization secrets with libsodium public-key encryption
+- **Organization & Team Management** — list organization members, invite and remove users, manage teams and team membership, invite collaborators and grant team access to repositories
 
 ---
 
@@ -344,14 +345,50 @@ ghg environment protection remove --env <name> --rule-id <id>
 ### Secrets
 
 ```bash
-ghg secret list                            # List repository secrets.
-ghg secret list --env <name>              # List environment secrets.
-ghg secret list --org <org>               # List organization secrets.
+ghg secret list                           # List repository secrets.
+ghg secret list --env <name>             # List environment secrets.
+ghg secret list --org <org>             # List organization secrets.
 ghg secret set --name <key> --value <val>
 ghg secret set --name <key> --value <val> --env <name>
-ghg secret set --name <key> --value <val> --org <org> [--visibility <all|private|selected>]
+ghg secret set --name <key> --value <val> --org <org>
 ghg secret delete --name <key>
 ```
+
+### Organization
+
+```bash
+ghg org members --org airscripts
+ghg org invite --org airscripts --user octocat --role admin
+ghg org remove --org airscripts --user octocat
+```
+
+- `members` lists all organization members with their roles.
+- `invite` adds or updates a user's organization membership.
+- `remove` removes a user from the organization.
+
+### Team
+
+```bash
+ghg team list --org airscripts
+ghg team create --org airscripts --name ops --description "Platform team"
+ghg team add --org airscripts --team ops --user octocat --role maintainer
+ghg team remove --org airscripts --team ops --user octocat
+```
+
+- `list` shows all teams in an organization.
+- `create` creates a new team.
+- `add` adds a member to a team.
+- `remove` removes a member from a team.
+
+### Repository Access
+
+```bash
+ghg repo invite --user octocat --role push
+ghg repo grant --team ops --role admin
+```
+
+- `invite` invites a collaborator to a repository.
+- `grant` grants team access to a repository.
 
 ---
 
@@ -490,6 +527,10 @@ src/
     insights.ts         # ghg insights <traffic|contributors|commits|frequency|popularity|participation>.
     issue.ts            # ghg issue <subtasks|parent>.
     labels.ts           # ghg labels <list|pull|push|prune>.
+    leaks.ts            # ghg leaks <scan|alerts>.
+    org.ts              # ghg org <members|invite|remove>.
+    team.ts             # ghg team <list|create|add|remove>.
+    repo.ts             # ghg repo <invite|grant>.
     mentions.ts         # ghg mentions.
     milestone.ts        # ghg milestone <create|list|close|progress>.
     notifications.ts    # ghg notifications <list|read|done>.
@@ -512,7 +553,10 @@ src/
     pr.ts               # PR lifecycle business logic.
     stack.ts            # Stacked PR chain management.
     notifications.ts    # Notifications business logic.
-    insights.ts         # Repository insights business logic.
+    insights.ts           # Repository insights business logic.
+    org.ts              # Organization membership business logic.
+    team.ts             # Team management business logic.
+    invites.ts          # Repository invite and team grant business logic.
     review.ts           # Code review business logic.
     cache.ts            # Cache inspection business logic.
     issue.ts            # Issue subtask and parent business logic.
@@ -545,6 +589,10 @@ src/
     pulls.ts            # Pulls API.
     repos.ts            # Repositories API.
     rulesets.ts         # Rulesets API.
+    orgs.ts             # Organization membership API.
+    teams.ts            # Team management API.
+    invites.ts          # Repository invite and team grant API.
+    leaks.ts            # Secret scanning alerts API.
     secrets.ts          # Repository, environment, and organization secrets API.
     variables.ts        # Repository, environment, and organization variables API.
     environments.ts     # Environment and protection rules API.
