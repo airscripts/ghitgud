@@ -47,21 +47,23 @@ const withProgress = async <T, R>(
   handler: (item: T) => Promise<R>,
 ): Promise<{
   success: boolean;
-  results: R[];
-  errors: { item: string; error: string }[];
+  results: (R | undefined)[];
+  errors: ({ item: string; error: string } | undefined)[];
 }> => {
   const bar = createProgressBar({ name, total: items.length });
-  const results: R[] = [];
-  const errors: { item: string; error: string }[] = [];
+  const results: (R | undefined)[] = new Array(items.length);
+
+  const errors: ({ item: string; error: string } | undefined)[] = new Array(
+    items.length,
+  );
 
   for (let i = 0; i < items.length; i++) {
     const item = items[i];
     try {
-      const result = await handler(item);
-      results.push(result);
+      results[i] = await handler(item);
     } catch (reason) {
       const error = reason instanceof Error ? reason.message : String(reason);
-      errors.push({ item: String(item), error });
+      errors[i] = { item: String(item), error };
     }
 
     if (bar) {
@@ -76,9 +78,12 @@ const withProgress = async <T, R>(
   stopProgressBars();
 
   return {
-    success: errors.length === 0,
     results,
-    errors,
+    success: errors.every((e) => e === undefined),
+
+    errors: errors.filter(
+      (e): e is { item: string; error: string } => e !== undefined,
+    ),
   };
 };
 

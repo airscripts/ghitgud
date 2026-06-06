@@ -20,6 +20,8 @@ const formatLabels = (labels: Label[]) => {
       color: label.color,
       description: label.description,
     })),
+
+    { emptyMessage: "No labels found." },
   );
 };
 

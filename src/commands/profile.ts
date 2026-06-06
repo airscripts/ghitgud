@@ -1,9 +1,9 @@
 import { Command } from "commander";
 
 import config from "@/core/config";
-import output from "@/core/output";
 import prompt from "@/core/prompt";
 import command from "@/core/command";
+import { ConfigError } from "@/core/errors";
 import profileService from "@/services/profile";
 
 const register = (program: Command) => {
@@ -38,7 +38,19 @@ Examples:
           );
         }
 
-        await command.run(() => profileService.add(profileName, options || {}));
+        let token = options?.token;
+        if (!token) {
+          token = await prompt.text("Enter GitHub token:", {
+            placeholder: "ghp_...",
+          });
+        }
+
+        await command.run(() =>
+          profileService.add(profileName, {
+            ...options,
+            token,
+          }),
+        );
       },
     );
 
@@ -60,11 +72,9 @@ Examples:
         const profiles = config.listProfiles();
 
         if (profiles.length === 0) {
-          output.log(
+          throw new ConfigError(
             "No profiles configured. Create one with: ghg profile add <name>",
           );
-
-          process.exit(1);
         }
 
         profileName = await prompt.select(

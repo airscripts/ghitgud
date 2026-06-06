@@ -179,12 +179,12 @@ const renderTable = (
   lines.push(bottomBorder);
   console.log();
   lines.forEach((line) => console.log(line));
+  console.log();
 };
 
 const renderSection = (title: string) => {
   if (!outputState.isHumanOutput()) return;
 
-  console.log();
   console.log(pc.cyan(pc.bold(title)));
   console.log(pc.cyan("=".repeat(Math.max(24, title.length))));
 };
@@ -201,6 +201,8 @@ const renderKeyValues = (entries: Array<[string, string | number]>) => {
     const coloredLabel = pc.gray(`${label.padEnd(16)}`);
     log(`${coloredLabel} ${value}`);
   });
+
+  console.log();
 };
 
 const renderSummary = (

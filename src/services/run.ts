@@ -97,7 +97,6 @@ const debugRun = async (
   for (const job of jobsData.jobs ?? []) {
     if (!job.check_run_url) continue;
 
-    await checksApi.getCheckRun(job.check_run_url).catch(() => null);
     const annotationResponse = await checksApi
       .listCheckRunAnnotations(job.check_run_url)
       .catch(() => null);

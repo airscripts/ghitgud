@@ -73,7 +73,7 @@ describe("leaks service", () => {
     expect(finding.match).toContain("[redacted]");
   });
 
-  it("respects a custom limit and falls back on invalid input", async () => {
+  it("respects a custom limit and throws on invalid input", async () => {
     fs.writeFileSync(
       path.join(tempDir, "a.txt"),
       "ghp_abcdefghijklmnopqrstuvwxyz123456\n",
@@ -88,8 +88,9 @@ describe("leaks service", () => {
     const limited = await leaksService.scan({ limit: 1 });
     expect(limited.metadata.findings).toHaveLength(1);
 
-    const invalid = await leaksService.scan({ limit: "bad" });
-    expect(invalid.metadata.findings.length).toBeLessThanOrEqual(100);
+    await expect(leaksService.scan({ limit: "bad" })).rejects.toThrow(
+      "Invalid limit: bad.",
+    );
   });
 
   it("skips missing and non-text files", async () => {

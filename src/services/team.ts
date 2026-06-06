@@ -77,6 +77,8 @@ const listMembers = async (org: string, teamSlug: string) => {
       role: member.role,
       login: member.login,
     })),
+
+    { emptyMessage: "No members found." },
   );
 
   logger.success(

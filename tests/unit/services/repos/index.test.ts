@@ -273,7 +273,7 @@ describe("repos service", () => {
           repo: "owner/one",
         },
       ],
-      errors: [],
+      errors: [undefined],
     });
 
     const result = await service.runBulk(repos, async () => ({ ok: true }));
@@ -297,8 +297,8 @@ describe("repos service", () => {
     ];
 
     (progress.withProgress as Mock).mockResolvedValue({
-      results: [null],
-      errors: [{ error: "network error" }],
+      results: [undefined],
+      errors: [{ item: "owner/one", error: "network error" }],
     });
 
     const result = await service.runBulk(repos, async () => {

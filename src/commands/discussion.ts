@@ -1,7 +1,7 @@
 import { Command } from "commander";
 
+import parse from "@/core/parse";
 import command from "@/core/command";
-import { GhitgudError } from "@/core/errors";
 import discussionService from "@/services/discussion";
 
 const register = (program: Command) => {
@@ -15,11 +15,9 @@ const register = (program: Command) => {
     .option("--category <name>", "Filter by category name")
     .option("--limit <n>", "Maximum discussions to fetch", "30")
     .action(async (options: { category?: string; limit?: string }) => {
-      const limit = options.limit ? Number(options.limit) : undefined;
-
-      if (limit !== undefined && (!Number.isInteger(limit) || limit <= 0)) {
-        throw new GhitgudError(`Invalid limit: ${options.limit}`);
-      }
+      const limit = options.limit
+        ? parse.parsePositiveInt(options.limit, "limit")
+        : undefined;
 
       await command.run(() =>
         discussionService.list({

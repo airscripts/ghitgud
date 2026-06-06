@@ -45,7 +45,11 @@ const formatDateShort = (date: string | Date | number): string => {
   });
 };
 
+const sleep = (ms: number): Promise<void> =>
+  new Promise((resolve) => setTimeout(resolve, ms));
+
 export default {
+  sleep,
   formatRelative,
   formatDuration,
   formatDateShort,

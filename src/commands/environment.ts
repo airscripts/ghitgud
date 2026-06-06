@@ -1,5 +1,6 @@
 import { Command } from "commander";
 
+import parse from "@/core/parse";
 import command from "@/core/command";
 import environmentsService from "@/services/environments";
 
@@ -19,7 +20,11 @@ const register = (program: Command) => {
     .command("create")
     .description("Create an environment.")
     .requiredOption("--name <name>", "Environment name")
-    .option("--wait-timer <seconds>", "Wait timer in seconds", parseInt)
+    .option(
+      "--wait-timer <seconds>",
+      "Wait timer in seconds",
+      (value: string) => parse.parsePositiveInt(value, "wait timer"),
+    )
     .action(async (options) => {
       await command.run(() => environmentsService.create(options));
     });
@@ -61,7 +66,9 @@ const register = (program: Command) => {
     .command("remove")
     .description("Remove a protection rule from an environment.")
     .requiredOption("--env <name>", "Environment name")
-    .requiredOption("--rule-id <id>", "Rule ID", parseInt)
+    .requiredOption("--rule-id <id>", "Rule ID", (value: string) =>
+      parse.parsePositiveInt(value, "rule ID"),
+    )
     .action(async (options) => {
       await command.run(() =>
         environmentsService.removeProtectionRule({

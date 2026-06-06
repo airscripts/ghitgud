@@ -192,11 +192,14 @@ const formatTraffic = (data: TrafficSummary) => {
 
 const formatContributors = (data: ContributorSummary[]) => {
   output.renderSection("Top Contributors");
+
   output.renderTable(
     data.slice(0, 10).map((c) => ({
       Login: pc.cyan(c.login),
       Contributions: pc.yellow(c.contributions.toLocaleString()),
     })),
+
+    { emptyMessage: "No contributors found." },
   );
 };
 
@@ -207,12 +210,15 @@ const formatCommits = (data: CommitSummary) => {
       Metric: "Total Weeks",
       Value: pc.yellow(data.totalWeeks.toString()),
     },
+
     {
       Metric: "Average/Week",
       Value: pc.yellow(data.averagePerWeek.toString()),
     },
+
     {
       Metric: "Most Active Week",
+
       Value: data.mostActiveWeek
         ? `${pc.cyan(dates.formatRelative(data.mostActiveWeek.week))} (${pc.yellow(data.mostActiveWeek.commits)} commits)`
         : pc.dim("n/a"),
@@ -227,12 +233,15 @@ const formatCodeFrequency = (data: CodeFrequencySummary) => {
       Metric: "Additions",
       Value: pc.green(`+${data.additions.toLocaleString()}`),
     },
+
     {
       Metric: "Deletions",
       Value: pc.red(`-${data.deletions.toLocaleString()}`),
     },
+
     {
       Metric: "Net",
+
       Value:
         data.net >= 0
           ? pc.green(`+${data.net.toLocaleString()}`)

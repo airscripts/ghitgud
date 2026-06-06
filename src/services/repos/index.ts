@@ -185,17 +185,20 @@ const runBulk = async <T>(
   );
 
   const mappedResults: BulkRepoResult<T>[] = [];
-  results.forEach((result, index) => {
+  for (let i = 0; i < repos.length; i++) {
+    const result = results[i];
+    const error = errors[i];
+
     if (result) {
       mappedResults.push(result);
-    } else if (errors[index]) {
+    } else if (error) {
       mappedResults.push({
         success: false,
-        error: errors[index].error,
-        repo: repos[index].fullName,
+        error: error.error,
+        repo: repos[i].fullName,
       } as BulkRepoResult<T>);
     }
-  });
+  }
 
   const failed = mappedResults.filter((result) => !result.success).length;
   const completed = mappedResults.length - failed;
@@ -231,7 +234,7 @@ const renderBulkResults = <T>(
     };
   });
 
-  output.renderTable(rows);
+  output.renderTable(rows, { emptyMessage: "No repository results found." });
   output.renderSummary(title, [
     ["Completed", result.metadata.completed],
     ["Failed", result.metadata.failed],

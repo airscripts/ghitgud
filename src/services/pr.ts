@@ -190,6 +190,11 @@ const push = async (prNumber: number, force: boolean) => {
   logger.success(
     `Pushed "${currentBranch}" to ${forkRepo}:${forkBranch}${force ? " with --force" : ""}.`,
   );
+
+  return {
+    success: true,
+    metadata: { prNumber, forkRepo, forkBranch },
+  };
 };
 
 export default {

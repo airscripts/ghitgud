@@ -6,6 +6,8 @@ import output from "@/core/output";
 import commits from "@/api/commits";
 import { RepoTargetOptions } from "@/types";
 
+const SEARCH_DELAY_MS = 6_000;
+
 interface ReportOptions extends RepoTargetOptions {
   since?: string;
 }
@@ -29,8 +31,9 @@ const getMergeDuration = (pull: {
   created_at: string;
   merged_at: string | null;
 }): number => {
+  if (!pull.merged_at) return 0;
   const created = new Date(pull.created_at).getTime();
-  const merged = new Date(pull.merged_at as string).getTime();
+  const merged = new Date(pull.merged_at).getTime();
   return (merged - created) / MS_PER_HOUR;
 };
 
@@ -47,20 +50,21 @@ const report = async (options: ReportOptions = {}) => {
   const repos = await service.resolveTargets(options);
 
   const result = await service.runBulk<ReportResult>(repos, async (repo) => {
-    const [
-      openIssues,
-      staleIssues,
-      openPullRequests,
-      mergedPullRequests,
-      contributors,
-    ] = await Promise.all([
-      issues.countOpen(repo.fullName),
-      issues.countStale(repo.fullName, staleDate),
-      pulls.countOpen(repo.fullName),
-      pulls.listMergedSince(repo.fullName, since),
-      commits.contributors(repo.fullName),
-    ]);
+    const openIssues = await issues.countOpen(repo.fullName);
+    await dates.sleep(SEARCH_DELAY_MS);
 
+    const staleIssues = await issues.countStale(repo.fullName, staleDate);
+    await dates.sleep(SEARCH_DELAY_MS);
+
+    const openPullRequests = await pulls.countOpen(repo.fullName);
+    await dates.sleep(SEARCH_DELAY_MS);
+
+    const mergedPullRequests = await pulls.listMergedSince(
+      repo.fullName,
+      since,
+    );
+
+    const contributors = await commits.contributors(repo.fullName);
     const mergeDurations = mergedPullRequests.map(getMergeDuration);
     const averageMergeHours = average(mergeDurations);
 
@@ -83,6 +87,7 @@ const report = async (options: ReportOptions = {}) => {
     prs: metadata.openPullRequests,
     merged: metadata.mergedPullRequests,
     contributors: metadata.contributors,
+
     lastPush: metadata.lastPushedAt
       ? dates.formatRelative(metadata.lastPushedAt)
       : "unknown",

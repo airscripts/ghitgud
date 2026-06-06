@@ -82,7 +82,7 @@ describe("progress", () => {
 
       const result = await progress.withProgress(items, "Test", handler);
       expect(result.success).toBe(false);
-      expect(result.results).toEqual([2, 6]);
+      expect(result.results).toEqual([2, undefined, 6]);
       expect(result.errors).toHaveLength(1);
 
       expect(result.errors[0]).toMatchObject({
@@ -118,7 +118,7 @@ describe("progress", () => {
 
       const result = await progress.withProgress(items, "Test", handler);
       expect(result.success).toBe(false);
-      expect(result.errors[0].error).toBe("string error");
+      expect(result.errors[0]?.error).toBe("string error");
     });
   });
 });

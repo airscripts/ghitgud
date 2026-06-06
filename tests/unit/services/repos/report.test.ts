@@ -34,6 +34,15 @@ vi.mock("@/services/repos", () => ({
   },
 }));
 
+vi.mock("@/core/dates", () => ({
+  default: {
+    formatDuration: vi.fn(),
+    formatDateShort: vi.fn(),
+    formatRelative: vi.fn(() => "4 days ago"),
+    sleep: vi.fn().mockResolvedValue(undefined),
+  },
+}));
+
 describe("repo report service", () => {
   beforeEach(() => {
     (service.parsePeriod as Mock).mockReturnValue(

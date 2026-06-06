@@ -6,6 +6,7 @@ import git from "@/core/git";
 import output from "@/core/output";
 import logger from "@/core/logger";
 import repoService from "@/services/repos";
+import { GhitgudError } from "@/core/errors";
 import leaksApi, { LeakAlertsOptions } from "@/api/leaks";
 
 import {
@@ -71,7 +72,7 @@ function parseLimit(limit?: number | string): number {
   const value = Number(limit);
 
   if (!Number.isSafeInteger(value) || value <= 0) {
-    return 100;
+    throw new GhitgudError(`Invalid limit: ${limit}.`);
   }
 
   return value;
