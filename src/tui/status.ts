@@ -98,6 +98,7 @@ const buildStatusItems = (
 
     {
       label: "mode",
+      tone: context.mode,
       value: context.mode,
     },
   ];

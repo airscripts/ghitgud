@@ -299,7 +299,7 @@ describe("tui state", () => {
         true,
       );
 
-      expect(lines).toContain("[insert] Name: alice");
+      expect(lines).toContain("> Name: alice");
     });
 
     it("shows confirmation block when confirming", () => {

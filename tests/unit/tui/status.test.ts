@@ -56,13 +56,15 @@ describe("tui status", () => {
     expect(getActiveProfile([])).toBe(null);
   });
 
-  it("should include mode", () => {
+  it("should include mode with tone", () => {
     const items = buildStatusItems(
       { mode: "visual" },
       { cwd: "/repo", repo: "owner/repo", token: "token", profiles: [] },
     );
 
-    expect(items.find((item) => item.label === "mode")?.value).toBe("visual");
+    const modeItem = items.find((item) => item.label === "mode");
+    expect(modeItem?.value).toBe("visual");
+    expect(modeItem?.tone).toBe("visual");
   });
 
   it("should include branch only when available", () => {

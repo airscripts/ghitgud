@@ -103,6 +103,13 @@ const createTuiApp = (runtime: Runtime) => {
     const [showHelp, setShowHelp] = React.useState(false);
     const [contextScroll, setContextScroll] = React.useState(0);
     const [contextHScroll, setContextHScroll] = React.useState(0);
+    const [blinkOn, setBlinkOn] = React.useState(true);
+
+    React.useEffect(() => {
+      const id = setInterval(() => setBlinkOn((b) => !b), 500);
+      return () => clearInterval(id);
+    }, []);
+
     const [visualAnchor, setVisualAnchor] = React.useState(0);
     const [visualCursor, setVisualCursor] = React.useState(0);
 
@@ -241,13 +248,16 @@ const createTuiApp = (runtime: Runtime) => {
       );
     }, [paletteOperations.length]);
 
+    const handleMouseRef = React.useRef(handleMouse);
+    handleMouseRef.current = handleMouse;
+
     React.useEffect(() => {
       if (!stdin) return undefined;
       process.stdout.write(MOUSE_ENABLE);
 
       const onData = (data: Buffer) => {
         const event = parseMouseEvent(data.toString("utf8"));
-        if (event) handleMouse(event);
+        if (event) handleMouseRef.current(event);
       };
 
       stdin.on("data", onData);
@@ -255,7 +265,7 @@ const createTuiApp = (runtime: Runtime) => {
         stdin.off("data", onData);
         process.stdout.write(MOUSE_DISABLE);
       };
-    });
+    }, [stdin]);
 
     const runOperation = async () => {
       const validationError = validate(operation, values);
@@ -419,6 +429,7 @@ const createTuiApp = (runtime: Runtime) => {
 
       if (input === "i") {
         if (field && field.type !== "boolean") {
+          updateField(field.key, "");
           setMode("insert");
         }
 
@@ -482,6 +493,10 @@ const createTuiApp = (runtime: Runtime) => {
       }
 
       if (key.escape) {
+        if (field && !asString(values[field.key]) && field.placeholder) {
+          updateField(field.key, field.placeholder);
+        }
+
         setMode("normal");
         return;
       }
@@ -697,6 +712,7 @@ const createTuiApp = (runtime: Runtime) => {
       status,
       values,
       result,
+      blinkOn,
       running,
       showHelp,
       operation,

@@ -85,11 +85,16 @@ const buildContextLines = (
 
   if (inputs.length) {
     inputs.forEach((input, index) => {
-      const value =
-        maskValue(input, values[input.key]) || input.placeholder || "-";
+      const isActive = index === activeField;
 
-      const marker =
-        index === activeField ? (insertMode ? "[insert]" : ">") : " ";
+      const rawValue =
+        values[input.key] === undefined ? "" : String(values[input.key]);
+
+      const masked = maskValue(input, rawValue || undefined);
+      const value =
+        isActive && insertMode ? masked : masked || input.placeholder || "-";
+
+      const marker = isActive ? ">" : " ";
 
       lines.push(
         `${marker} ${input.label}: ${value}${input.required ? " *" : ""}`,

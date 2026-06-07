@@ -5,6 +5,24 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.14.1] - 2026-06-07
+
+### Fixed
+
+- TUI input field alignment: removed `[insert]` prefix in favor of a single-character `>` marker with a blinking `|` cursor appended after the value
+- TUI insert mode now clears the field content on entry and restores the placeholder when exiting with empty input
+- TUI `buildContextLines` and renderer now treat insert mode as raw-value editing while keeping placeholder fallback in normal mode
+
+### Added
+
+- TUI visual mode for output selection and copying with vim-like navigation and `y` to yank selected lines
+- TUI clipboard support with cross-platform copy (macOS, Windows, WSL, and Linux with `xclip`/`wl-copy` fallbacks)
+- Full TUI CRUD operations for Organization workspace (`list`, `members`, `invite`, `remove`)
+- Full TUI CRUD operations for Team workspace (`list`, `create`, `add`, `remove`)
+- Full TUI CRUD operations for Repository Access workspace (`invite`, `grant`)
+- `.prettierignore` to exclude generated and third-party files from formatting
+- Expanded tests for TUI visual mode, clipboard helper, and new workspace operations
+
 ## [2.14.0] - 2026-06-07
 
 ### Fixed
@@ -39,7 +57,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Repository team access granting with `ghg repo grant --team <name> --role <role>`
 - Full API wrappers for organization members, teams, and repository invites in `src/api/orgs.ts`, `src/api/teams.ts`, and `src/api/invites.ts`
 - Full services and command coverage with interactive prompts for missing arguments
-- TUI integration placeholders for Organization and Team workspaces
 - Expanded tests for `repo` command covering `parseRepo` validation, role custom parser, and prompt fallbacks
 - Expanded tests for `config` command covering prompt flows and token placeholder security
 - Validation tests for `release bump --level` rejecting invalid values and accepting valid ones

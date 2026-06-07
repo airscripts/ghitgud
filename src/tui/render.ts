@@ -516,6 +516,7 @@ const renderBody = (
   mode: Mode,
   visualAnchor: number,
   visualCursor: number,
+  blinkOn: boolean,
 ) => {
   const outputLines = renderContextLines(
     ctx,
@@ -532,13 +533,20 @@ const renderBody = (
   const inputs = operation.inputs ?? [];
   const inputLines = inputs.length
     ? inputs.map((input, index) => {
-        const marker =
-          index === activeField ? (insertMode ? "[insert]" : ">") : " ";
+        const isActive = index === activeField;
+        const marker = isActive ? ">" : " ";
 
-        return `${marker} ${input.label}: ${asValueString(
-          input,
-          values[input.key],
-        )}${input.required ? " *" : ""}`;
+        const rawValue =
+          values[input.key] === undefined ? "" : String(values[input.key]);
+
+        const displayValue =
+          isActive && insertMode
+            ? rawValue
+            : asValueString(input, values[input.key]);
+
+        const suffix = input.required ? " *" : "";
+        const cursor = isActive && insertMode && blinkOn ? "|" : "";
+        return `${marker} ${input.label}: ${displayValue}${suffix}${cursor}`;
       })
     : ["No inputs."];
 
@@ -843,6 +851,7 @@ interface AppRenderProps {
   paletteOperations: TuiOperation[];
   visualAnchor: number;
   visualCursor: number;
+  blinkOn: boolean;
 }
 
 const renderNormalView = (
@@ -856,6 +865,7 @@ const renderNormalView = (
     status,
     values,
     result,
+    blinkOn,
     running,
     operation,
     insertMode,
@@ -896,6 +906,7 @@ const renderNormalView = (
       mode,
       visualAnchor,
       visualCursor,
+      blinkOn,
     ),
 
     renderFooter(ctx, statusItems),

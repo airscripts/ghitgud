@@ -1,6 +1,6 @@
 {
   "name": "@airscript/ghitgud",
-  "version": "2.14.0",
+  "version": "2.14.1",
   "description": "A better GitHub CLI that extends the official gh CLI.",
   "main": "dist/index.js",
   "files": [
