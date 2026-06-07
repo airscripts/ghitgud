@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.14.2] - 2026-06-07
+
+### Fixed
+
+- `fatal: not a git repository` error no longer leaks outside the TUI frame when opened outside a git repository
+- Internal git helper (`src/core/git.ts`) now pipes stderr by default, preventing terminal clutter from background git failures
+
+### Changed
+
+- TUI output panel now shows a yellow warning message when opened outside a git repository
+- TUI `resetForOperation` preserves the repo-aware default result message instead of unconditionally resetting to the generic placeholder
+
 ## [2.14.1] - 2026-06-07
 
 ### Fixed
