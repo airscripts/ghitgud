@@ -152,6 +152,7 @@ const getContextLineColor = (line: string): string | undefined => {
     return COLORS.active;
 
   if (line === CONTEXT_LINE_PATTERNS.mutationLabel) return COLORS.running;
+  if (line.startsWith("[WARN]")) return COLORS.warning;
   return undefined;
 };
 

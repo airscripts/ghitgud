@@ -14,6 +14,7 @@ function git(args: string[], options: GitOptions = {}): string {
   const result = execFileSync("git", args, {
     ...options,
     encoding: options.encoding ?? "utf8",
+    stdio: options.stdio ?? ["pipe", "pipe", "pipe"],
   });
 
   return result;

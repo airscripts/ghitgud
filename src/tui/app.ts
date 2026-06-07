@@ -1,3 +1,4 @@
+import git from "@/core/git";
 import { renderApp } from "./render";
 import operations from "./operations";
 import { buildStatusItems } from "./status";
@@ -21,6 +22,14 @@ import {
   stringifyResult,
   buildDashboardData,
 } from "./state";
+
+const getDefaultResult = () => {
+  if (git.isInsideRepo()) {
+    return "No output to be shown, run a command first.";
+  }
+
+  return "[WARN] Not inside a git repository, some commands may not work.";
+};
 
 const MOUSE_ENABLE = "\x1b[?1000h\x1b[?1006h";
 const MOUSE_DISABLE = "\x1b[?1000l\x1b[?1006l";
@@ -91,9 +100,7 @@ const createTuiApp = (runtime: Runtime) => {
       initialValues(operations[0]),
     );
 
-    const [result, setResult] = React.useState(
-      "No output to be shown, run a command first.",
-    );
+    const [result, setResult] = React.useState(getDefaultResult());
     const [status, setStatus] = React.useState("Ready.");
     const [running, setRunning] = React.useState(false);
     const [mode, setMode] = React.useState<Mode>("dashboard");
@@ -144,7 +151,7 @@ const createTuiApp = (runtime: Runtime) => {
       setValues(initialValues(nextOperation));
       setActiveField(0);
       setMode("normal");
-      setResult("No output to be shown, run a command first.");
+      setResult(getDefaultResult());
       setStatus("Ready.");
     };
 
