@@ -150,7 +150,7 @@ describe("discussion service", () => {
 
   it("views a discussion", async () => {
     (api.get as Mock).mockResolvedValue(buildDiscussionResponse(42));
-    const result = await discussionService.view("42");
+    const result = await discussionService.view(42);
 
     expect(api.get).toHaveBeenCalledWith("owner", "repo", 42);
     expect(result.success).toBe(true);
@@ -260,8 +260,8 @@ describe("discussion service", () => {
   });
 
   it("rejects invalid discussion numbers", async () => {
-    await expect(discussionService.view("abc")).rejects.toThrow(
-      "Invalid discussion number: abc",
+    await expect(discussionService.view(-1)).rejects.toThrow(
+      "Invalid discussion number: -1",
     );
   });
 });

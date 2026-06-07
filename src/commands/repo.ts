@@ -6,6 +6,24 @@ import command from "@/core/command";
 import { ConfigError } from "@/core/errors";
 import inviteService from "@/services/invites";
 
+const VALID_REPO_ROLES = new Set([
+  "pull",
+  "push",
+  "admin",
+  "maintain",
+  "triage",
+]);
+
+const validateRepoRole = (value: string): string => {
+  if (!VALID_REPO_ROLES.has(value)) {
+    throw new Error(
+      `Invalid role: ${value}. Expected: ${Array.from(VALID_REPO_ROLES).join(", ")}.`,
+    );
+  }
+
+  return value;
+};
+
 const parseRepo = (repo?: string): { owner: string; repo: string } => {
   if (repo) {
     const [owner, name] = repo.split("/");
@@ -25,6 +43,12 @@ const parseRepo = (repo?: string): { owner: string; repo: string } => {
   }
 
   const [owner, name] = configuredRepo.split("/");
+  if (!owner || !name) {
+    throw new ConfigError(
+      `Invalid configured repository: ${configuredRepo}. Expected: owner/repo`,
+    );
+  }
+
   return { owner, repo: name };
 };
 
@@ -50,6 +74,7 @@ Examples:
     .option(
       "--role <role>",
       "Permission level (pull, push, admin, maintain, triage)",
+      validateRepoRole,
       "push",
     )
     .action(async (options) => {
@@ -69,6 +94,7 @@ Examples:
     .option(
       "--role <role>",
       "Permission level (pull, push, admin, maintain, triage)",
+      validateRepoRole,
       "push",
     )
     .action(async (options) => {

@@ -5,6 +5,18 @@ import command from "@/core/command";
 import milestoneService from "@/services/milestone";
 import { MilestoneState } from "@/types";
 
+const VALID_MILESTONE_STATUSES = new Set(["open", "closed"]);
+
+const validateMilestoneStatus = (value: string): string => {
+  if (!VALID_MILESTONE_STATUSES.has(value)) {
+    throw new Error(
+      `Invalid status: ${value}. Expected: ${Array.from(VALID_MILESTONE_STATUSES).join(", ")}.`,
+    );
+  }
+
+  return value;
+};
+
 const register = (program: Command) => {
   const milestone = program
     .command("milestone")
@@ -22,7 +34,12 @@ const register = (program: Command) => {
   milestone
     .command("list")
     .description("List milestones.")
-    .option("--status <status>", "Milestone status (open, closed)", "open")
+    .option(
+      "--status <status>",
+      "Milestone status (open, closed)",
+      validateMilestoneStatus,
+      "open",
+    )
     .action(async (options: { status: MilestoneState }) => {
       await command.run(() => milestoneService.list(options));
     });

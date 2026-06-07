@@ -49,7 +49,7 @@ describe("integration > discussion commands", () => {
     discussionCommand.register(program);
 
     await program.parseAsync(["node", "test", "discussion", "view", "42"]);
-    expect(discussionService.view).toHaveBeenCalledWith("42");
+    expect(discussionService.view).toHaveBeenCalledWith(42);
   });
 
   it("create calls service with required options", async () => {

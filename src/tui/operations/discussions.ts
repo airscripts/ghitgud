@@ -26,6 +26,7 @@ const discussionOperations: TuiOperation[] = [
     title: "View Discussion",
     command: "ghg discussion view <number>",
     description: "View a discussion and its comments.",
+
     inputs: [
       {
         key: "number",
@@ -34,8 +35,8 @@ const discussionOperations: TuiOperation[] = [
         label: "Discussion",
       },
     ],
-    run: ({ values }) =>
-      discussionService.view(String(numberValue(values, "number"))),
+
+    run: ({ values }) => discussionService.view(numberValue(values, "number")),
   },
 
   {
@@ -51,6 +52,7 @@ const discussionOperations: TuiOperation[] = [
       { key: "category", label: "Category", type: "string", required: true },
       { key: "body", label: "Body", type: "string" },
     ],
+
     run: ({ values }) =>
       discussionService.create({
         body: text(values, "body"),
@@ -76,6 +78,7 @@ const discussionOperations: TuiOperation[] = [
       },
       { key: "body", label: "Body", type: "string", required: true },
     ],
+
     run: ({ values }) =>
       discussionService.comment(
         String(numberValue(values, "number")),
@@ -99,6 +102,7 @@ const discussionOperations: TuiOperation[] = [
         label: "Discussion",
       },
     ],
+
     run: ({ values }) =>
       discussionService.close(String(numberValue(values, "number"))),
   },

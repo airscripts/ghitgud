@@ -32,7 +32,11 @@ const register = (program: Command) => {
     .description("View a discussion.")
     .argument("<number>", "Discussion number")
     .action(async (number: string) => {
-      await command.run(() => discussionService.view(number));
+      await command.run(() =>
+        discussionService.view(
+          parse.parsePositiveInt(number, "discussion number"),
+        ),
+      );
     });
 
   discussion

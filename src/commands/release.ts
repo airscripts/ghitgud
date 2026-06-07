@@ -4,6 +4,18 @@ import command from "@/core/command";
 import releaseService from "@/services/release";
 import { RELEASE_DEFAULT_GENERATED } from "@/core/constants";
 
+const VALID_BUMP_LEVELS = new Set(["major", "minor", "patch"]);
+
+const validateBumpLevel = (value: string): string => {
+  if (!VALID_BUMP_LEVELS.has(value)) {
+    throw new Error(
+      `Invalid level: ${value}. Expected: ${Array.from(VALID_BUMP_LEVELS).join(", ")}.`,
+    );
+  }
+
+  return value;
+};
+
 const register = (program: Command) => {
   const release = program
     .command("release")
@@ -38,7 +50,7 @@ Examples:
   release
     .command("bump")
     .description("Auto-detect or specify the next semver bump.")
-    .option("--level <level>", "major, minor, or patch")
+    .option("--level <level>", "major, minor, or patch", validateBumpLevel)
     .option("--create", "Create an annotated tag locally")
     .option("--push", "Push the tag to origin (requires --create)")
     .action(async (options) => {

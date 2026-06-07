@@ -142,7 +142,7 @@ describe("labels", () => {
     vi.spyOn(io, "readJsonFile").mockReturnValue(METADATA_LABELS);
     (api.delete as Mock).mockResolvedValue({ status: 204 });
 
-    const result = await labelsService.prune();
+    const result = await labelsService.prune({ yes: true });
     expect(result).toEqual({ success: true, metadata: { deleted: 1 } });
     expect(logger.success).toHaveBeenCalledWith("Deleted 1 label(s).");
   });

@@ -64,8 +64,10 @@ Examples:
   labels
     .command("prune")
     .description("Prune all related labels for a repository.")
-    .action(async () => {
-      await command.run(() => labelsService.prune());
+    .option("--dry-run", "Preview changes without deleting", false)
+    .option("--yes", "Confirm deletion", false)
+    .action(async (options) => {
+      await command.run(() => labelsService.prune(options));
     });
 };
 

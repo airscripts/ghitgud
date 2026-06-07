@@ -31,4 +31,38 @@ describe("release command", () => {
     expect(bump?.options.map((o) => o.long)).toContain("--create");
     expect(bump?.options.map((o) => o.long)).toContain("--push");
   });
+
+  it("should reject invalid --level values", async () => {
+    const program = new Command();
+    program.exitOverride();
+    releaseCommand.register(program);
+
+    await expect(
+      program.parseAsync([
+        "node",
+        "test",
+        "release",
+        "bump",
+        "--level",
+        "beta",
+      ]),
+    ).rejects.toThrow("Invalid level: beta. Expected: major, minor, patch.");
+  });
+
+  it("should accept valid --level values", async () => {
+    const program = new Command();
+    program.exitOverride();
+    releaseCommand.register(program);
+
+    await expect(
+      program.parseAsync([
+        "node",
+        "test",
+        "release",
+        "bump",
+        "--level",
+        "major",
+      ]),
+    ).resolves.toBeDefined();
+  });
 });

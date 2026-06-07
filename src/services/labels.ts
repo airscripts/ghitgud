@@ -194,8 +194,32 @@ const pushTemplate = async (templateName: string, templatesDir: string) => {
   return { success: true, metadata: result };
 };
 
-const prune = async () => {
+const prune = async (options: { dryRun?: boolean; yes?: boolean } = {}) => {
   const labels = loadLabelsFromMetadata();
+
+  if (options.dryRun) {
+    logger.start(`Previewing deletion of ${labels.length} label(s).`);
+
+    output.renderTable(
+      labels.map((label) => ({
+        name: label.name,
+        color: label.color,
+        description: label.description,
+      })),
+
+      { emptyMessage: "No labels to prune." },
+    );
+
+    logger.success(`${labels.length} label(s) would be deleted.`);
+    return { success: true, metadata: { deleted: labels.length } };
+  }
+
+  if (!options.yes) {
+    throw new GhitgudError(
+      "This operation deletes labels. Re-run with --yes to apply.",
+    );
+  }
+
   logger.start(`Deleting ${labels.length} label(s) from the repository.`);
 
   await Promise.all(

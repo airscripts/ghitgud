@@ -1,8 +1,8 @@
 import { Command } from "commander";
 
 import tui from "@/tui";
-import output from "@/core/output";
 import command from "@/core/command";
+import { GhitgudError } from "@/core/errors";
 
 const register = (program: Command) => {
   program
@@ -10,8 +10,7 @@ const register = (program: Command) => {
     .description("Launch the full-screen terminal UI.")
     .action(async () => {
       if (!process.stdin.isTTY) {
-        output.writeError("TUI requires an interactive terminal.");
-        process.exit(1);
+        throw new GhitgudError("TUI requires an interactive terminal.");
       }
 
       await command.run(() => tui.start());

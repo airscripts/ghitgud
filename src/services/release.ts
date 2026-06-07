@@ -99,6 +99,9 @@ function bumpVersion(current: string, level: BumpLevel): string {
 
     case "patch":
       return `${v.major}.${v.minor}.${v.patch + 1}`;
+
+    default:
+      throw new GhitgudError(`Invalid bump level: ${level}.`);
   }
 }
 
@@ -131,6 +134,7 @@ const changelog = async (options: ChangelogOptions) => {
 
   return {
     to,
+    body,
     groups,
     from: since,
     success: true,

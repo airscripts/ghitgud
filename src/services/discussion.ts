@@ -252,10 +252,9 @@ const list = async (options: ListOptions = {}) => {
   return { success: true, discussions };
 };
 
-const view = async (numberValue: string) => {
-  const number = Number(numberValue);
+const view = async (number: number) => {
   if (!Number.isInteger(number) || number <= 0) {
-    throw new GhitgudError(`Invalid discussion number: ${numberValue}`);
+    throw new GhitgudError(`Invalid discussion number: ${number}`);
   }
 
   const { owner, name } = getRepoParts();

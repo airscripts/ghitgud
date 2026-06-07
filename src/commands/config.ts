@@ -38,9 +38,10 @@ const register = (program: Command) => {
         const placeholder =
           configKey === "token" ? "ghp_xxxxxxxxxxxx" : "owner/repo";
 
-        const initialValue = currentValue
-          ? `${currentValue.substring(0, 4)}...`
-          : undefined;
+        const initialValue =
+          currentValue && configKey !== "token"
+            ? `${currentValue.substring(0, 4)}...`
+            : undefined;
 
         configValue = await prompt.text(`Enter value for ${configKey}:`, {
           placeholder,
