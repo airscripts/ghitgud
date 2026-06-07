@@ -5,7 +5,31 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [2.14.0] - 2026-06-06
+## [2.14.0] - 2026-06-07
+
+### Fixed
+
+- `withProgress`/`runBulk` result misalignment — fixed-size arrays indexed by position so failures map to the correct repo name
+- `labels prune` now requires `--yes` flag and supports `--dry-run` to prevent accidental label deletion
+- `tui` command throws `GhitgudError` instead of calling `process.exit(1)` when not in a TTY, enabling proper JSON-mode error handling
+- `release bump --level` validation against `major|minor|patch` via custom parser
+- `repo invite --role` and `repo grant --role` validation against `pull|push|admin|maintain|triage` via custom parser
+- `milestone list --status` validation against `open|closed` via custom parser
+- `repos report` search API rate limiting — switched from concurrent `Promise.all` to sequential calls with `dates.sleep(6_000)` between requests
+- `renderTable()` and `renderKeyValues()` now print a trailing blank line so success/warn messages no longer glue to table bottoms
+- `profile add` prompts for missing `--token` instead of calling the service with `undefined`
+- `profile switch` throws `ConfigError` instead of `process.exit(1)` for consistent JSON error output
+- `leaks scan` throws `GhitgudError` on invalid `--limit` instead of silently falling back to `100`
+- `pr push` returns a structured `{ success: true, metadata: {...} }` result instead of `undefined`
+- `config set` no longer leaks the token prefix in prompt `initialValue`
+- `discussion view` argument validated with `parse.parsePositiveInt()` before passing to the service
+- `run debug` removed unused fire-and-forget `checksApi.getCheckRun()` call
+- `getMergeDuration` guarded against null `merged_at` with early return
+
+### Changed
+
+- Replaced chained `!==` comparisons with self-documenting `Set`-based validators (`VALID_BUMP_LEVELS`, `VALID_REPO_ROLES`, `VALID_MILESTONE_STATUSES`)
+- Logger reverted to consola's default fancy reporter with clean colored icons
 
 ### Added
 
@@ -16,6 +40,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Full API wrappers for organization members, teams, and repository invites in `src/api/orgs.ts`, `src/api/teams.ts`, and `src/api/invites.ts`
 - Full services and command coverage with interactive prompts for missing arguments
 - TUI integration placeholders for Organization and Team workspaces
+- Expanded tests for `repo` command covering `parseRepo` validation, role custom parser, and prompt fallbacks
+- Expanded tests for `config` command covering prompt flows and token placeholder security
+- Validation tests for `release bump --level` rejecting invalid values and accepting valid ones
 
 ## [2.13.0] - 2026-06-06
 
