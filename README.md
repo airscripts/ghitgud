@@ -131,6 +131,8 @@ ghg config get token
 ghg config get repo
 ```
 
+> **Token type recommendation:** Use a **classic personal access token** with at least `repo`, `notifications`, `read:user`, and `read:org` scopes. Fine-grained PATs are repository-scoped and will fail with 403 errors on user-scoped endpoints such as notifications, activity, and mentions.
+>
 > Create a token at: https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens
 
 Configuration is stored in `~/.config/ghitgud/credentials.json` and supports per-repository `.ghitgudrc` files for automatic profile detection.

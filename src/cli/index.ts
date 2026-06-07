@@ -1,9 +1,11 @@
 import process from "process";
 import { program } from "commander";
 
+import pc from "picocolors";
 import ascii from "./ascii";
 import dates from "@/core/dates";
 import output from "@/core/output";
+import logger from "@/core/logger";
 import prCommand from "@/commands/pr";
 import tuiCommand from "@/commands/tui";
 import runCommand from "@/commands/run";
@@ -51,6 +53,7 @@ const DESCRIPTION = "A better GitHub CLI that extends the official gh CLI.";
 if (!proxyCommand.runProxyFromArgv()) {
   (async () => {
     outputState.setJsonOutput(process.argv.includes("--json"));
+    outputState.setDebug(process.argv.includes("--debug"));
 
     process.stdout.on("error", (error: NodeJS.ErrnoException) => {
       if (error.code === "EPIPE") {
@@ -77,6 +80,7 @@ if (!proxyCommand.runProxyFromArgv()) {
       .description(DESCRIPTION)
       .version(__VERSION__)
       .option("--json", "Output structured JSON")
+      .option("--debug", "Write debug trace to a temporary log file")
       .option("--theme <theme>", "Color theme (dark, light, auto)", "auto")
       .showSuggestionAfterError();
 
@@ -164,9 +168,27 @@ Examples:
 
     program.exitOverride();
 
+    const announceDebugLog = () => {
+      if (outputState.isDebug()) {
+        console.error("");
+
+        logger.printPill(
+          "INFO",
+          `Debug log written to: ${logger.getDebugLogPath()}`,
+          pc.bgBlue,
+          pc.black,
+        );
+      }
+    };
+
     function handleError(error: unknown): never {
+      if (outputState.isDebug()) {
+        logger.debugError(error);
+      }
+
       if (error instanceof TokenRequiredError) {
         output.writeError(error.message, ERROR_NO_TOKEN);
+        announceDebugLog();
         process.exit(1);
       }
 
@@ -175,12 +197,13 @@ Examples:
           error.message,
           `Rate limit resets ${dates.formatRelative(error.resetAt)} (${dates.formatDateShort(error.resetAt)}).`,
         );
-
+        announceDebugLog();
         process.exit(1);
       }
 
       if (error instanceof GhitgudError) {
         output.writeError(error.message);
+        announceDebugLog();
         process.exit(1);
       }
 
@@ -211,6 +234,17 @@ Examples:
       await program.parseAsync(process.argv);
     } catch (error) {
       handleError(error);
+    }
+
+    if (outputState.isDebug()) {
+      console.error("");
+
+      logger.printPill(
+        "INFO",
+        `Debug log written to: ${logger.getDebugLogPath()}`,
+        pc.bgBlue,
+        pc.black,
+      );
     }
 
     process.on("unhandledRejection", (error: unknown) => {

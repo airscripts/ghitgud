@@ -1,3 +1,4 @@
+import logger from "@/core/logger";
 import config from "@/core/config";
 
 import {
@@ -166,6 +167,21 @@ function getNextPageUrl(linkHeader: string | null): string | null {
   return match?.[1] ?? null;
 }
 
+function redactHeaders(
+  headers: Record<string, string>,
+): Record<string, string> {
+  const result = { ...headers };
+
+  if (result.Authorization) {
+    result.Authorization = result.Authorization.replace(
+      /Bearer .+/,
+      "Bearer <redacted>",
+    );
+  }
+
+  return result;
+}
+
 async function requestUrl(
   url: string,
   options: RequestOptions = {},
@@ -188,11 +204,16 @@ async function requestUrl(
     fetchOptions.body = JSON.stringify(options.body);
   }
 
+  logger.debug(`${fetchOptions.method} ${url}`);
+  logger.debug(`Headers: ${JSON.stringify(redactHeaders(headers))}`);
+
   let response: Response;
 
   try {
     response = await fetch(url, fetchOptions);
   } catch (error) {
+    logger.debugError(error);
+
     const message =
       error instanceof Error && error.message
         ? `Network request failed: ${error.message}`
@@ -201,7 +222,22 @@ async function requestUrl(
     throw new GhitgudError(message);
   }
 
+  logger.debug(`Response: ${response.status} ${response.statusText}`);
+
   if (isSuccessful(response.status)) return response;
+
+  let bodyText: string | undefined;
+  try {
+    const cloned = response.clone();
+    bodyText = await cloned.text();
+
+    if (bodyText) {
+      logger.debug(`Body: ${bodyText.slice(0, 500)}`);
+    }
+  } catch {
+    // Fall through.
+  }
+
   handleError(response.status, response, options.tokenRequired);
 }
 
