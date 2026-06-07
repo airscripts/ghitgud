@@ -1,5 +1,8 @@
 import prOperations from "./prs";
 import runOperations from "./run";
+import orgOperations from "./org";
+import teamOperations from "./team";
+import repoOperations from "./repo";
 import cacheOperations from "./cache";
 import auditOperations from "./audit";
 import leaksOperations from "./leaks";
@@ -52,6 +55,9 @@ const operations: TuiOperation[] = [
   ...variableOperations,
   ...secretsOperations,
   ...environmentOperations,
+  ...orgOperations,
+  ...teamOperations,
+  ...repoOperations,
 ];
 
 const workspaces = Array.from(new Set(operations.map((op) => op.workspace)));

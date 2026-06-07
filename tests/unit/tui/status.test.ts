@@ -5,7 +5,7 @@ import { buildStatusItems, getActiveProfile } from "@/tui/status";
 describe("tui status", () => {
   it("should show token set state", () => {
     const items = buildStatusItems(
-      { workspace: "Dashboard" },
+      { mode: "normal" },
 
       {
         cwd: "/repo",
@@ -24,7 +24,7 @@ describe("tui status", () => {
 
   it("should show none for missing token and repo", () => {
     const items = buildStatusItems(
-      { workspace: "Dashboard" },
+      { mode: "normal" },
 
       {
         cwd: "/repo",
@@ -40,6 +40,7 @@ describe("tui status", () => {
     });
 
     expect(items.find((item) => item.label === "repo")).toMatchObject({
+      tone: "danger",
       value: "none",
     });
   });
@@ -55,20 +56,18 @@ describe("tui status", () => {
     expect(getActiveProfile([])).toBe(null);
   });
 
-  it("should include workspace", () => {
+  it("should include mode", () => {
     const items = buildStatusItems(
-      { workspace: "Review" },
+      { mode: "visual" },
       { cwd: "/repo", repo: "owner/repo", token: "token", profiles: [] },
     );
 
-    expect(items.find((item) => item.label === "workspace")?.value).toBe(
-      "Review",
-    );
+    expect(items.find((item) => item.label === "mode")?.value).toBe("visual");
   });
 
   it("should include branch only when available", () => {
     const withBranch = buildStatusItems(
-      { workspace: "Review" },
+      { mode: "normal" },
 
       {
         cwd: "/repo",
@@ -80,7 +79,7 @@ describe("tui status", () => {
     );
 
     const withoutBranch = buildStatusItems(
-      { workspace: "Review" },
+      { mode: "normal" },
       { cwd: "/repo", repo: "owner/repo", token: "token", profiles: [] },
     );
 
@@ -95,10 +94,34 @@ describe("tui status", () => {
 
   it("should show folder name for cwd", () => {
     const items = buildStatusItems(
-      { workspace: "Review" },
+      { mode: "normal" },
       { cwd: "/very/long/path/to/a/repository/root" },
     );
 
     expect(items.find((item) => item.label === "cwd")?.value).toBe("root");
+  });
+
+  it("should order items as token, repo, profile, cwd, branch, mode", () => {
+    const items = buildStatusItems(
+      { mode: "normal" },
+
+      {
+        cwd: "/repo",
+        token: "ghp_test",
+        repo: "owner/repo",
+        branch: "main",
+        profiles: [{ name: "work", active: true }],
+      },
+    );
+
+    const labels = items.map((item) => item.label);
+    expect(labels).toEqual([
+      "token",
+      "repo",
+      "profile",
+      "cwd",
+      "branch",
+      "mode",
+    ]);
   });
 });

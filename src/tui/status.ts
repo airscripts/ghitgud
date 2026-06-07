@@ -8,11 +8,11 @@ import { truncateMiddle } from "./layout";
 interface StatusItem {
   label: string;
   value: string;
-  tone?: "default" | "success" | "warning" | "danger";
+  tone?: string;
 }
 
 interface StatusContext {
-  workspace: string;
+  mode: string;
 }
 
 interface StatusDependencies {
@@ -59,6 +59,7 @@ const buildStatusItems = (
   dependencies: StatusDependencies = resolveStatusDependencies(),
 ): StatusItem[] => {
   const tokenSet = !!dependencies.token;
+  const repoSet = !!dependencies.repo;
   const profile = getActiveProfile(dependencies.profiles ?? []);
   const folder = path.basename(dependencies.cwd ?? process.cwd());
 
@@ -68,20 +69,24 @@ const buildStatusItems = (
       value: tokenSet ? "set" : "none",
       tone: tokenSet ? "success" : "danger",
     },
+
     {
-      label: "cwd",
-      value: truncateMiddle(folder, 18),
+      label: "repo",
+      value: repoSet ? "set" : "none",
+      tone: repoSet ? "success" : "danger",
     },
+
     {
       label: "profile",
       value: profile ?? "none",
       tone: profile ? undefined : "warning",
     },
+
     {
-      label: "repo",
-      value: dependencies.repo ?? "none",
-      tone: dependencies.repo ? undefined : "warning",
+      label: "cwd",
+      value: truncateMiddle(folder, 18),
     },
+
     ...(dependencies.branch
       ? [
           {
@@ -90,9 +95,10 @@ const buildStatusItems = (
           },
         ]
       : []),
+
     {
-      label: "workspace",
-      value: context.workspace,
+      label: "mode",
+      value: context.mode,
     },
   ];
 };

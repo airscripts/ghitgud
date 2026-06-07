@@ -114,6 +114,8 @@ const props = (overrides: Partial<AppRenderProps> = {}): AppRenderProps => ({
     repo: "owner/repo",
   },
 
+  visualAnchor: 0,
+  visualCursor: 0,
   paletteOperations: [operation],
   ...overrides,
 });

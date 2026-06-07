@@ -49,14 +49,15 @@ ghg layers its commands on top of the GitHub REST API and local Git operations. 
 
 The architecture is flat and explicit:
 
-| Layer      | Responsibility                                                |
-| ---------- | ------------------------------------------------------------- |
-| `cli`      | Commander program setup, global error boundary, ASCII banner  |
-| `commands` | Self-registering subcommand modules with argument parsing     |
-| `services` | Business logic — validation, orchestration, output formatting |
-| `api`      | GitHub REST API client with auth, retry, and error mapping    |
-| `core`     | Config resolution, Git helpers, file I/O, logging, errors     |
-| `types`    | Shared TypeScript interfaces and normalization helpers        |
+| Layer      | Responsibility                                                                               |
+| ---------- | -------------------------------------------------------------------------------------------- |
+| `cli`      | Commander program setup, global error boundary, ASCII banner                                 |
+| `commands` | Self-registering subcommand modules with argument parsing                                    |
+| `services` | Business logic — validation, orchestration, output formatting                                |
+| `api`      | GitHub REST API client with auth, retry, and error mapping                                   |
+| `core`     | Config resolution, Git helpers, file I/O, logging, errors                                    |
+| `types`    | Shared TypeScript interfaces and normalization helpers                                       |
+| `tui`      | Full-screen terminal UI runtime, layout engine, renderer, and interactive command operations |
 
 Every command reads from `src/core/config.ts`, which resolves values in this order: environment variables, active profile credentials, fallback defaults. All HTTP calls go through `src/api/client.ts` — no direct `fetch` anywhere else.
 
@@ -163,27 +164,40 @@ When a profile is active, all API calls use that profile's token. The `detect` c
 ### Notifications
 
 ```bash
-ghg tui                         # Launch full-screen terminal UI.
-ghg notifications list          # List unread notifications.
-ghg notifications read <id>     # Mark as read.
-ghg notifications done <id>     # Mark as done.
+ghg tui
+ghg notifications list
+ghg notifications read <id>
+ghg notifications done <id>
 ```
+
+- `tui` launches the full-screen terminal UI.
+- `list` lists unread notifications.
+- `read` marks a notification as read.
+- `done` marks a notification as done.
 
 ### Activity & Mentions
 
 ```bash
-ghg activity                    # Assigned issues, review requests, mentions.
-ghg mentions                    # Recent @mentions of you.
+ghg activity
+ghg mentions
 ```
+
+- `activity` shows assigned issues, review requests, and mentions.
+- `mentions` shows recent @mentions of you.
 
 ### Labels
 
 ```bash
-ghg labels list                 # List all labels.
-ghg labels pull                 # Pull labels from repo to local config.
-ghg labels push                 # Push local labels to repo.
-ghg labels prune                # Delete all labels from repo.
+ghg labels list
+ghg labels pull
+ghg labels push
+ghg labels prune
 ```
+
+- `list` lists all repository labels.
+- `pull` pulls labels from the repository to local config.
+- `push` pushes local labels to the repository.
+- `prune` deletes all labels from the repository.
 
 ### Repository Governance
 
@@ -212,6 +226,13 @@ ghg insights popularity --repo owner/repo
 ghg insights participation --repo owner/repo
 ```
 
+- `traffic` shows repository traffic data.
+- `contributors` shows top contributors.
+- `commits` shows commit activity.
+- `frequency` shows code frequency.
+- `popularity` shows referrers and popular paths.
+- `participation` shows participation stats.
+
 ### Review
 
 ```bash
@@ -222,6 +243,12 @@ ghg review suggest <pr> --file src/main.ts --line 10 --replace "const x = 1;"
 ghg review apply <pr> --push
 ```
 
+- `comment` creates a line review comment.
+- `threads` lists review threads for a pull request.
+- `resolve` marks a review thread as resolved.
+- `suggest` creates a single-line suggestion.
+- `apply` applies review suggestions locally.
+
 ### Cache
 
 ```bash
@@ -229,11 +256,16 @@ ghg cache inspect <key> --repo owner/repo
 ghg cache download <key> --repo owner/repo --output-dir ./cache-debug
 ```
 
+- `inspect` inspects GitHub Actions cache metadata.
+- `download` downloads cache-related debug artifacts.
+
 ### Run
 
 ```bash
 ghg run debug <run-id> --repo owner/repo --output-dir ./run-debug
 ```
+
+- `debug` fetches logs, artifacts, and annotations for a workflow run.
 
 ### Workflow
 
@@ -242,35 +274,52 @@ ghg workflow validate [path]
 ghg workflow preview [path]
 ```
 
+- `validate` validates GitHub Actions workflow files.
+- `preview` previews workflow structure.
+
 ### Configuration
 
 ```bash
-ghg config set <key> <val>      # Set token or repo.
-ghg config get <key>            # Get configured value.
+ghg config set <key> <val>
+ghg config get <key>
 ```
+
+- `set` sets a config value such as token or repo.
+- `get` reads a configured value.
 
 ### Profile
 
 ```bash
-ghg profile add <name>          # Add or update profile.
-ghg profile list                # List all profiles.
-ghg profile switch <name>       # Activate profile.
-ghg profile detect              # Detect profile for current repo.
+ghg profile add <name>
+ghg profile list
+ghg profile switch <name>
+ghg profile detect
 ```
+
+- `add` adds or updates a profile.
+- `list` lists all profiles.
+- `switch` activates a profile.
+- `detect` detects the profile for the current repository.
 
 ### Passthrough
 
 ```bash
-ghg proxy <args>                # Pass any args to the gh CLI.
+ghg proxy <args>
 ```
+
+- `proxy` passes any arguments through to the official `gh` CLI.
 
 ### Utility
 
 ```bash
-ghg tui                         # Launch full-screen terminal UI.
-ghg ping                        # Check if the CLI is working.
-ghg version                     # Show version number.
+ghg tui
+ghg ping
+ghg version
 ```
+
+- `tui` launches the full-screen terminal UI.
+- `ping` checks if the CLI is working.
+- `version` shows the current version number.
 
 ### Milestones
 
@@ -281,11 +330,18 @@ ghg milestone close "v2.10.0"
 ghg milestone progress "v2.10.0"
 ```
 
+- `create` creates a repository milestone with a due date.
+- `list` lists open or closed milestones.
+- `close` closes a milestone by title.
+- `progress` shows milestone completion percentage.
+
 ### Project Boards
 
 ```bash
 ghg project board <id> --owner <owner>
 ```
+
+- `board` renders an ASCII kanban board for a GitHub Project v2.
 
 ### Issue Management
 
@@ -295,6 +351,11 @@ ghg issue subtasks <issue> --create --title "Sub-task"
 ghg issue subtasks <issue> --link <sub-issue>
 ghg issue parent <child> --parent <parent>
 ```
+
+- `subtasks` lists sub-issues for a parent issue.
+- `subtasks --create` creates and links a new sub-issue.
+- `subtasks --link` links an existing issue as a sub-issue.
+- `parent` links an existing issue to a parent issue.
 
 ### Security & Compliance
 
@@ -308,51 +369,79 @@ ghg leaks scan --limit 50
 ghg leaks alerts --org <org> --state open
 ```
 
+- `audit` queries organization or enterprise audit logs.
+- `compliance check` scores repository compliance posture.
+- `dependabot list` inspects Dependabot alerts.
+- `dependabot dismiss` dismisses a Dependabot alert.
+- `leaks scan` runs a local scan for leaked secrets.
+- `leaks alerts` lists secret scanning alerts.
+
 ### Discussions
 
 ```bash
-ghg discussion list                         # List discussions, optionally by category.
-ghg discussion list --category "Q&A"       # Filter by category.
-ghg discussion view <number>                # View a discussion and its comments.
+ghg discussion list
+ghg discussion list --category "Q&A"
+ghg discussion view <number>
 ghg discussion create --title "Hello" --category "General" --body "Text"
 ghg discussion comment <number> --body "Nice post!"
-ghg discussion close <number>              # Close a discussion.
-ghg discussion categories                   # List available categories.
+ghg discussion close <number>
+ghg discussion categories
 ```
+
+- `list` lists discussions, optionally by category.
+- `view` views a discussion and its comments.
+- `create` creates a new discussion.
+- `comment` adds a comment to a discussion.
+- `close` closes a discussion.
+- `categories` lists available discussion categories.
 
 ### Variables
 
 ```bash
-ghg variable list                          # List repository variables.
-ghg variable list --env <name>             # List environment variables.
-ghg variable list --org <org>             # List organization variables.
+ghg variable list
+ghg variable list --env <name>
+ghg variable list --org <org>
 ghg variable set --name <key> --value <val>
 ghg variable set --name <key> --value <val> --env <name>
 ghg variable set --name <key> --value <val> --org <org>
 ghg variable delete --name <key>
 ```
 
+- `list` lists repository, environment, or organization variables.
+- `set` creates or updates a variable.
+- `delete` removes a variable.
+
 ### Environments
 
 ```bash
-ghg environment list                       # List configured environments.
+ghg environment list
 ghg environment create --name <name> [--wait-timer <seconds>]
 ghg environment protection list --env <name>
 ghg environment protection add --env <name> --type <type> --value <json>
 ghg environment protection remove --env <name> --rule-id <id>
 ```
 
+- `list` lists configured environments.
+- `create` creates an environment with an optional wait timer.
+- `protection list` lists protection rules for an environment.
+- `protection add` adds a protection rule.
+- `protection remove` removes a protection rule.
+
 ### Secrets
 
 ```bash
-ghg secret list                           # List repository secrets.
-ghg secret list --env <name>             # List environment secrets.
-ghg secret list --org <org>             # List organization secrets.
+ghg secret list
+ghg secret list --env <name>
+ghg secret list --org <org>
 ghg secret set --name <key> --value <val>
 ghg secret set --name <key> --value <val> --env <name>
 ghg secret set --name <key> --value <val> --org <org>
 ghg secret delete --name <key>
 ```
+
+- `list` lists repository, environment, or organization secrets.
+- `set` creates or updates an encrypted secret.
+- `delete` removes a secret.
 
 ### Organization
 
@@ -397,14 +486,18 @@ ghg repo grant --team ops --role admin
 ### Clean up merged branches
 
 ```bash
-ghg pr cleanup                  # Delete merged branches locally and remotely.
+ghg pr cleanup
 ```
+
+- `cleanup` deletes merged branches locally and remotely.
 
 ### Push Back To Contributor's Fork
 
 ```bash
-ghg pr push <pr-number>         # Push local changes to contributor's fork.
+ghg pr push <pr-number>
 ```
+
+- `push` pushes local changes to a contributor's fork.
 
 ### Manage Stacked PRs
 
@@ -415,11 +508,18 @@ ghg pr stack update
 ghg pr stack push --title "feat: {branch}" --draft
 ```
 
+- `stack create` creates a stack from the current branch.
+- `stack list` shows the current stack status.
+- `stack update` updates an existing stack after parent PR merges.
+- `stack push` pushes a stack and creates or updates PRs.
+
 ### Navigate PR Chain
 
 ```bash
-ghg pr next                     # Checkout next PR in chain.
+ghg pr next
 ```
+
+- `next` checks out the next PR in the chain.
 
 ---
 

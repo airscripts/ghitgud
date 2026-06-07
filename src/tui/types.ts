@@ -1,4 +1,10 @@
-type Mode = "dashboard" | "normal" | "insert" | "palette" | "confirm";
+type Mode =
+  | "dashboard"
+  | "normal"
+  | "insert"
+  | "palette"
+  | "confirm"
+  | "visual";
 
 type TuiWorkspace =
   | "Dashboard"
@@ -22,7 +28,10 @@ type TuiWorkspace =
   | "Variables"
   | "Secrets"
   | "Environments"
-  | "Security";
+  | "Security"
+  | "Organization"
+  | "Team"
+  | "Repository Access";
 
 type TuiInputType = "string" | "number" | "boolean";
 

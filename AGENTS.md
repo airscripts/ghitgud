@@ -294,6 +294,7 @@ When a feature milestone is complete and ready to ship, perform these steps in o
 5. **Update `ROADMAP.md`** — Remove the completed version section so the next planned version becomes the first entry.
 6. **Update `README.md`** — Add new features/commands to the features list, commands table, and repository structure tree.
 7. **Verify** — Run `pnpm typecheck`, `pnpm lint`, `pnpm format:check`, and `pnpm test:coverage` to confirm everything is clean and coverage meets the 80% threshold before the release commit.
+8. **Conventional Commit Summary** — After the build phase, present a single concise conventional commit message to the user summarizing all changes made. Follow the project's commit style: lowercase prefix, colon and space, short imperative subject, no scope, usually no body. Example: `feat: add visual mode and clipboard support to TUI`.
 
 ## 12. Dependencies and Tooling
 

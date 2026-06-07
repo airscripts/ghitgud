@@ -118,6 +118,11 @@ const resolveToneColor = (tone?: string): string => {
   if (tone === "success") return COLORS.success;
   if (tone === "warning") return COLORS.warning;
   if (tone === "danger") return COLORS.danger;
+  if (tone === "normal") return COLORS.ready;
+  if (tone === "insert") return COLORS.running;
+  if (tone === "visual") return COLORS.selected;
+  if (tone === "confirm") return COLORS.danger;
+  if (tone === "palette") return COLORS.active;
   return COLORS.inactive;
 };
 
@@ -270,10 +275,11 @@ const renderContextLine = (
   ctx: RendererContext,
   segments: Segment[],
   key: string,
+  backgroundColor?: string,
 ) => {
   return text(
     ctx,
-    { key },
+    { key, ...(backgroundColor ? { backgroundColor } : {}) },
     ...segments.map((segment, index) =>
       text(
         ctx,
@@ -295,11 +301,27 @@ const renderContextLines = (
   hScroll: number,
   width: number,
   scroll: number,
+  mode: Mode,
+  visualAnchor: number,
+  visualCursor: number,
 ) =>
   lines.map((line, index) => {
+    const fullIndex = scroll + index;
+
+    const inVisualRange =
+      mode === "visual" &&
+      fullIndex >= Math.min(visualAnchor, visualCursor) &&
+      fullIndex <= Math.max(visualAnchor, visualCursor);
+
     const segments = segmentLine(line, operation);
     const visibleSegments = sliceSegments(segments, hScroll, width);
-    return renderContextLine(ctx, visibleSegments, `${scroll}-${index}`);
+
+    return renderContextLine(
+      ctx,
+      visibleSegments,
+      `${scroll}-${index}`,
+      inVisualRange ? "cyan" : undefined,
+    );
   });
 
 const asValueString = (
@@ -331,8 +353,6 @@ const renderHeader = (
   mode: Mode,
   status: string,
 ) => {
-  const modePrefix = mode === "insert" ? "[insert] " : "";
-
   return box(
     ctx,
     { justifyContent: "space-between" },
@@ -344,11 +364,7 @@ const renderHeader = (
       plainText(ctx, `  ${LABELS.tagline}`, COLORS.inactive),
     ),
 
-    plainText(
-      ctx,
-      `${modePrefix}${status}`,
-      running ? COLORS.running : COLORS.ready,
-    ),
+    plainText(ctx, status, running ? COLORS.running : COLORS.ready),
   );
 };
 
@@ -370,6 +386,8 @@ const renderHintBar = (ctx: RendererContext) => {
       " palette  ",
       text(ctx, { color: COLORS.accent }, "i"),
       " insert  ",
+      text(ctx, { color: COLORS.accent }, "v"),
+      " visual  ",
       text(ctx, { color: COLORS.accent }, "Enter"),
       " run  ",
       text(ctx, { color: COLORS.accent }, "?"),
@@ -495,6 +513,9 @@ const renderBody = (
   confirming: boolean,
   visibleOutput: VisibleLines,
   contextHScroll: number,
+  mode: Mode,
+  visualAnchor: number,
+  visualCursor: number,
 ) => {
   const outputLines = renderContextLines(
     ctx,
@@ -503,7 +524,11 @@ const renderBody = (
     contextHScroll,
     layout.outputWidth,
     visibleOutput.scroll,
+    mode,
+    visualAnchor,
+    visualCursor,
   );
+
   const inputs = operation.inputs ?? [];
   const inputLines = inputs.length
     ? inputs.map((input, index) => {
@@ -527,6 +552,7 @@ const renderBody = (
       overflow: "hidden",
       flexDirection: "row",
     },
+
     renderPanel(
       ctx,
       formatScrollTitle("Output", visibleOutput),
@@ -540,6 +566,7 @@ const renderBody = (
 
       "Shows the output of the executed command.",
     ),
+
     box(
       ctx,
       {
@@ -617,7 +644,27 @@ const renderHelpModal = (ctx: RendererContext, layout: TuiLayout) => {
       ],
     ],
 
+    [
+      "Modes",
+      [
+        "c        command palette",
+        "i        insert mode",
+        "v        visual mode",
+        "Esc      exit mode / close overlay",
+      ],
+    ],
+
     ["Actions", ["Space    toggle boolean", "y/n      confirm/cancel"]],
+
+    [
+      "Visual",
+      [
+        "j/k      move cursor",
+        "y        copy selection",
+        "Esc/v    exit visual mode",
+      ],
+    ],
+
     [
       "Context",
       [
@@ -794,6 +841,8 @@ interface AppRenderProps {
   visibleOutput: VisibleLines;
   dashboardData: DashboardData;
   paletteOperations: TuiOperation[];
+  visualAnchor: number;
+  visualCursor: number;
 }
 
 const renderNormalView = (
@@ -815,6 +864,8 @@ const renderNormalView = (
     activeField,
     visibleOutput,
     contextHScroll,
+    visualAnchor,
+    visualCursor,
   } = props;
 
   return box(
@@ -842,6 +893,9 @@ const renderNormalView = (
       confirming,
       visibleOutput,
       contextHScroll,
+      mode,
+      visualAnchor,
+      visualCursor,
     ),
 
     renderFooter(ctx, statusItems),

@@ -1,7 +1,8 @@
-import operations from "./operations";
 import { renderApp } from "./render";
+import operations from "./operations";
 import { buildStatusItems } from "./status";
 import outputState from "@/core/output-state";
+import { copyToClipboard } from "./clipboard";
 import { parseMouseEvent, SCROLL_SENSITIVITY } from "./mouse";
 import type { Mode, MouseEvent, TuiInputValues, TuiOperation } from "./types";
 
@@ -102,6 +103,8 @@ const createTuiApp = (runtime: Runtime) => {
     const [showHelp, setShowHelp] = React.useState(false);
     const [contextScroll, setContextScroll] = React.useState(0);
     const [contextHScroll, setContextHScroll] = React.useState(0);
+    const [visualAnchor, setVisualAnchor] = React.useState(0);
+    const [visualCursor, setVisualCursor] = React.useState(0);
 
     const dashboardData = React.useMemo(
       () => buildDashboardData(__VERSION__),
@@ -422,6 +425,13 @@ const createTuiApp = (runtime: Runtime) => {
         return;
       }
 
+      if (input === "v") {
+        setMode("visual");
+        setVisualAnchor(contextScroll);
+        setVisualCursor(contextScroll);
+        return;
+      }
+
       if (!field) return;
 
       if (field.type === "boolean" && input === " ") {
@@ -488,6 +498,126 @@ const createTuiApp = (runtime: Runtime) => {
       }
     };
 
+    const handleVisual = (input: string, key: Record<string, unknown>) => {
+      if (input === "q") {
+        returnToDashboard();
+        return;
+      }
+
+      if (input === "v" || key.escape) {
+        setMode("normal");
+        return;
+      }
+
+      if (input === "y") {
+        const start = Math.min(visualAnchor, visualCursor);
+        const end = Math.max(visualAnchor, visualCursor);
+        const selectedLines = outputLines.slice(start, end + 1);
+
+        try {
+          copyToClipboard(selectedLines.join("\n"));
+          setStatus("Copied to clipboard.");
+        } catch (error) {
+          setStatus(
+            error instanceof Error ? error.message : "Clipboard copy failed.",
+          );
+        }
+
+        setMode("normal");
+        return;
+      }
+
+      if (key.upArrow || input === "k") {
+        setVisualCursor((current) => {
+          const next = Math.max(0, current - 1);
+
+          if (next < contextScroll) {
+            setContextScroll(next);
+          }
+
+          return next;
+        });
+
+        return;
+      }
+
+      if (key.downArrow || input === "j") {
+        setVisualCursor((current) => {
+          const next = Math.min(outputLines.length - 1, current + 1);
+          const maxScroll = outputLines.length - layout.outputContentHeight;
+
+          if (next >= contextScroll + layout.outputContentHeight) {
+            setContextScroll(
+              Math.min(maxScroll, next - layout.outputContentHeight + 1),
+            );
+          }
+
+          return next;
+        });
+
+        return;
+      }
+
+      if (input === "u" || key.pageUp) {
+        setContextScroll((current) =>
+          scrollBy(
+            current,
+            -Math.ceil(layout.outputContentHeight / 2),
+            outputLines.length,
+            layout.outputContentHeight,
+          ),
+        );
+
+        return;
+      }
+
+      if (input === "d" || key.pageDown) {
+        setContextScroll((current) =>
+          scrollBy(
+            current,
+            Math.ceil(layout.outputContentHeight / 2),
+            outputLines.length,
+            layout.outputContentHeight,
+          ),
+        );
+
+        return;
+      }
+
+      if (input === "g") {
+        setContextScroll(0);
+        return;
+      }
+
+      if (input === "G") {
+        setContextScroll(
+          clampScroll(
+            outputLines.length,
+            outputLines.length,
+            layout.outputContentHeight,
+          ),
+        );
+
+        return;
+      }
+
+      if (input === "h" || key.leftArrow) {
+        setContextHScroll((current) =>
+          Math.max(0, current - Math.ceil(layout.outputWidth / 2)),
+        );
+
+        return;
+      }
+
+      if (input === "l" || key.rightArrow) {
+        setContextHScroll(
+          (current) => current + Math.ceil(layout.outputWidth / 2),
+        );
+
+        return;
+      }
+    };
+
     useInput((input, key) => {
       if (key.ctrl && key.c) {
         app.exit();
@@ -530,6 +660,11 @@ const createTuiApp = (runtime: Runtime) => {
         return;
       }
 
+      if (mode === "visual") {
+        handleVisual(input, key as Record<string, unknown>);
+        return;
+      }
+
       handleNormalNavigation(input, key as Record<string, unknown>);
       handleNormalScroll(input, key as Record<string, unknown>);
       handleNormalHScroll(input, key as Record<string, unknown>);
@@ -554,7 +689,7 @@ const createTuiApp = (runtime: Runtime) => {
     );
 
     const statusItems = buildStatusItems({
-      workspace: operation.workspace,
+      mode: displayMode,
     });
 
     return renderApp(h, Box, Text, {
@@ -569,15 +704,17 @@ const createTuiApp = (runtime: Runtime) => {
       activeField,
       paletteQuery,
       paletteIndex,
+      visualAnchor,
+      visualCursor,
       visibleOutput,
       dashboardData,
       contextHScroll,
-      isValidSize: isValidSize(stdout.columns, stdout.rows),
       mode: displayMode,
       paletteOperations,
       confirming: mode === "confirm",
       showPalette: mode === "palette",
       insertMode: displayMode === "insert",
+      isValidSize: isValidSize(stdout.columns, stdout.rows),
     });
   };
 };
