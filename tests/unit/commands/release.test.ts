@@ -1,8 +1,30 @@
 import { Command } from "commander";
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi, beforeEach } from "vitest";
+
 import releaseCommand from "@/commands/release";
+import releaseService from "@/services/release";
+
+vi.mock("@/services/release", () => ({
+  default: {
+    bump: vi.fn(),
+    notes: vi.fn(),
+    draft: vi.fn(),
+    verify: vi.fn(),
+    changelog: vi.fn(),
+  },
+}));
+
+vi.mock("@/core/command", () => ({
+  default: {
+    run: (task: () => unknown) => task(),
+  },
+}));
 
 describe("release command", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
   it("should register release command with subcommands", () => {
     const program = new Command();
     releaseCommand.register(program);
@@ -50,6 +72,13 @@ describe("release command", () => {
   });
 
   it("should accept valid --level values", async () => {
+    vi.mocked(releaseService.bump).mockResolvedValue({
+      success: true,
+      next: "2.0.0",
+      level: "major",
+      current: "1.0.0",
+    });
+
     const program = new Command();
     program.exitOverride();
     releaseCommand.register(program);
@@ -64,5 +93,9 @@ describe("release command", () => {
         "major",
       ]),
     ).resolves.toBeDefined();
+
+    expect(releaseService.bump).toHaveBeenCalledWith(
+      expect.objectContaining({ level: "major" }),
+    );
   });
 });
