@@ -31,7 +31,7 @@ importers:
         version: 16.5.0
       figlet:
         specifier: ^1.8.1
-        version: 1.8.1
+        version: 1.11.0
       ink:
         specifier: ^5.2.1
         version: 5.2.1(@types/react@18.3.29)(react@18.3.1)
@@ -1016,9 +1016,9 @@ packages:
       picomatch:
         optional: true
 
-  figlet@1.8.1:
-    resolution: {integrity: sha512-kEC3Sme+YvA8Hkibv0NR1oClGcWia0VB2fC1SlMy027cwe795Xx40Xiv/nw/iFAwQLupymWh+uhAAErn/7hwPg==}
-    engines: {node: '>= 0.4.0'}
+  figlet@1.11.0:
+    resolution: {integrity: sha512-EEx3OS/l2bFqcUNN2NM9FPJp8vAMrgbCxsbl2hbcJNNxOEwVe3mEzrhan7TbJQViZa8mMqhihlbCaqD+LyYKTQ==}
+    engines: {node: '>= 17.0.0'}
     hasBin: true
 
   file-entry-cache@8.0.0:
@@ -2534,7 +2534,9 @@ snapshots:
     optionalDependencies:
       picomatch: 4.0.4
 
-  figlet@1.8.1: {}
+  figlet@1.11.0:
+    dependencies:
+      commander: 14.0.3
 
   file-entry-cache@8.0.0:
     dependencies:
