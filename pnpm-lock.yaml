@@ -25,7 +25,7 @@ importers:
         version: 3.4.2
       date-fns:
         specifier: ^4.2.1
-        version: 4.2.1
+        version: 4.4.0
       dotenv:
         specifier: ^16.5.0
         version: 16.5.0
@@ -863,8 +863,8 @@ packages:
   csstype@3.2.3:
     resolution: {integrity: sha512-z1HGKcYy2xA8AGQfwrn0PAy+PB7X/GSj3UVJW9qKyn43xWa+gl5nXmU4qqLMRzWVLFC8KusUX8T/0kCiOYpAIQ==}
 
-  date-fns@4.2.1:
-    resolution: {integrity: sha512-37RhSdxaG1suen6VDCza6rNrQfooyQh57HFVPwQGEq2QWliVLzPQZ8Oa017weOu+HZCnzI7N3Pf/wyoBKfEqrA==}
+  date-fns@4.4.0:
+    resolution: {integrity: sha512-+1UMbeh68lH1SegH83CGWwpb6OHHbpSgr3+s5Eww5M4CAgswBpoWS0AjTOfEJ33HiYKz1hdj/KTFprzXHmq/6w==}
 
   debug@4.4.1:
     resolution: {integrity: sha512-KcKCqiftBJcZr++7ykoDIEwSa3XWowTfNPo92BYxjXiyYEVrUQh2aLyhxBCwww+heortUFxEJYcRzosstTEBYQ==}
@@ -2376,7 +2376,7 @@ snapshots:
 
   csstype@3.2.3: {}
 
-  date-fns@4.2.1: {}
+  date-fns@4.4.0: {}
 
   debug@4.4.1:
     dependencies:
