@@ -5,7 +5,7 @@ import git from "@/core/git";
 import api from "@/api/review";
 import output from "@/core/output";
 import logger from "@/core/logger";
-import config from "@/core/config";
+import repoResolver from "@/core/repo";
 
 import {
   ReviewThread,
@@ -15,7 +15,6 @@ import {
 } from "@/types";
 
 import {
-  ERROR_NO_REPO,
   ERROR_REVIEW_NO_THREADS,
   ERROR_REVIEW_PR_REQUIRED,
   ERROR_REVIEW_FILE_REQUIRED,
@@ -26,13 +25,7 @@ import {
   ERROR_REVIEW_COMMIT_SHA_REQUIRED,
 } from "@/core/constants";
 
-import { ConfigError, GhitgudError } from "@/core/errors";
-
-function resolveRepo(repo?: string): string {
-  const resolved = repo || config.getRepoOptional();
-  if (!resolved) throw new ConfigError(ERROR_NO_REPO);
-  return resolved;
-}
+import { GhitgudError } from "@/core/errors";
 
 async function getPrHeadSha(repo: string, pr: number): Promise<string> {
   const response = await api.getPrDetails(repo, pr);
@@ -210,7 +203,7 @@ const comment = async (options: CommentOptions) => {
   if (!options.body) throw new GhitgudError(ERROR_REVIEW_BODY_REQUIRED);
 
   const side = normalizeSide(options.side);
-  const repo = resolveRepo(options.repo);
+  const repo = await repoResolver.resolveRepo(options.repo);
   logger.start(`Creating review comment on PR #${options.pr}.`);
 
   const commitId = await getPrHeadSha(repo, options.pr);
@@ -231,7 +224,7 @@ const comment = async (options: CommentOptions) => {
 const threads = async (pr: number, repo?: string) => {
   if (!pr) throw new GhitgudError(ERROR_REVIEW_PR_REQUIRED);
 
-  const targetRepo = resolveRepo(repo);
+  const targetRepo = await repoResolver.resolveRepo(repo);
   logger.start(`Fetching review threads for PR #${pr}.`);
 
   const response = await api.listComments(targetRepo, pr);
@@ -275,7 +268,7 @@ const threads = async (pr: number, repo?: string) => {
 const resolve = async (threadId: number, repo?: string, pr?: number) => {
   if (!threadId) throw new GhitgudError(ERROR_REVIEW_THREAD_NOT_FOUND);
 
-  const targetRepo = resolveRepo(repo);
+  const targetRepo = await repoResolver.resolveRepo(repo);
   logger.start(`Resolving review thread ${threadId}.`);
 
   if (!pr) {
@@ -317,7 +310,7 @@ const suggest = async (options: SuggestOptions) => {
   if (!options.line) throw new GhitgudError(ERROR_REVIEW_LINE_REQUIRED);
   if (!options.replace) throw new GhitgudError(ERROR_REVIEW_BODY_REQUIRED);
 
-  const repo = resolveRepo(options.repo);
+  const repo = await repoResolver.resolveRepo(options.repo);
   logger.start(`Creating suggestion on PR #${options.pr}.`);
 
   const commitId = await getPrHeadSha(repo, options.pr);
@@ -340,7 +333,7 @@ const suggest = async (options: SuggestOptions) => {
 const apply = async (pr: number, repo?: string, pushFlag = false) => {
   if (!pr) throw new GhitgudError(ERROR_REVIEW_PR_REQUIRED);
 
-  const targetRepo = resolveRepo(repo);
+  const targetRepo = await repoResolver.resolveRepo(repo);
   logger.start(`Fetching suggestions for PR #${pr}.`);
 
   const response = await api.listComments(targetRepo, pr);

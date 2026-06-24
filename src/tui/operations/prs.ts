@@ -1,7 +1,14 @@
 import prService from "@/services/pr";
 import stackService from "@/services/stack";
 import type { TuiOperation } from "../types";
-import { text, booleanValue, numberValue } from "./shared";
+
+import {
+  text,
+  repoInput,
+  inferRepo,
+  numberValue,
+  booleanValue,
+} from "./shared";
 
 const prOperations: TuiOperation[] = [
   {
@@ -14,15 +21,19 @@ const prOperations: TuiOperation[] = [
     description: "Delete merged local/remote branches and fast-forward base.",
 
     inputs: [
+      repoInput,
       { key: "dryRun", label: "Dry run", type: "boolean", defaultValue: true },
       { key: "force", label: "Force", type: "boolean" },
     ],
 
-    run: ({ values }) =>
-      prService.cleanup({
+    run: async ({ values }) => {
+      const repo = text(values, "repo") || (await inferRepo());
+
+      return prService.cleanup(repo, {
         dryRun: booleanValue(values, "dryRun"),
         force: booleanValue(values, "force"),
-      }),
+      });
+    },
   },
 
   {
@@ -34,12 +45,20 @@ const prOperations: TuiOperation[] = [
     description: "Push current branch to a contributor fork.",
 
     inputs: [
+      repoInput,
       { key: "pr", label: "PR number", type: "number", required: true },
       { key: "force", label: "Force", type: "boolean" },
     ],
 
-    run: ({ values }) =>
-      prService.push(numberValue(values, "pr"), booleanValue(values, "force")),
+    run: async ({ values }) => {
+      const repo = text(values, "repo") || (await inferRepo());
+
+      return prService.push(
+        numberValue(values, "pr"),
+        repo,
+        booleanValue(values, "force"),
+      );
+    },
   },
 
   {
@@ -88,7 +107,12 @@ const prOperations: TuiOperation[] = [
     title: "List Stack",
     command: "ghg pr stack list",
     description: "Show current stack status.",
-    run: () => stackService.list(),
+    inputs: [repoInput],
+
+    run: async ({ values }) => {
+      const repo = text(values, "repo") || (await inferRepo());
+      return stackService.list(repo);
+    },
   },
 
   {
@@ -98,7 +122,12 @@ const prOperations: TuiOperation[] = [
     title: "Update Stack",
     command: "ghg pr stack update",
     description: "Update an existing stack after parent PR merges.",
-    run: () => stackService.update(),
+    inputs: [repoInput],
+
+    run: async ({ values }) => {
+      const repo = text(values, "repo") || (await inferRepo());
+      return stackService.update(repo);
+    },
   },
 
   {
@@ -110,6 +139,7 @@ const prOperations: TuiOperation[] = [
     description: "Push a stack and create/update PRs.",
 
     inputs: [
+      repoInput,
       {
         key: "title",
         type: "string",
@@ -119,11 +149,14 @@ const prOperations: TuiOperation[] = [
       { key: "draft", label: "Draft", type: "boolean" },
     ],
 
-    run: ({ values }) =>
-      stackService.push({
+    run: async ({ values }) => {
+      const repo = text(values, "repo") || (await inferRepo());
+
+      return stackService.push(repo, {
         title: text(values, "title"),
         draft: booleanValue(values, "draft"),
-      }),
+      });
+    },
   },
 ];
 

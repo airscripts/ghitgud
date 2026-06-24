@@ -14,6 +14,12 @@ vi.mock("@/services/discussion", () => ({
   },
 }));
 
+vi.mock("@/core/repo", () => ({
+  default: {
+    resolveRepo: vi.fn(() => Promise.resolve("owner/repo")),
+  },
+}));
+
 import discussionService from "@/services/discussion";
 
 describe("integration > discussion commands", () => {
@@ -37,7 +43,7 @@ describe("integration > discussion commands", () => {
       "10",
     ]);
 
-    expect(discussionService.list).toHaveBeenCalledWith({
+    expect(discussionService.list).toHaveBeenCalledWith("owner/repo", {
       category: "General",
       limit: 10,
     });
@@ -49,7 +55,7 @@ describe("integration > discussion commands", () => {
     discussionCommand.register(program);
 
     await program.parseAsync(["node", "test", "discussion", "view", "42"]);
-    expect(discussionService.view).toHaveBeenCalledWith(42);
+    expect(discussionService.view).toHaveBeenCalledWith("owner/repo", 42);
   });
 
   it("create calls service with required options", async () => {
@@ -70,7 +76,7 @@ describe("integration > discussion commands", () => {
       "World",
     ]);
 
-    expect(discussionService.create).toHaveBeenCalledWith({
+    expect(discussionService.create).toHaveBeenCalledWith("owner/repo", {
       body: "World",
       title: "Hello",
       category: "General",
@@ -92,7 +98,11 @@ describe("integration > discussion commands", () => {
       "Nice post",
     ]);
 
-    expect(discussionService.comment).toHaveBeenCalledWith("42", "Nice post");
+    expect(discussionService.comment).toHaveBeenCalledWith(
+      "owner/repo",
+      "42",
+      "Nice post",
+    );
   });
 
   it("close calls service with discussion number", async () => {
@@ -101,7 +111,7 @@ describe("integration > discussion commands", () => {
     discussionCommand.register(program);
 
     await program.parseAsync(["node", "test", "discussion", "close", "42"]);
-    expect(discussionService.close).toHaveBeenCalledWith("42");
+    expect(discussionService.close).toHaveBeenCalledWith("owner/repo", "42");
   });
 
   it("categories calls service without args", async () => {
@@ -110,6 +120,6 @@ describe("integration > discussion commands", () => {
     discussionCommand.register(program);
 
     await program.parseAsync(["node", "test", "discussion", "categories"]);
-    expect(discussionService.categories).toHaveBeenCalledTimes(1);
+    expect(discussionService.categories).toHaveBeenCalledWith("owner/repo");
   });
 });

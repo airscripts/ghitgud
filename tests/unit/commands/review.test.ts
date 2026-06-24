@@ -14,6 +14,14 @@ vi.mock("@/services/review", () => ({
   },
 }));
 
+vi.mock("@/core/repo", () => ({
+  default: {
+    resolveRepo: vi.fn().mockResolvedValue("airscripts/ghitgud"),
+    resolveRepoSync: vi.fn().mockReturnValue("airscripts/ghitgud"),
+    resolveRepos: vi.fn().mockResolvedValue(["airscripts/ghitgud"]),
+  },
+}));
+
 vi.mock("@/core/command", () => ({
   default: {
     run: (task: () => unknown) => task(),
@@ -102,7 +110,10 @@ describe("review command", () => {
     reviewCommand.register(program);
 
     await program.parseAsync(["node", "test", "review", "threads", "42"]);
-    expect(reviewService.threads).toHaveBeenCalledWith(42, undefined);
+    expect(reviewService.threads).toHaveBeenCalledWith(
+      42,
+      "airscripts/ghitgud",
+    );
   });
 
   it("should call threads service with repo option", async () => {
@@ -120,7 +131,10 @@ describe("review command", () => {
       "owner/repo",
     ]);
 
-    expect(reviewService.threads).toHaveBeenCalledWith(42, "owner/repo");
+    expect(reviewService.threads).toHaveBeenCalledWith(
+      42,
+      "airscripts/ghitgud",
+    );
   });
 
   it("should call resolve service with valid args", async () => {
@@ -137,7 +151,11 @@ describe("review command", () => {
       "42",
     ]);
 
-    expect(reviewService.resolve).toHaveBeenCalledWith(123456, undefined, 42);
+    expect(reviewService.resolve).toHaveBeenCalledWith(
+      123456,
+      "airscripts/ghitgud",
+      42,
+    );
   });
 
   it("should call suggest service with valid args", async () => {
@@ -162,9 +180,9 @@ describe("review command", () => {
     expect(reviewService.suggest).toHaveBeenCalledWith({
       pr: 42,
       line: 10,
-      repo: undefined,
       file: "src/main.ts",
       replace: "const x = 1;",
+      repo: "airscripts/ghitgud",
     });
   });
 
@@ -184,7 +202,11 @@ describe("review command", () => {
       "--push",
     ]);
 
-    expect(reviewService.apply).toHaveBeenCalledWith(42, "owner/repo", true);
+    expect(reviewService.apply).toHaveBeenCalledWith(
+      42,
+      "airscripts/ghitgud",
+      true,
+    );
   });
 
   it("should call comment service with all args", async () => {
@@ -212,9 +234,9 @@ describe("review command", () => {
       pr: 42,
       line: 10,
       side: "LEFT",
-      repo: undefined,
       file: "src/main.ts",
       body: "Looks good.",
+      repo: "airscripts/ghitgud",
     });
   });
 });

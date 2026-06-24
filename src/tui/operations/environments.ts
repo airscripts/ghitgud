@@ -1,7 +1,14 @@
 import type { TuiOperation } from "../types";
 import { GhitgudError } from "@/core/errors";
-import { requiredText, numberValue } from "./shared";
 import environmentsService from "@/services/environments";
+
+import {
+  text,
+  inferRepo,
+  repoInput,
+  numberValue,
+  requiredText,
+} from "./shared";
 
 const environmentOperations: TuiOperation[] = [
   {
@@ -10,8 +17,12 @@ const environmentOperations: TuiOperation[] = [
     title: "List Environments",
     command: "ghg environment list",
     description: "List configured environments.",
-    inputs: [],
-    run: () => environmentsService.list(),
+    inputs: [repoInput],
+
+    run: async ({ values }) => {
+      const repo = text(values, "repo") || (await inferRepo());
+      return environmentsService.list(repo);
+    },
   },
 
   {
@@ -23,6 +34,7 @@ const environmentOperations: TuiOperation[] = [
     description: "Create an environment with optional wait timer.",
 
     inputs: [
+      repoInput,
       { key: "name", label: "Name", type: "string", required: true },
 
       {
@@ -33,14 +45,17 @@ const environmentOperations: TuiOperation[] = [
       },
     ],
 
-    run: ({ values }) =>
-      environmentsService.create({
+    run: async ({ values }) => {
+      const repo = text(values, "repo") || (await inferRepo());
+
+      return environmentsService.create(repo, {
         name: requiredText(values, "name"),
 
         waitTimer: values.waitTimer
           ? numberValue(values, "waitTimer")
           : undefined,
-      }),
+      });
+    },
   },
 
   {
@@ -51,11 +66,18 @@ const environmentOperations: TuiOperation[] = [
     description: "List protection rules for an environment.",
 
     inputs: [
+      repoInput,
       { key: "env", label: "Environment", type: "string", required: true },
     ],
 
-    run: ({ values }) =>
-      environmentsService.listProtectionRules(requiredText(values, "env")),
+    run: async ({ values }) => {
+      const repo = text(values, "repo") || (await inferRepo());
+
+      return environmentsService.listProtectionRules(
+        repo,
+        requiredText(values, "env"),
+      );
+    },
   },
 
   {
@@ -67,6 +89,7 @@ const environmentOperations: TuiOperation[] = [
     command: "ghg environment protection add --env <name> --type <type>",
 
     inputs: [
+      repoInput,
       { key: "env", label: "Environment", type: "string", required: true },
 
       {
@@ -80,7 +103,8 @@ const environmentOperations: TuiOperation[] = [
       { key: "value", label: "Value (JSON)", type: "string", required: true },
     ],
 
-    run: ({ values }) => {
+    run: async ({ values }) => {
+      const repo = text(values, "repo") || (await inferRepo());
       let parsed: Record<string, unknown>;
 
       try {
@@ -89,7 +113,7 @@ const environmentOperations: TuiOperation[] = [
         throw new GhitgudError("Invalid JSON value.");
       }
 
-      return environmentsService.addProtectionRule({
+      return environmentsService.addProtectionRule(repo, {
         env: requiredText(values, "env"),
         type: requiredText(values, "type") as
           | "required_reviewers"
@@ -109,15 +133,19 @@ const environmentOperations: TuiOperation[] = [
     command: "ghg environment protection remove --env <name> --rule-id <id>",
 
     inputs: [
+      repoInput,
       { key: "env", label: "Environment", type: "string", required: true },
       { key: "ruleId", label: "Rule ID", type: "number", required: true },
     ],
 
-    run: ({ values }) =>
-      environmentsService.removeProtectionRule({
+    run: async ({ values }) => {
+      const repo = text(values, "repo") || (await inferRepo());
+
+      return environmentsService.removeProtectionRule(repo, {
         env: requiredText(values, "env"),
         ruleId: numberValue(values, "ruleId"),
-      }),
+      });
+    },
   },
 ];
 

@@ -261,6 +261,38 @@ const jsonLineColor = (line: string): string | undefined => {
     }
 
     if (/^"/.test(value)) {
+      const unquoted = value.slice(1, -1).toLowerCase();
+      if (
+        unquoted === "failed" ||
+        unquoted === "failure" ||
+        unquoted === "error" ||
+        unquoted === "denied" ||
+        unquoted === "unauthorized" ||
+        unquoted === "forbidden"
+      ) {
+        return COLORS.danger;
+      }
+
+      if (
+        unquoted === "success" ||
+        unquoted === "ok" ||
+        unquoted === "merged" ||
+        unquoted === "open" ||
+        unquoted === "active" ||
+        unquoted === "approved" ||
+        unquoted === "passed"
+      ) {
+        return COLORS.success;
+      }
+
+      if (
+        unquoted === "pending" ||
+        unquoted === "review_requested" ||
+        unquoted === "changes_requested"
+      ) {
+        return COLORS.warning;
+      }
+
       return COLORS.ready;
     }
 
@@ -348,6 +380,16 @@ const wrapText = (text: string, width: number): string[] => {
   return lines;
 };
 
+const DANGER_STATUSES = ["Failed", "Error", "Cancelled"];
+const SUCCESS_STATUSES = ["Success"];
+
+const statusColor = (status: string, running: boolean): string => {
+  if (running) return COLORS.running;
+  if (DANGER_STATUSES.some((s) => status.startsWith(s))) return COLORS.danger;
+  if (SUCCESS_STATUSES.some((s) => status.startsWith(s))) return COLORS.success;
+  return COLORS.ready;
+};
+
 const renderHeader = (
   ctx: RendererContext,
   running: boolean,
@@ -365,7 +407,7 @@ const renderHeader = (
       plainText(ctx, `  ${LABELS.tagline}`, COLORS.inactive),
     ),
 
-    plainText(ctx, status, running ? COLORS.running : COLORS.ready),
+    plainText(ctx, status, statusColor(status, running)),
   );
 };
 
@@ -545,9 +587,9 @@ const renderBody = (
             ? rawValue
             : asValueString(input, values[input.key]);
 
-        const suffix = input.required ? " *" : "";
+        const suffix = input.required ? "*" : "";
         const cursor = isActive && insertMode && blinkOn ? "|" : "";
-        return `${marker} ${input.label}: ${displayValue}${suffix}${cursor}`;
+        return `${marker} ${input.label}${suffix}: ${displayValue}${cursor}`;
       })
     : ["No inputs."];
 

@@ -1,6 +1,6 @@
-import { text } from "./shared";
 import type { TuiOperation } from "../types";
 import labelsService from "@/services/labels";
+import { text, repoInput, inferRepo } from "./shared";
 
 const labelOperations: TuiOperation[] = [
   {
@@ -9,7 +9,12 @@ const labelOperations: TuiOperation[] = [
     title: "List Labels",
     command: "ghg labels list",
     description: "List repository labels.",
-    run: () => labelsService.list(),
+    inputs: [repoInput],
+
+    run: async ({ values }) => {
+      const repo = text(values, "repo") || (await inferRepo());
+      return labelsService.list(repo);
+    },
   },
 
   {
@@ -19,14 +24,15 @@ const labelOperations: TuiOperation[] = [
     title: "Pull Labels",
     command: "ghg labels pull",
     description: "Save repository labels to local metadata.",
-    inputs: [{ key: "template", label: "Template", type: "string" }],
+    inputs: [repoInput, { key: "template", label: "Template", type: "string" }],
 
-    run: ({ values }) => {
+    run: async ({ values }) => {
+      const repo = text(values, "repo") || (await inferRepo());
       const template = text(values, "template");
 
       return template
         ? labelsService.pullTemplate(template, "templates")
-        : labelsService.pull();
+        : labelsService.pull(repo);
     },
   },
 
@@ -37,14 +43,15 @@ const labelOperations: TuiOperation[] = [
     title: "Push Labels",
     command: "ghg labels push",
     description: "Sync local or template labels to the repository.",
-    inputs: [{ key: "template", label: "Template", type: "string" }],
+    inputs: [repoInput, { key: "template", label: "Template", type: "string" }],
 
-    run: ({ values }) => {
+    run: async ({ values }) => {
+      const repo = text(values, "repo") || (await inferRepo());
       const template = text(values, "template");
 
       return template
-        ? labelsService.pushTemplate(template, "templates")
-        : labelsService.push();
+        ? labelsService.pushTemplate(template, "templates", repo)
+        : labelsService.push(repo);
     },
   },
 
@@ -55,7 +62,12 @@ const labelOperations: TuiOperation[] = [
     title: "Prune Labels",
     command: "ghg labels prune",
     description: "Delete labels listed in local metadata.",
-    run: () => labelsService.prune(),
+    inputs: [repoInput],
+
+    run: async ({ values }) => {
+      const repo = text(values, "repo") || (await inferRepo());
+      return labelsService.prune(repo);
+    },
   },
 ];
 

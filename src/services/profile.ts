@@ -14,7 +14,6 @@ import {
 } from "@/core/constants";
 
 interface AddProfileOptions {
-  repo?: string;
   token?: string;
 }
 
@@ -32,7 +31,6 @@ function add(name: string, options: AddProfileOptions) {
 
   logger.start(`Saving profile "${profileName}".`);
   config.addProfile(profileName, {
-    repo: options.repo,
     token: options.token,
   });
 
@@ -47,7 +45,6 @@ function list() {
     profiles.map((profile) => ({
       profile: profile.name,
       active: profile.active ? "yes" : "no",
-      repository: profile.repo ?? "(no repo)",
       token: profile.hasToken ? "configured" : "missing",
     })),
     { emptyMessage: "No profiles configured." },
@@ -90,25 +87,21 @@ function detect() {
   }
 
   const repo = remoteUrl ? git.parseRepoFromRemoteUrl(remoteUrl) : null;
-  const detectedProfile = repo ? config.findProfileByRepo(repo) : null;
-  const profileName = detectedProfile ?? DEFAULT_PROFILE_NAME;
+  const profileName = DEFAULT_PROFILE_NAME;
 
   logger.start("Detecting the best profile for the current repository.");
   config.setRepoLocalProfile(profileName);
 
-  if (detectedProfile) {
-    logger.success(`Detected profile "${profileName}" for ${repo}.`);
+  if (repo) {
+    logger.success(`Using profile "${profileName}" for ${repo}.`);
   } else {
-    logger.warn(
-      `No matching profile found for ${repo ?? "the current remote"}. Falling back to "${DEFAULT_PROFILE_NAME}".`,
-    );
+    logger.warn("No git remote found. Using default profile.");
   }
 
   return {
     success: true,
     repository: repo,
     profile: profileName,
-    fallback: !detectedProfile,
   };
 }
 

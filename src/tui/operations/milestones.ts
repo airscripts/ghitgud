@@ -1,6 +1,6 @@
 import type { TuiOperation } from "../types";
-import { text, requiredText } from "./shared";
 import milestoneService from "@/services/milestone";
+import { text, requiredText, repoInput, inferRepo } from "./shared";
 
 const milestoneOperations: TuiOperation[] = [
   {
@@ -12,6 +12,7 @@ const milestoneOperations: TuiOperation[] = [
     description: "Create a repository milestone with a due date.",
 
     inputs: [
+      repoInput,
       { key: "title", label: "Title", type: "string", required: true },
 
       {
@@ -23,11 +24,14 @@ const milestoneOperations: TuiOperation[] = [
       },
     ],
 
-    run: ({ values }) =>
-      milestoneService.create({
+    run: async ({ values }) => {
+      const repo = text(values, "repo") || (await inferRepo());
+
+      return milestoneService.create(repo, {
         due: requiredText(values, "due"),
         title: requiredText(values, "title"),
-      }),
+      });
+    },
   },
 
   {
@@ -38,6 +42,7 @@ const milestoneOperations: TuiOperation[] = [
     description: "List open or closed repository milestones.",
 
     inputs: [
+      repoInput,
       {
         key: "status",
         type: "string",
@@ -47,10 +52,13 @@ const milestoneOperations: TuiOperation[] = [
       },
     ],
 
-    run: ({ values }) =>
-      milestoneService.list({
+    run: async ({ values }) => {
+      const repo = text(values, "repo") || (await inferRepo());
+
+      return milestoneService.list(repo, {
         status: (text(values, "status") ?? "open") as "open" | "closed",
-      }),
+      });
+    },
   },
 
   {
@@ -60,8 +68,16 @@ const milestoneOperations: TuiOperation[] = [
     title: "Close Milestone",
     command: "ghg milestone close <name>",
     description: "Close a milestone by exact title.",
-    inputs: [{ key: "name", label: "Name", type: "string", required: true }],
-    run: ({ values }) => milestoneService.close(requiredText(values, "name")),
+
+    inputs: [
+      repoInput,
+      { key: "name", label: "Name", type: "string", required: true },
+    ],
+
+    run: async ({ values }) => {
+      const repo = text(values, "repo") || (await inferRepo());
+      return milestoneService.close(repo, requiredText(values, "name"));
+    },
   },
 
   {
@@ -70,10 +86,16 @@ const milestoneOperations: TuiOperation[] = [
     title: "Milestone Progress",
     command: "ghg milestone progress <name>",
     description: "Show milestone completion percentage.",
-    inputs: [{ key: "name", label: "Name", type: "string", required: true }],
 
-    run: ({ values }) =>
-      milestoneService.progress(requiredText(values, "name")),
+    inputs: [
+      repoInput,
+      { key: "name", label: "Name", type: "string", required: true },
+    ],
+
+    run: async ({ values }) => {
+      const repo = text(values, "repo") || (await inferRepo());
+      return milestoneService.progress(repo, requiredText(values, "name"));
+    },
   },
 ];
 

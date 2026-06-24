@@ -7,7 +7,6 @@ vi.mock("@/api/client", () => ({
     get: vi.fn(),
     post: vi.fn(),
     patch: vi.fn(),
-    getRepo: vi.fn(() => "owner/repo"),
   },
 }));
 
@@ -27,9 +26,8 @@ describe("pr api", () => {
     it("should fetch merged PRs", async () => {
       const mockResponse = { status: 200 } as Response;
       vi.mocked(client.get).mockResolvedValue(mockResponse);
-      const result = await pr.fetchMerged();
+      const result = await pr.fetchMerged("owner/repo");
 
-      expect(client.getRepo).toHaveBeenCalled();
       expect(client.get).toHaveBeenCalledWith(
         `/repos/${mockRepo}/pulls?state=closed&per_page=100`,
       );
@@ -42,7 +40,7 @@ describe("pr api", () => {
     it("should fetch a commit by sha", async () => {
       const mockResponse = { status: 200 } as Response;
       vi.mocked(client.get).mockResolvedValue(mockResponse);
-      const result = await pr.getCommit("abc123");
+      const result = await pr.getCommit("abc123", "owner/repo");
 
       expect(client.get).toHaveBeenCalledWith(
         `/repos/${mockRepo}/commits/abc123`,
@@ -77,7 +75,7 @@ describe("pr api", () => {
         json: vi.fn().mockResolvedValue(mockPr),
       } as unknown as Response);
 
-      const result = await pr.fetch(123);
+      const result = await pr.fetch(123, "owner/repo");
       expect(client.get).toHaveBeenCalledWith(`/repos/${mockRepo}/pulls/123`);
 
       expect(result).toEqual(mockPr);
@@ -120,7 +118,7 @@ describe("pr api", () => {
       const mockResponse = { status: 200 } as Response;
       vi.mocked(client.get).mockResolvedValue(mockResponse);
 
-      const result = await pr.listOpen();
+      const result = await pr.listOpen("owner/repo");
       expect(client.get).toHaveBeenCalledWith(
         `/repos/${mockRepo}/pulls?state=open&per_page=100`,
       );
@@ -154,7 +152,7 @@ describe("pr api", () => {
         json: vi.fn().mockResolvedValue(mockPr),
       } as unknown as Response);
 
-      const result = await pr.createPr(body);
+      const result = await pr.createPr("owner/repo", body);
       expect(client.post).toHaveBeenCalledWith(
         `/repos/${mockRepo}/pulls`,
         body,
@@ -186,7 +184,7 @@ describe("pr api", () => {
         json: vi.fn().mockResolvedValue(mockPr),
       } as unknown as Response);
 
-      const result = await pr.updatePr(123, body);
+      const result = await pr.updatePr("owner/repo", 123, body);
       expect(client.patch).toHaveBeenCalledWith(
         `/repos/${mockRepo}/pulls/123`,
         body,
@@ -207,7 +205,7 @@ describe("pr api", () => {
         json: vi.fn().mockResolvedValue({}),
       } as unknown as Response);
 
-      await pr.updatePr(123, body);
+      await pr.updatePr("owner/repo", 123, body);
       expect(client.patch).toHaveBeenCalledWith(
         `/repos/${mockRepo}/pulls/123`,
         body,

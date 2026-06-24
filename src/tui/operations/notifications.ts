@@ -1,4 +1,5 @@
 import type { TuiOperation } from "../types";
+import reposService from "@/services/repos/index";
 import notificationsService from "@/services/notifications";
 
 import {
@@ -7,6 +8,9 @@ import {
   numberValue,
   requiredText,
   booleanValue,
+  targetInputs,
+  targetOptions,
+  inferRepoOptional,
 } from "./shared";
 
 const notificationOperations: TuiOperation[] = [
@@ -18,19 +22,58 @@ const notificationOperations: TuiOperation[] = [
     description: "List GitHub notifications.",
 
     inputs: [
-      { key: "all", label: "Include read", type: "boolean" },
-      { key: "participating", label: "Participating only", type: "boolean" },
       repoInput,
+      { key: "all", label: "Include read", type: "boolean" },
+      {
+        key: "participating",
+        label: "Participating only",
+        type: "boolean",
+      },
       { key: "limit", label: "Limit", type: "number" },
     ],
 
-    run: ({ values }) =>
-      notificationsService.list({
-        repo: text(values, "repo"),
+    run: async ({ values }) => {
+      const repo = text(values, "repo") || (await inferRepoOptional());
+      return notificationsService.list({
+        repo,
         all: booleanValue(values, "all"),
         participating: booleanValue(values, "participating"),
         limit: text(values, "limit") ? numberValue(values, "limit") : undefined,
-      }),
+      });
+    },
+  },
+
+  {
+    mutates: true,
+    workspace: "Notifications",
+    id: "notifications.list-by-target",
+    title: "List Notifications by Target",
+    command: "ghg notifications list --repo <targets>",
+
+    description:
+      "List notifications for a set of repositories (org, repos list, or file).",
+
+    inputs: [
+      ...targetInputs,
+      { key: "all", label: "Include read", type: "boolean" },
+      {
+        key: "participating",
+        label: "Participating only",
+        type: "boolean",
+      },
+    ],
+
+    run: async ({ values }) => {
+      const targets = targetOptions(values);
+      const repoSummaries = await reposService.resolveTargets(targets);
+      const repos = repoSummaries.map((r) => r.fullName);
+
+      return notificationsService.list({
+        repos,
+        all: booleanValue(values, "all"),
+        participating: booleanValue(values, "participating"),
+      });
+    },
   },
 
   {
@@ -42,7 +85,12 @@ const notificationOperations: TuiOperation[] = [
     description: "Mark a notification as read.",
 
     inputs: [
-      { key: "id", label: "Notification ID", type: "string", required: true },
+      {
+        key: "id",
+        label: "Notification ID",
+        type: "string",
+        required: true,
+      },
     ],
 
     run: ({ values }) =>
@@ -58,7 +106,12 @@ const notificationOperations: TuiOperation[] = [
     description: "Mark a notification as done.",
 
     inputs: [
-      { key: "id", label: "Notification ID", type: "string", required: true },
+      {
+        key: "id",
+        label: "Notification ID",
+        type: "string",
+        required: true,
+      },
     ],
 
     run: ({ values }) =>
@@ -71,7 +124,12 @@ const notificationOperations: TuiOperation[] = [
     command: "ghg activity",
     workspace: "Notifications",
     description: "Load assigned issues, review requests, and mentions.",
-    run: () => notificationsService.activity(),
+    inputs: [repoInput],
+
+    run: async ({ values }) => {
+      const repo = text(values, "repo") || (await inferRepoOptional());
+      return notificationsService.activity(repo);
+    },
   },
 
   {
@@ -80,7 +138,12 @@ const notificationOperations: TuiOperation[] = [
     command: "ghg mentions",
     workspace: "Notifications",
     description: "Load recent @mentions.",
-    run: () => notificationsService.mentions(),
+    inputs: [repoInput],
+
+    run: async ({ values }) => {
+      const repo = text(values, "repo") || (await inferRepoOptional());
+      return notificationsService.mentions(repo);
+    },
   },
 ];
 

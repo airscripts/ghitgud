@@ -110,12 +110,10 @@ interface RulesetInput {
 }
 
 interface Profile {
-  repo?: string;
   token?: string;
 }
 
 interface CredentialsFile {
-  repo?: string;
   token?: string;
   activeProfile?: string;
   profiles?: Record<string, Profile>;

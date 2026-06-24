@@ -7,7 +7,6 @@ vi.mock("@/api/client", () => ({
     get: vi.fn(),
     postTokenRequired: vi.fn(),
     patchTokenRequired: vi.fn(),
-    getRepo: vi.fn(() => "owner/repo"),
     getDefaultPerPage: vi.fn(() => 100),
   },
 }));
@@ -15,7 +14,7 @@ vi.mock("@/api/client", () => ({
 describe("milestones api", () => {
   it("lists milestones by state", async () => {
     (client.get as Mock).mockResolvedValue({ status: 200 });
-    await milestones.list("closed");
+    await milestones.list("closed", "owner/repo");
 
     expect(client.get).toHaveBeenCalledWith(
       "/repos/owner/repo/milestones?state=closed&per_page=100",
@@ -24,10 +23,13 @@ describe("milestones api", () => {
 
   it("creates milestones with token required", async () => {
     (client.postTokenRequired as Mock).mockResolvedValue({ status: 201 });
-    await milestones.create({
-      title: "v2.10.0",
-      dueOn: "2026-06-30T00:00:00.000Z",
-    });
+    await milestones.create(
+      {
+        title: "v2.10.0",
+        dueOn: "2026-06-30T00:00:00.000Z",
+      },
+      "owner/repo",
+    );
 
     expect(client.postTokenRequired).toHaveBeenCalledWith(
       "/repos/owner/repo/milestones",
@@ -40,7 +42,7 @@ describe("milestones api", () => {
 
   it("closes milestones with token required", async () => {
     (client.patchTokenRequired as Mock).mockResolvedValue({ status: 200 });
-    await milestones.close(3);
+    await milestones.close(3, "owner/repo");
 
     expect(client.patchTokenRequired).toHaveBeenCalledWith(
       "/repos/owner/repo/milestones/3",

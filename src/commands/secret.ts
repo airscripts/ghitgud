@@ -1,6 +1,7 @@
 import { Command } from "commander";
 
 import command from "@/core/command";
+import repoResolver from "@/core/repo";
 import secretsService from "@/services/secrets";
 
 const register = (program: Command) => {
@@ -11,10 +12,15 @@ const register = (program: Command) => {
   secret
     .command("list")
     .description("List secrets.")
+    .option("--repo <owner/repo>", "Repository")
     .option("--env <name>", "Environment name")
     .option("--org <org>", "Organization name")
     .action(async (options) => {
-      await command.run(() => secretsService.list(options));
+      const repo = options.repo
+        ? await repoResolver.resolveRepo(options.repo)
+        : undefined;
+
+      await command.run(() => secretsService.list({ ...options, repo }));
     });
 
   secret
@@ -22,6 +28,7 @@ const register = (program: Command) => {
     .description("Set a secret.")
     .requiredOption("--name <key>", "Secret name")
     .requiredOption("--value <val>", "Secret value")
+    .option("--repo <owner/repo>", "Repository")
     .option("--env <name>", "Environment name")
     .option("--org <org>", "Organization name")
     .option(
@@ -33,17 +40,26 @@ const register = (program: Command) => {
       "Comma-separated repo list for selected visibility",
     )
     .action(async (options) => {
-      await command.run(() => secretsService.set(options));
+      const repo = options.repo
+        ? await repoResolver.resolveRepo(options.repo)
+        : undefined;
+
+      await command.run(() => secretsService.set({ ...options, repo }));
     });
 
   secret
     .command("delete")
     .description("Delete a secret.")
     .requiredOption("--name <key>", "Secret name")
+    .option("--repo <owner/repo>", "Repository")
     .option("--env <name>", "Environment name")
     .option("--org <org>", "Organization name")
     .action(async (options) => {
-      await command.run(() => secretsService.remove(options));
+      const repo = options.repo
+        ? await repoResolver.resolveRepo(options.repo)
+        : undefined;
+
+      await command.run(() => secretsService.remove({ ...options, repo }));
     });
 };
 

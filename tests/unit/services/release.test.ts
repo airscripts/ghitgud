@@ -21,12 +21,6 @@ vi.mock("@/api/releases", () => ({
   },
 }));
 
-vi.mock("@/core/config", () => ({
-  default: {
-    getRepoOptional: vi.fn(() => "owner/repo"),
-  },
-}));
-
 vi.mock("@/core/logger", () => ({
   default: {
     warn: vi.fn(),
@@ -66,10 +60,10 @@ vi.mock("@/core/io", () => ({
 
 import git from "@/core/git";
 import api from "@/api/releases";
-import config from "@/core/config";
 import logger from "@/core/logger";
 import { GhitgudError } from "@/core/errors";
 import releaseService from "@/services/release";
+import { ERROR_NO_REPO } from "@/core/constants";
 
 describe("release service", () => {
   beforeEach(() => {
@@ -77,7 +71,6 @@ describe("release service", () => {
     vi.mocked(git.isInsideRepo).mockReturnValue(true);
     vi.mocked(git.getLatestTag).mockReturnValue("2.9.0");
     vi.mocked(git.getCommitsSinceTag).mockReturnValue([]);
-    vi.mocked(config.getRepoOptional).mockReturnValue("owner/repo");
   });
 
   afterEach(() => {
@@ -92,7 +85,7 @@ describe("release service", () => {
       expect(result.from).toBe("2.9.0");
       expect(result.to).toBe("HEAD");
 
-      expect(logger.warn).toHaveBeenCalledWith(
+      expect(vi.mocked(logger.warn)).toHaveBeenCalledWith(
         "No conventional commits found in range.",
       );
     });
@@ -109,7 +102,7 @@ describe("release service", () => {
       expect(result.groups.Added).toContain("new feature");
       expect(result.groups.Fixed).toContain("bug fix");
 
-      expect(logger.success).toHaveBeenCalledWith(
+      expect(vi.mocked(logger.success)).toHaveBeenCalledWith(
         expect.stringContaining("Generated changelog"),
       );
     });
@@ -159,7 +152,9 @@ describe("release service", () => {
       const result = await releaseService.bump({});
 
       expect(result.next).toBe("2.9.0");
-      expect(logger.info).toHaveBeenCalledWith("No bump-worthy commits found.");
+      expect(vi.mocked(logger.info)).toHaveBeenCalledWith(
+        "No bump-worthy commits found.",
+      );
     });
 
     it("should throw when not in repo and --create", async () => {
@@ -252,8 +247,7 @@ describe("release service", () => {
         { hash: "abc", subject: "feat: new feature", body: "" },
       ]);
 
-      const result = await releaseService.notes({});
-
+      const result = await releaseService.notes({ repo: "owner/repo" });
       expect(result.success).toBe(true);
       expect(result.body).toContain("### Added");
       expect(result.body).toContain("new feature");
@@ -272,7 +266,11 @@ describe("release service", () => {
         html_url: "https://github.com/owner/repo/releases/tag/2.9.1",
       });
 
-      const result = await releaseService.draft({ level: "patch" });
+      const result = await releaseService.draft({
+        level: "patch",
+        repo: "owner/repo",
+      });
+
       expect(result.success).toBe(true);
       expect(result.tag).toBe("2.9.1");
 
@@ -287,12 +285,13 @@ describe("release service", () => {
       );
     });
 
-    it("should throw when repo not configured", async () => {
-      vi.mocked(config.getRepoOptional).mockReturnValue(null);
-
-      await expect(releaseService.draft({ level: "patch" })).rejects.toThrow(
-        "Repository is required",
-      );
+    it("should throw when repo not provided", async () => {
+      await expect(
+        releaseService.draft({
+          level: "patch",
+          repo: undefined as unknown as string,
+        }),
+      ).rejects.toThrow(ERROR_NO_REPO);
     });
   });
 });

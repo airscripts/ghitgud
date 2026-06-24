@@ -3,6 +3,7 @@ import process from "process";
 
 import git from "@/core/git";
 import config from "@/core/config";
+import repoResolver from "@/core/repo";
 import { truncateMiddle } from "./layout";
 
 interface StatusItem {
@@ -38,14 +39,6 @@ const getBranch = () => {
   }
 };
 
-const resolveStatusDependencies = (): StatusDependencies => ({
-  cwd: process.cwd(),
-  repo: safeRead(() => config.getRepoOptional()),
-  token: safeRead(() => config.getTokenOptional()),
-  profiles: safeRead(() => config.listProfiles()) ?? [],
-  branch: getBranch(),
-});
-
 const safeRead = <T>(read: () => T): T | null => {
   try {
     return read();
@@ -53,6 +46,14 @@ const safeRead = <T>(read: () => T): T | null => {
     return null;
   }
 };
+
+const resolveStatusDependencies = (): StatusDependencies => ({
+  cwd: process.cwd(),
+  repo: safeRead(() => repoResolver.resolveRepoSync()),
+  token: safeRead(() => config.getTokenOptional()),
+  profiles: safeRead(() => config.listProfiles()) ?? [],
+  branch: getBranch(),
+});
 
 const buildStatusItems = (
   context: StatusContext,

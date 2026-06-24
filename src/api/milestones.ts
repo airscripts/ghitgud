@@ -3,7 +3,7 @@ import client from "./client";
 const milestones = {
   list: async (
     state: "open" | "closed" = "open",
-    repo = client.getRepo(),
+    repo: string,
   ): Promise<Response> => {
     return client.get(
       `/repos/${repo}/milestones?state=${state}&per_page=${client.getDefaultPerPage()}`,
@@ -12,7 +12,7 @@ const milestones = {
 
   create: async (
     options: { title: string; dueOn: string },
-    repo = client.getRepo(),
+    repo: string,
   ): Promise<Response> => {
     return client.postTokenRequired(`/repos/${repo}/milestones`, {
       title: options.title,
@@ -20,7 +20,7 @@ const milestones = {
     });
   },
 
-  close: async (number: number, repo = client.getRepo()): Promise<Response> => {
+  close: async (number: number, repo: string): Promise<Response> => {
     return client.patchTokenRequired(`/repos/${repo}/milestones/${number}`, {
       state: "closed",
     });

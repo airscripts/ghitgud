@@ -3,15 +3,15 @@ import { Label } from "@/types";
 import { repoPath } from "./path";
 
 const labels = {
-  fetch: async (repo = client.getRepo()): Promise<Response> => {
+  fetch: async (repo: string): Promise<Response> => {
     return client.get(repoPath(repo, "labels"));
   },
 
-  get: async (name: string, repo = client.getRepo()): Promise<Response> => {
+  get: async (name: string, repo: string): Promise<Response> => {
     return client.get(repoPath(repo, "labels", name));
   },
 
-  create: async (label: Label, repo = client.getRepo()): Promise<Response> => {
+  create: async (label: Label, repo: string): Promise<Response> => {
     return client.post(repoPath(repo, "labels"), {
       name: label.name,
       color: label.color,
@@ -19,7 +19,7 @@ const labels = {
     });
   },
 
-  patch: async (label: Label, repo = client.getRepo()): Promise<Response> => {
+  patch: async (label: Label, repo: string): Promise<Response> => {
     return client.patch(repoPath(repo, "labels", label.name), {
       color: label.color,
       description: label.description,
@@ -27,7 +27,7 @@ const labels = {
     });
   },
 
-  delete: async (name: string, repo = client.getRepo()): Promise<Response> => {
+  delete: async (name: string, repo: string): Promise<Response> => {
     return client.delete(repoPath(repo, "labels", name));
   },
 };

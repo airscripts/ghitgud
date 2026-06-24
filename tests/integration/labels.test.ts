@@ -7,7 +7,6 @@ vi.mock("@/services/labels", () => ({
   default: {
     list: vi.fn(() => Promise.resolve({ success: true, metadata: [] })),
     pull: vi.fn(() => Promise.resolve({ success: true, metadata: [] })),
-
     push: vi.fn(() => Promise.resolve({ success: true, metadata: {} })),
     prune: vi.fn(() => Promise.resolve({ success: true, metadata: {} })),
     pullTemplate: vi.fn(() => Promise.resolve({ success: true, metadata: [] })),
@@ -27,7 +26,15 @@ describe("integration > labels commands", () => {
     program.exitOverride();
     labelsCommand.register(program);
 
-    await program.parseAsync(["node", "test", "labels", "list"]);
+    await program.parseAsync([
+      "node",
+      "test",
+      "labels",
+      "list",
+      "--repo",
+      "airscripts/ghitgud",
+    ]);
+
     expect(labelsService.list).toHaveBeenCalledTimes(1);
   });
 
@@ -36,7 +43,15 @@ describe("integration > labels commands", () => {
     program.exitOverride();
     labelsCommand.register(program);
 
-    await program.parseAsync(["node", "test", "labels", "pull"]);
+    await program.parseAsync([
+      "node",
+      "test",
+      "labels",
+      "pull",
+      "--repo",
+      "airscripts/ghitgud",
+    ]);
+
     expect(labelsService.pull).toHaveBeenCalledTimes(1);
   });
 
@@ -62,7 +77,15 @@ describe("integration > labels commands", () => {
     program.exitOverride();
     labelsCommand.register(program);
 
-    await program.parseAsync(["node", "test", "labels", "push"]);
+    await program.parseAsync([
+      "node",
+      "test",
+      "labels",
+      "push",
+      "--repo",
+      "airscripts/ghitgud",
+    ]);
+
     expect(labelsService.push).toHaveBeenCalledTimes(1);
   });
 
@@ -76,6 +99,8 @@ describe("integration > labels commands", () => {
       "test",
       "labels",
       "push",
+      "--repo",
+      "airscripts/ghitgud",
       "-t",
       "github",
     ]);
@@ -88,7 +113,15 @@ describe("integration > labels commands", () => {
     program.exitOverride();
     labelsCommand.register(program);
 
-    await program.parseAsync(["node", "test", "labels", "prune"]);
+    await program.parseAsync([
+      "node",
+      "test",
+      "labels",
+      "prune",
+      "--repo",
+      "airscripts/ghitgud",
+    ]);
+
     expect(labelsService.prune).toHaveBeenCalledTimes(1);
   });
 });

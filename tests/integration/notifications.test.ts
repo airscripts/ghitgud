@@ -3,6 +3,17 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 
 import notificationsCommand from "@/commands/notifications";
 
+vi.mock("@/core/repo", () => ({
+  default: {
+    resolveRepo: vi.fn((repo?: string) =>
+      Promise.resolve(repo ?? "airscripts/ghitgud"),
+    ),
+
+    resolveRepoSync: vi.fn(() => "airscripts/ghitgud"),
+    resolveRepos: vi.fn(() => Promise.resolve(["airscripts/ghitgud"])),
+  },
+}));
+
 vi.mock("@/services/notifications", () => ({
   default: {
     list: vi.fn(() => Promise.resolve({ success: true, metadata: [] })),
@@ -11,6 +22,15 @@ vi.mock("@/services/notifications", () => ({
   },
 }));
 
+vi.mock("@/services/repos/index", () => ({
+  default: {
+    resolveTargets: vi.fn(() =>
+      Promise.resolve([{ fullName: "airscripts/ghitgud", name: "ghitgud" }]),
+    ),
+  },
+}));
+
+import repoResolver from "@/core/repo";
 import service from "@/services/notifications";
 
 describe("integration > notifications commands", () => {
@@ -36,11 +56,28 @@ describe("integration > notifications commands", () => {
       "50",
     ]);
 
+    expect(repoResolver.resolveRepo).toHaveBeenCalledWith("airscripts/ghitgud");
     expect(service.list).toHaveBeenCalledWith({
       all: true,
       limit: 50,
       participating: true,
       repo: "airscripts/ghitgud",
+    });
+  });
+
+  it("list passes undefined repo when repo is omitted", async () => {
+    const program = new Command();
+    program.exitOverride();
+    notificationsCommand.register(program);
+
+    await program.parseAsync(["node", "test", "notifications", "list"]);
+
+    expect(repoResolver.resolveRepo).not.toHaveBeenCalled();
+    expect(service.list).toHaveBeenCalledWith({
+      all: undefined,
+      limit: undefined,
+      participating: undefined,
+      repo: undefined,
     });
   });
 

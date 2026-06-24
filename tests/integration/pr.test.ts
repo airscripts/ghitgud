@@ -20,6 +20,12 @@ vi.mock("@/services/stack", () => ({
   },
 }));
 
+vi.mock("@/core/repo", () => ({
+  default: {
+    resolveRepo: vi.fn(() => Promise.resolve("owner/repo")),
+  },
+}));
+
 import prService from "@/services/pr";
 import stackService from "@/services/stack";
 
@@ -42,7 +48,7 @@ describe("integration > pr commands", () => {
       "--force",
     ]);
 
-    expect(prService.cleanup).toHaveBeenCalledWith({
+    expect(prService.cleanup).toHaveBeenCalledWith("owner/repo", {
       dryRun: true,
       force: true,
     });
@@ -54,7 +60,7 @@ describe("integration > pr commands", () => {
     prCommand.register(program);
 
     await program.parseAsync(["node", "test", "pr", "push", "42", "-f"]);
-    expect(prService.push).toHaveBeenCalledWith(42, true);
+    expect(prService.push).toHaveBeenCalledWith(42, "owner/repo", true);
   });
 
   it("next calls stackService.next with options", async () => {
@@ -101,7 +107,7 @@ describe("integration > pr commands", () => {
     prCommand.register(program);
 
     await program.parseAsync(["node", "test", "pr", "stack", "list"]);
-    expect(stackService.list).toHaveBeenCalledTimes(1);
+    expect(stackService.list).toHaveBeenCalledWith("owner/repo");
   });
 
   it("stack update calls service", async () => {
@@ -110,7 +116,7 @@ describe("integration > pr commands", () => {
     prCommand.register(program);
 
     await program.parseAsync(["node", "test", "pr", "stack", "update"]);
-    expect(stackService.update).toHaveBeenCalledTimes(1);
+    expect(stackService.update).toHaveBeenCalledWith("owner/repo");
   });
 
   it("stack push calls service with title and draft", async () => {
@@ -131,7 +137,7 @@ describe("integration > pr commands", () => {
       "--draft",
     ]);
 
-    expect(stackService.push).toHaveBeenCalledWith({
+    expect(stackService.push).toHaveBeenCalledWith("owner/repo", {
       draft: true,
       title: "feat: stack",
     });

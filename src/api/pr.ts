@@ -23,18 +23,15 @@ interface PullRequest {
 }
 
 const pr = {
-  fetchMerged: async (): Promise<Response> => {
-    const repo = client.getRepo();
+  fetchMerged: async (repo: string): Promise<Response> => {
     return client.get(`/repos/${repo}/pulls?state=closed&per_page=100`);
   },
 
-  getCommit: async (sha: string): Promise<Response> => {
-    const repo = client.getRepo();
+  getCommit: async (sha: string, repo: string): Promise<Response> => {
     return client.get(`/repos/${repo}/commits/${sha}`);
   },
 
-  fetch: async (prNumber: number): Promise<PullRequest> => {
-    const repo = client.getRepo();
+  fetch: async (prNumber: number, repo: string): Promise<PullRequest> => {
     const response = await client.get(`/repos/${repo}/pulls/${prNumber}`);
     return response.json();
   },
@@ -49,25 +46,29 @@ const pr = {
     }
   },
 
-  listOpen: async (): Promise<Response> => {
-    const repo = client.getRepo();
+  listOpen: async (repo: string): Promise<Response> => {
     return client.get(`/repos/${repo}/pulls?state=open&per_page=100`);
   },
 
-  createPr: async (body: {
-    title: string;
-    head: string;
-    base: string;
-    body: string;
-    draft: boolean;
-  }): Promise<PullRequest> => {
-    const repo = client.getRepo();
+  createPr: async (
+    repo: string,
+
+    body: {
+      title: string;
+      head: string;
+      base: string;
+      body: string;
+      draft: boolean;
+    },
+  ): Promise<PullRequest> => {
     const response = await client.post(`/repos/${repo}/pulls`, body);
     return response.json();
   },
 
   updatePr: async (
+    repo: string,
     prNumber: number,
+
     body: {
       title?: string;
       body?: string;
@@ -75,8 +76,6 @@ const pr = {
       state?: string;
     },
   ): Promise<PullRequest> => {
-    const repo = client.getRepo();
-
     const response = await client.patch(
       `/repos/${repo}/pulls/${prNumber}`,
       body,

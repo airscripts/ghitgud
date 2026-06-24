@@ -1,6 +1,6 @@
 import runService from "@/services/run";
 import type { TuiOperation } from "../types";
-import { repoInput, text, numberValue } from "./shared";
+import { text, numberValue, repoInput, inferRepo } from "./shared";
 
 const runOperations: TuiOperation[] = [
   {
@@ -12,14 +12,14 @@ const runOperations: TuiOperation[] = [
     description: "Fetch logs, artifacts, and annotations for a run.",
 
     inputs: [
-      { key: "runId", label: "Run ID", type: "number", required: true },
       repoInput,
+      { key: "runId", label: "Run ID", type: "number", required: true },
       { key: "outputDir", label: "Output dir", type: "string" },
     ],
 
-    run: ({ values }) =>
+    run: async ({ values }) =>
       runService.debugRun(numberValue(values, "runId"), {
-        repo: text(values, "repo"),
+        repo: text(values, "repo") || (await inferRepo()),
         outputDir: text(values, "outputDir"),
       }),
   },

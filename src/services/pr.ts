@@ -14,10 +14,13 @@ interface CleanupResult {
   remoteDeleted: boolean;
 }
 
-async function isSquashOrRebaseMerge(pr: PullRequest): Promise<boolean> {
+async function isSquashOrRebaseMerge(
+  pr: PullRequest,
+  repo: string,
+): Promise<boolean> {
   if (!pr.merge_commit_sha) return false;
   try {
-    const response = await api.getCommit(pr.merge_commit_sha);
+    const response = await api.getCommit(pr.merge_commit_sha, repo);
     const commit = await response.json();
     const parents = commit.parents?.length || 0;
     return parents === 1;
@@ -26,14 +29,17 @@ async function isSquashOrRebaseMerge(pr: PullRequest): Promise<boolean> {
   }
 }
 
-const cleanup = async (options: { dryRun: boolean; force: boolean }) => {
+const cleanup = async (
+  repo: string,
+  options: { dryRun: boolean; force: boolean },
+) => {
   logger.start(
     options.dryRun
       ? "Scanning merged pull requests in dry-run mode."
       : "Scanning merged pull requests for cleanup.",
   );
 
-  const response = await api.fetchMerged();
+  const response = await api.fetchMerged(repo);
   const prs: PullRequest[] = await response.json();
   const mergedPrs = prs.filter((p) => p.merged);
 
@@ -57,7 +63,7 @@ const cleanup = async (options: { dryRun: boolean; force: boolean }) => {
       skipped: false,
     };
 
-    const isSquashRebase = await isSquashOrRebaseMerge(pr);
+    const isSquashRebase = await isSquashOrRebaseMerge(pr, repo);
     if (isSquashRebase) {
       result.skipped = true;
       result.reason = "squash/rebase merge detected — skipping";
@@ -139,9 +145,9 @@ const cleanup = async (options: { dryRun: boolean; force: boolean }) => {
   return { success: true, results, fastForward: ffSuccess };
 };
 
-const push = async (prNumber: number, force: boolean) => {
+const push = async (prNumber: number, repo: string, force: boolean) => {
   logger.start(`Loading PR #${prNumber}.`);
-  const pr = await api.fetch(prNumber);
+  const pr = await api.fetch(prNumber, repo);
 
   if (!pr.head.repo) {
     throw new GhitgudError(

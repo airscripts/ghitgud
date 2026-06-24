@@ -1,13 +1,6 @@
-import config from "@/core/config";
+import repoResolver from "@/core/repo";
 import { GhitgudError } from "@/core/errors";
 import type { TuiInput, TuiInputValues } from "../types";
-
-const repoInput: TuiInput = {
-  key: "repo",
-  type: "string",
-  label: "Repository",
-  placeholder: "owner/repo",
-};
 
 const orgInput: TuiInput = {
   key: "org",
@@ -32,6 +25,13 @@ const limitInput: TuiInput = {
   key: "limit",
   type: "number",
   label: "Limit",
+};
+
+const repoInput: TuiInput = {
+  key: "repo",
+  type: "string",
+  label: "Repository",
+  placeholder: "owner/repo",
 };
 
 const targetInputs = [orgInput, reposInput, fileInput, limitInput];
@@ -65,16 +65,24 @@ const targetOptions = (values: TuiInputValues) => ({
   limit: text(values, "limit"),
 });
 
-const repoValue = (values: TuiInputValues) => {
-  return text(values, "repo") ?? config.getRepo();
+const inferRepo = async (): Promise<string> => {
+  return repoResolver.resolveRepo();
+};
+
+const inferRepoOptional = async (): Promise<string | undefined> => {
+  try {
+    return await repoResolver.resolveRepo();
+  } catch {
+    return undefined;
+  }
 };
 
 export {
   text,
   orgInput,
-  repoInput,
-  repoValue,
   fileInput,
+  inferRepo,
+  repoInput,
   reposInput,
   limitInput,
   numberValue,
@@ -82,4 +90,5 @@ export {
   requiredText,
   booleanValue,
   targetOptions,
+  inferRepoOptional,
 };

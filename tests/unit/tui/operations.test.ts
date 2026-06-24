@@ -1,11 +1,10 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
-vi.mock("@/core/config", () => ({
+vi.mock("@/core/repo", () => ({
   default: {
-    listProfiles: vi.fn(() => []),
-    getRepo: vi.fn(() => "owner/repo"),
-    getTokenOptional: vi.fn(() => "token"),
-    getRepoOptional: vi.fn(() => "owner/repo"),
+    resolveRepoSync: vi.fn(() => "airscripts/ghitgud"),
+    resolveRepo: vi.fn(() => Promise.resolve("airscripts/ghitgud")),
+    resolveRepos: vi.fn(() => Promise.resolve(["airscripts/ghitgud"])),
   },
 }));
 
@@ -248,36 +247,40 @@ describe("tui operations run functions", () => {
       expect(notificationsService.list).toHaveBeenCalledWith({
         all: true,
         limit: 10,
-        repo: undefined,
         participating: false,
+        repo: "airscripts/ghitgud",
       });
     });
 
     it("runs notifications.read", async () => {
-      await runOp(notificationOperations[1], { id: "123" });
+      await runOp(notificationOperations[2], { id: "123" });
       expect(notificationsService.markRead).toHaveBeenCalledWith("123");
     });
 
     it("runs notifications.done", async () => {
-      await runOp(notificationOperations[2], { id: "123" });
+      await runOp(notificationOperations[3], { id: "123" });
       expect(notificationsService.markDone).toHaveBeenCalledWith("123");
     });
 
     it("runs activity", async () => {
-      await runOp(notificationOperations[3]);
-      expect(notificationsService.activity).toHaveBeenCalled();
+      await runOp(notificationOperations[4]);
+      expect(notificationsService.activity).toHaveBeenCalledWith(
+        "airscripts/ghitgud",
+      );
     });
 
     it("runs mentions", async () => {
-      await runOp(notificationOperations[4]);
-      expect(notificationsService.mentions).toHaveBeenCalled();
+      await runOp(notificationOperations[5]);
+      expect(notificationsService.mentions).toHaveBeenCalledWith(
+        "airscripts/ghitgud",
+      );
     });
   });
 
   describe("labels", () => {
     it("runs labels.list", async () => {
       await runOp(labelOperations[0]);
-      expect(labelsService.list).toHaveBeenCalled();
+      expect(labelsService.list).toHaveBeenCalledWith("airscripts/ghitgud");
     });
 
     it("runs labels.pull with template", async () => {
@@ -290,7 +293,7 @@ describe("tui operations run functions", () => {
 
     it("runs labels.pull without template", async () => {
       await runOp(labelOperations[1]);
-      expect(labelsService.pull).toHaveBeenCalled();
+      expect(labelsService.pull).toHaveBeenCalledWith("airscripts/ghitgud");
     });
 
     it("runs labels.push with template", async () => {
@@ -298,24 +301,25 @@ describe("tui operations run functions", () => {
       expect(labelsService.pushTemplate).toHaveBeenCalledWith(
         "base",
         "templates",
+        "airscripts/ghitgud",
       );
     });
 
     it("runs labels.push without template", async () => {
       await runOp(labelOperations[2]);
-      expect(labelsService.push).toHaveBeenCalled();
+      expect(labelsService.push).toHaveBeenCalledWith("airscripts/ghitgud");
     });
 
     it("runs labels.prune", async () => {
       await runOp(labelOperations[3]);
-      expect(labelsService.prune).toHaveBeenCalled();
+      expect(labelsService.prune).toHaveBeenCalledWith("airscripts/ghitgud");
     });
   });
 
   describe("prs", () => {
     it("runs pr.cleanup", async () => {
       await runOp(prOperations[0], { dryRun: true, force: false });
-      expect(prService.cleanup).toHaveBeenCalledWith({
+      expect(prService.cleanup).toHaveBeenCalledWith("airscripts/ghitgud", {
         dryRun: true,
         force: false,
       });
@@ -323,7 +327,11 @@ describe("tui operations run functions", () => {
 
     it("runs pr.push", async () => {
       await runOp(prOperations[1], { pr: 42, force: true });
-      expect(prService.push).toHaveBeenCalledWith(42, true);
+      expect(prService.push).toHaveBeenCalledWith(
+        42,
+        "airscripts/ghitgud",
+        true,
+      );
     });
 
     it("runs pr.next", async () => {
@@ -341,17 +349,17 @@ describe("tui operations run functions", () => {
 
     it("runs pr.stack.list", async () => {
       await runOp(prOperations[4]);
-      expect(stackService.list).toHaveBeenCalled();
+      expect(stackService.list).toHaveBeenCalledWith("airscripts/ghitgud");
     });
 
     it("runs pr.stack.update", async () => {
       await runOp(prOperations[5]);
-      expect(stackService.update).toHaveBeenCalled();
+      expect(stackService.update).toHaveBeenCalledWith("airscripts/ghitgud");
     });
 
     it("runs pr.stack.push", async () => {
       await runOp(prOperations[6], { title: "feat: foo", draft: true });
-      expect(stackService.push).toHaveBeenCalledWith({
+      expect(stackService.push).toHaveBeenCalledWith("airscripts/ghitgud", {
         draft: true,
         title: "feat: foo",
       });
@@ -373,19 +381,26 @@ describe("tui operations run functions", () => {
         line: 10,
         body: "nice",
         side: "RIGHT",
-        repo: undefined,
         file: "src/main.ts",
+        repo: "airscripts/ghitgud",
       });
     });
 
     it("runs review.threads", async () => {
       await runOp(reviewOperations[1], { pr: 1 });
-      expect(reviewService.threads).toHaveBeenCalledWith(1, undefined);
+      expect(reviewService.threads).toHaveBeenCalledWith(
+        1,
+        "airscripts/ghitgud",
+      );
     });
 
     it("runs review.resolve", async () => {
       await runOp(reviewOperations[2], { threadId: 100, pr: 1 });
-      expect(reviewService.resolve).toHaveBeenCalledWith(100, undefined, 1);
+      expect(reviewService.resolve).toHaveBeenCalledWith(
+        100,
+        "airscripts/ghitgud",
+        1,
+      );
     });
 
     it("runs review.suggest", async () => {
@@ -399,7 +414,7 @@ describe("tui operations run functions", () => {
       expect(reviewService.suggest).toHaveBeenCalledWith({
         pr: 1,
         line: 5,
-        repo: undefined,
+        repo: "airscripts/ghitgud",
         file: "src/main.ts",
         replace: "const x = 1;",
       });
@@ -407,7 +422,11 @@ describe("tui operations run functions", () => {
 
     it("runs review.apply", async () => {
       await runOp(reviewOperations[4], { pr: 1, push: true });
-      expect(reviewService.apply).toHaveBeenCalledWith(1, undefined, true);
+      expect(reviewService.apply).toHaveBeenCalledWith(
+        1,
+        "airscripts/ghitgud",
+        true,
+      );
     });
   });
 
@@ -418,25 +437,36 @@ describe("tui operations run functions", () => {
         due: "2026-01-01",
       });
 
-      expect(milestoneService.create).toHaveBeenCalledWith({
-        title: "v1.0",
-        due: "2026-01-01",
-      });
+      expect(milestoneService.create).toHaveBeenCalledWith(
+        "airscripts/ghitgud",
+        {
+          title: "v1.0",
+          due: "2026-01-01",
+        },
+      );
     });
 
     it("runs milestone.list", async () => {
       await runOp(milestoneOperations[1], { status: "closed" });
-      expect(milestoneService.list).toHaveBeenCalledWith({ status: "closed" });
+      expect(milestoneService.list).toHaveBeenCalledWith("airscripts/ghitgud", {
+        status: "closed",
+      });
     });
 
     it("runs milestone.close", async () => {
       await runOp(milestoneOperations[2], { name: "v1.0" });
-      expect(milestoneService.close).toHaveBeenCalledWith("v1.0");
+      expect(milestoneService.close).toHaveBeenCalledWith(
+        "airscripts/ghitgud",
+        "v1.0",
+      );
     });
 
     it("runs milestone.progress", async () => {
       await runOp(milestoneOperations[3], { name: "v1.0" });
-      expect(milestoneService.progress).toHaveBeenCalledWith("v1.0");
+      expect(milestoneService.progress).toHaveBeenCalledWith(
+        "airscripts/ghitgud",
+        "v1.0",
+      );
     });
   });
 
@@ -452,7 +482,10 @@ describe("tui operations run functions", () => {
   describe("issues", () => {
     it("runs issue.subtasks.list", async () => {
       await runOp(issueOperations[0], { issue: 42 });
-      expect(issueService.subtasks).toHaveBeenCalledWith("42");
+      expect(issueService.subtasks).toHaveBeenCalledWith(
+        "airscripts/ghitgud",
+        "42",
+      );
     });
 
     it("runs issue.subtasks.create", async () => {
@@ -462,25 +495,37 @@ describe("tui operations run functions", () => {
         body: "body",
       });
 
-      expect(issueService.subtasks).toHaveBeenCalledWith("42", {
-        create: true,
-        title: "sub",
-        body: "body",
-      });
+      expect(issueService.subtasks).toHaveBeenCalledWith(
+        "airscripts/ghitgud",
+        "42",
+        {
+          create: true,
+          title: "sub",
+          body: "body",
+        },
+      );
     });
 
     it("runs issue.subtasks.link", async () => {
       await runOp(issueOperations[2], { issue: 42, link: 99 });
-      expect(issueService.subtasks).toHaveBeenCalledWith("42", {
-        link: "99",
-      });
+      expect(issueService.subtasks).toHaveBeenCalledWith(
+        "airscripts/ghitgud",
+        "42",
+        {
+          link: "99",
+        },
+      );
     });
 
     it("runs issue.parent", async () => {
       await runOp(issueOperations[3], { child: 1, parent: 2 });
-      expect(issueService.parent).toHaveBeenCalledWith("1", {
-        parent: "2",
-      });
+      expect(issueService.parent).toHaveBeenCalledWith(
+        "airscripts/ghitgud",
+        "1",
+        {
+          parent: "2",
+        },
+      );
     });
   });
 
@@ -549,32 +594,44 @@ describe("tui operations run functions", () => {
   describe("insights", () => {
     it("runs insights.traffic", async () => {
       await runOp(insightsOperations[0]);
-      expect(insightsService.traffic).toHaveBeenCalledWith("owner/repo");
+      expect(insightsService.traffic).toHaveBeenCalledWith(
+        "airscripts/ghitgud",
+      );
     });
 
     it("runs insights.contributors", async () => {
       await runOp(insightsOperations[1]);
-      expect(insightsService.contributors).toHaveBeenCalledWith("owner/repo");
+      expect(insightsService.contributors).toHaveBeenCalledWith(
+        "airscripts/ghitgud",
+      );
     });
 
     it("runs insights.commits", async () => {
       await runOp(insightsOperations[2]);
-      expect(insightsService.commits).toHaveBeenCalledWith("owner/repo");
+      expect(insightsService.commits).toHaveBeenCalledWith(
+        "airscripts/ghitgud",
+      );
     });
 
     it("runs insights.frequency", async () => {
       await runOp(insightsOperations[3]);
-      expect(insightsService.codeFrequency).toHaveBeenCalledWith("owner/repo");
+      expect(insightsService.codeFrequency).toHaveBeenCalledWith(
+        "airscripts/ghitgud",
+      );
     });
 
     it("runs insights.popularity", async () => {
       await runOp(insightsOperations[4]);
-      expect(insightsService.popularity).toHaveBeenCalledWith("owner/repo");
+      expect(insightsService.popularity).toHaveBeenCalledWith(
+        "airscripts/ghitgud",
+      );
     });
 
     it("runs insights.participation", async () => {
       await runOp(insightsOperations[5]);
-      expect(insightsService.participation).toHaveBeenCalledWith("owner/repo");
+      expect(insightsService.participation).toHaveBeenCalledWith(
+        "airscripts/ghitgud",
+      );
     });
   });
 
@@ -596,19 +653,21 @@ describe("tui operations run functions", () => {
 
   describe("cache", () => {
     it("runs cache.inspect", async () => {
-      await runOp(cacheOperations[0], { key: "abc", repo: "owner/repo" });
-      expect(cacheService.inspect).toHaveBeenCalledWith("abc", "owner/repo");
+      await runOp(cacheOperations[0], { key: "abc" });
+      expect(cacheService.inspect).toHaveBeenCalledWith(
+        "abc",
+        "airscripts/ghitgud",
+      );
     });
 
     it("runs cache.download", async () => {
       await runOp(cacheOperations[1], {
         key: "abc",
-        repo: "owner/repo",
         outputDir: "./out",
       });
 
       expect(cacheService.download).toHaveBeenCalledWith("abc", {
-        repo: "owner/repo",
+        repo: "airscripts/ghitgud",
         outputDir: "./out",
       });
     });
@@ -618,12 +677,11 @@ describe("tui operations run functions", () => {
     it("runs run.debug", async () => {
       await runOp(runOperations[0], {
         runId: 123,
-        repo: "owner/repo",
         outputDir: "./out",
       });
 
       expect(runService.debugRun).toHaveBeenCalledWith(123, {
-        repo: "owner/repo",
+        repo: "airscripts/ghitgud",
         outputDir: "./out",
       });
     });
@@ -634,11 +692,9 @@ describe("tui operations run functions", () => {
       await runOp(profileOperations[0], {
         name: "work",
         token: "ghp_xxx",
-        repo: "owner/repo",
       });
 
       expect(profileService.add).toHaveBeenCalledWith("work", {
-        repo: "owner/repo",
         token: "ghp_xxx",
       });
     });
@@ -666,8 +722,8 @@ describe("tui operations run functions", () => {
     });
 
     it("runs config.get", async () => {
-      await runOp(configOperations[1], { key: "repo" });
-      expect(configService.get).toHaveBeenCalledWith("repo");
+      await runOp(configOperations[1], { key: "token" });
+      expect(configService.get).toHaveBeenCalledWith("token");
     });
 
     it("runs config.unset", async () => {
@@ -744,7 +800,9 @@ describe("tui operations run functions", () => {
 
     it("runs release.verify", async () => {
       await runOp(releaseOperations[2], { tag: "v1.0" });
-      expect(releaseService.verify).toHaveBeenCalledWith("v1.0", {});
+      expect(releaseService.verify).toHaveBeenCalledWith("v1.0", {
+        repo: "airscripts/ghitgud",
+      });
     });
 
     it("runs release.notes with defaults", async () => {
@@ -753,6 +811,7 @@ describe("tui operations run functions", () => {
         out: undefined,
         since: undefined,
         templateFile: undefined,
+        repo: "airscripts/ghitgud",
       });
     });
 
@@ -767,6 +826,7 @@ describe("tui operations run functions", () => {
         out: "o.md",
         since: "v1.0",
         templateFile: "t.md",
+        repo: "airscripts/ghitgud",
       });
     });
 
@@ -781,6 +841,7 @@ describe("tui operations run functions", () => {
         title: "v1.1",
         level: "minor",
         notes: "generated",
+        repo: "airscripts/ghitgud",
       });
     });
   });

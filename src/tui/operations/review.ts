@@ -4,6 +4,7 @@ import reviewService from "@/services/review";
 import {
   text,
   repoInput,
+  inferRepo,
   numberValue,
   booleanValue,
   requiredText,
@@ -19,17 +20,17 @@ const reviewOperations: TuiOperation[] = [
     description: "Create a line review comment.",
 
     inputs: [
+      repoInput,
       { key: "pr", label: "PR number", type: "number", required: true },
       { key: "file", label: "File", type: "string", required: true },
       { key: "line", label: "Line", type: "number", required: true },
       { key: "body", label: "Body", type: "string", required: true },
       { key: "side", label: "Side", type: "string", defaultValue: "RIGHT" },
-      repoInput,
     ],
 
-    run: ({ values }) =>
+    run: async ({ values }) =>
       reviewService.comment({
-        repo: text(values, "repo"),
+        repo: text(values, "repo") || (await inferRepo()),
         pr: numberValue(values, "pr"),
         line: numberValue(values, "line"),
         file: requiredText(values, "file"),
@@ -46,12 +47,15 @@ const reviewOperations: TuiOperation[] = [
     description: "List review threads for a PR.",
 
     inputs: [
-      { key: "pr", label: "PR number", type: "number", required: true },
       repoInput,
+      { key: "pr", label: "PR number", type: "number", required: true },
     ],
 
-    run: ({ values }) =>
-      reviewService.threads(numberValue(values, "pr"), text(values, "repo")),
+    run: async ({ values }) =>
+      reviewService.threads(
+        numberValue(values, "pr"),
+        text(values, "repo") || (await inferRepo()),
+      ),
   },
 
   {
@@ -63,15 +67,15 @@ const reviewOperations: TuiOperation[] = [
     description: "Mark a review thread as resolved.",
 
     inputs: [
+      repoInput,
       { key: "threadId", label: "Thread ID", type: "number", required: true },
       { key: "pr", label: "PR number", type: "number", required: true },
-      repoInput,
     ],
 
-    run: ({ values }) =>
+    run: async ({ values }) =>
       reviewService.resolve(
         numberValue(values, "threadId"),
-        text(values, "repo"),
+        text(values, "repo") || (await inferRepo()),
         numberValue(values, "pr"),
       ),
   },
@@ -85,16 +89,16 @@ const reviewOperations: TuiOperation[] = [
     description: "Create a single-line suggestion.",
 
     inputs: [
+      repoInput,
       { key: "pr", label: "PR number", type: "number", required: true },
       { key: "file", label: "File", type: "string", required: true },
       { key: "line", label: "Line", type: "number", required: true },
       { key: "replace", label: "Replacement", type: "string", required: true },
-      repoInput,
     ],
 
-    run: ({ values }) =>
+    run: async ({ values }) =>
       reviewService.suggest({
-        repo: text(values, "repo"),
+        repo: text(values, "repo") || (await inferRepo()),
         pr: numberValue(values, "pr"),
         line: numberValue(values, "line"),
         file: requiredText(values, "file"),
@@ -111,15 +115,15 @@ const reviewOperations: TuiOperation[] = [
     description: "Apply review suggestions locally.",
 
     inputs: [
-      { key: "pr", label: "PR number", type: "number", required: true },
       repoInput,
+      { key: "pr", label: "PR number", type: "number", required: true },
       { key: "push", label: "Push", type: "boolean" },
     ],
 
-    run: ({ values }) =>
+    run: async ({ values }) =>
       reviewService.apply(
         numberValue(values, "pr"),
-        text(values, "repo"),
+        text(values, "repo") || (await inferRepo()),
         booleanValue(values, "push"),
       ),
   },

@@ -8,7 +8,6 @@ vi.mock("@/core/config", () => ({
     has: vi.fn(),
     read: vi.fn(),
     write: vi.fn(),
-    getRepo: vi.fn(() => "owner/repo"),
     getToken: vi.fn(() => "test-token"),
     getTokenOptional: vi.fn(() => "test-token"),
   },
@@ -248,12 +247,6 @@ describe("client", () => {
     it("should return true only for 404", () => {
       expect(client.isNotFound(404)).toBe(true);
       expect(client.isNotFound(200)).toBe(false);
-    });
-  });
-
-  describe("getRepo", () => {
-    it("should return the configured repo", () => {
-      expect(client.getRepo()).toBe("owner/repo");
     });
   });
 });

@@ -16,9 +16,10 @@ export interface ActivityResult {
 
 export interface ListOptions {
   all?: boolean;
-  participating?: boolean;
   repo?: string;
   limit?: number;
+  repos?: string[];
+  participating?: boolean;
 }
 
 export const normalizeThread = (item: unknown): Notification => {

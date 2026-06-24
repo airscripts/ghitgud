@@ -1,12 +1,15 @@
 import type { TuiOperation } from "../types";
 import dependabotService from "@/services/dependabot";
+
 import {
   text,
+  repoInput,
+  inferRepo,
+  numberValue,
   booleanValue,
+  requiredText,
   targetInputs,
   targetOptions,
-  requiredText,
-  numberValue,
 } from "./shared";
 
 const dependabotOperations: TuiOperation[] = [
@@ -50,16 +53,16 @@ const dependabotOperations: TuiOperation[] = [
     description: "Dismiss a Dependabot alert with a reason.",
 
     inputs: [
+      repoInput,
       { key: "alert", label: "Alert number", type: "number", required: true },
-      { key: "repo", label: "Repository", type: "string" },
       { key: "reason", label: "Reason", type: "string", required: true },
       { key: "comment", label: "Comment", type: "string" },
       { key: "yes", label: "Confirm", type: "boolean" },
     ],
 
-    run: ({ values }) =>
+    run: async ({ values }) =>
       dependabotService.dismiss(numberValue(values, "alert"), {
-        repo: text(values, "repo"),
+        repo: text(values, "repo") || (await inferRepo()),
         comment: text(values, "comment"),
         yes: booleanValue(values, "yes"),
         reason: requiredText(values, "reason"),

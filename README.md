@@ -117,35 +117,35 @@ pnpm start              # Run the CLI locally.
 
 ## Configuration
 
-Set a GitHub personal access token and repository (in `owner/repo` format):
+Set a GitHub personal access token:
 
 ```bash
 ghg config set token <your-token>
-ghg config set repo owner/repository
 ```
 
 Retrieve a configured value:
 
 ```bash
 ghg config get token
-ghg config get repo
 ```
 
 > **Token type recommendation:** Use a **classic personal access token** with at least `repo`, `notifications`, `read:user`, and `read:org` scopes. Fine-grained PATs are repository-scoped and will fail with 403 errors on user-scoped endpoints such as notifications, activity, and mentions.
 >
 > Create a token at: https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens
 
-Configuration is stored in `~/.config/ghitgud/credentials.json` and supports per-repository `.ghitgudrc` files for automatic profile detection.
+> **Repository target resolution:** For commands that need a repository, ghg resolves the target from the `--repo` flag or the current git remote. If neither is available, the command throws an error.
+
+Configuration is stored in `~/.config/ghitgud/credentials.json`.
 
 ---
 
 ## Profile Management
 
-ghg introduces multi-account support through named profiles. Each profile stores its own token and optional repository association.
+ghg introduces multi-account support through named profiles. Each profile stores its own token.
 
 ```bash
 # Add or update a profile.
-ghg profile add work --repo owner/repo --token ghp_xxx
+ghg profile add work --token ghp_xxx
 
 # List all profiles.
 ghg profile list
@@ -157,7 +157,7 @@ ghg profile switch work
 ghg profile detect
 ```
 
-When a profile is active, all API calls use that profile's token. The `detect` command reads the current repository's remote URL and matches it against profile associations, including a per-repo `.ghitgudrc` file if present.
+When a profile is active, all API calls use that profile's token. The `detect` command reads the current repository's remote URL and matches it against profile associations.
 
 ---
 
@@ -286,7 +286,7 @@ ghg config set <key> <val>
 ghg config get <key>
 ```
 
-- `set` sets a config value such as token or repo.
+- `set` sets a config value such as token.
 - `get` reads a configured value.
 
 ### Profile
@@ -575,7 +575,7 @@ Error:
 ```json
 {
   "success": false,
-  "error": "You must set the GHITGUD_GITHUB_REPO environment variable."
+  "error": "No repository specified. Use --repo owner/repo or run inside a git repository with a GitHub remote."
 }
 ```
 

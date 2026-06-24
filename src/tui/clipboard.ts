@@ -65,4 +65,66 @@ const copyToClipboard = (text: string): void => {
   );
 };
 
-export { copyToClipboard };
+const pasteFromClipboard = (): string => {
+  const platform = process.platform;
+
+  const exec = (command: string, args: string[]): string => {
+    return execFileSync(command, args, {
+      encoding: "utf-8",
+      stdio: ["ignore", "pipe", "ignore"],
+    });
+  };
+
+  if (platform === "darwin") {
+    try {
+      return exec("pbpaste", []);
+    } catch {
+      // Fall through.
+    }
+  }
+
+  if (platform === "win32") {
+    try {
+      return exec("powershell.exe", [
+        "-NoProfile",
+        "-Command",
+        "Get-Clipboard",
+      ]);
+    } catch {
+      // Fall through.
+    }
+  }
+
+  if (platform === "linux") {
+    try {
+      return exec("xclip", ["-selection", "clipboard", "-o"]);
+    } catch {
+      // Fall through.
+    }
+
+    try {
+      return exec("xsel", ["--clipboard", "--output"]);
+    } catch {
+      // Fall through.
+    }
+
+    try {
+      return exec("wl-paste", []);
+    } catch {
+      // Fall through.
+    }
+  }
+
+  // WSL fallback.
+  try {
+    return exec("powershell.exe", ["-NoProfile", "-Command", "Get-Clipboard"]);
+  } catch {
+    // Fall through.
+  }
+
+  throw new GhitgudError(
+    "No clipboard tool found. Install xclip, xsel, or wl-copy.",
+  );
+};
+
+export { copyToClipboard, pasteFromClipboard };

@@ -80,7 +80,11 @@ describe("pr service", () => {
         json: () => Promise.resolve([]),
       });
 
-      const result = await prService.cleanup({ dryRun: false, force: false });
+      const result = await prService.cleanup("owner/repo", {
+        dryRun: false,
+        force: false,
+      });
+
       expect(result.success).toBe(true);
       expect(result.results).toEqual([]);
 
@@ -108,7 +112,11 @@ describe("pr service", () => {
         json: () => Promise.resolve({ parents: [{}, {}] }),
       });
 
-      const result = await prService.cleanup({ dryRun: false, force: false });
+      const result = await prService.cleanup("owner/repo", {
+        dryRun: false,
+        force: false,
+      });
+
       expect(result.success).toBe(true);
       expect(git.deleteLocalBranch).toHaveBeenCalledWith("feature", false);
       expect(git.deleteRemoteBranch).toHaveBeenCalledWith("feature", false);
@@ -129,9 +137,12 @@ describe("pr service", () => {
         json: () => Promise.resolve({ parents: [{}] }),
       });
 
-      const result = await prService.cleanup({ dryRun: false, force: false });
-      expect(result.results[0].skipped).toBe(true);
+      const result = await prService.cleanup("owner/repo", {
+        dryRun: false,
+        force: false,
+      });
 
+      expect(result.results[0].skipped).toBe(true);
       expect(result.results[0].reason).toBe(
         "squash/rebase merge detected — skipping",
       );
@@ -152,7 +163,11 @@ describe("pr service", () => {
         json: () => Promise.resolve({ parents: [{}, {}] }),
       });
 
-      const result = await prService.cleanup({ dryRun: false, force: false });
+      const result = await prService.cleanup("owner/repo", {
+        dryRun: false,
+        force: false,
+      });
+
       expect(result.results[0].skipped).toBe(true);
       expect(result.results[0].reason).toBe("branch already deleted");
     });
@@ -186,7 +201,11 @@ describe("pr service", () => {
       (git.deleteRemoteBranch as Mock).mockReturnValue(true);
       (git.fastForwardBase as Mock).mockReturnValue(true);
 
-      const result = await prService.cleanup({ dryRun: false, force: true });
+      const result = await prService.cleanup("owner/repo", {
+        dryRun: false,
+        force: true,
+      });
+
       expect(result.results[0].skipped).toBe(false);
     });
 
@@ -208,7 +227,11 @@ describe("pr service", () => {
         json: () => Promise.resolve({ parents: [{}, {}] }),
       });
 
-      const result = await prService.cleanup({ dryRun: true, force: true });
+      const result = await prService.cleanup("owner/repo", {
+        dryRun: true,
+        force: true,
+      });
+
       expect(result.success).toBe(true);
       expect(git.deleteLocalBranch).toHaveBeenCalledWith("feature", true);
       expect(git.deleteRemoteBranch).toHaveBeenCalledWith("feature", true);
@@ -233,7 +256,7 @@ describe("pr service", () => {
         json: () => Promise.resolve({ parents: [{}, {}] }),
       });
 
-      await prService.cleanup({ dryRun: false, force: true });
+      await prService.cleanup("owner/repo", { dryRun: false, force: true });
       expect(git.checkoutBranch).toHaveBeenCalledWith("main");
     });
   });
@@ -248,17 +271,25 @@ describe("pr service", () => {
       (api.fetch as Mock).mockReturnValue(pr);
       (git.getCurrentBranch as Mock).mockReturnValue("fix");
 
-      await expect(prService.push(1, false)).rejects.toThrow(GhitgudError);
-      await expect(prService.push(1, false)).rejects.toThrow("deleted fork");
+      await expect(prService.push(1, "owner/repo", false)).rejects.toThrow(
+        GhitgudError,
+      );
+
+      await expect(prService.push(1, "owner/repo", false)).rejects.toThrow(
+        "deleted fork",
+      );
     });
 
     it("throws when PR does not allow edits from maintainers", async () => {
       const pr = makePr({ maintainer_can_modify: false });
       (api.fetch as Mock).mockReturnValue(pr);
       (git.getCurrentBranch as Mock).mockReturnValue("fix");
-      await expect(prService.push(1, false)).rejects.toThrow(GhitgudError);
 
-      await expect(prService.push(1, false)).rejects.toThrow(
+      await expect(prService.push(1, "owner/repo", false)).rejects.toThrow(
+        GhitgudError,
+      );
+
+      await expect(prService.push(1, "owner/repo", false)).rejects.toThrow(
         "does not allow edits from maintainers",
       );
     });
@@ -271,8 +302,13 @@ describe("pr service", () => {
       (git.branchExistsOnRemote as Mock).mockReturnValue(true);
       (git.hasDiverged as Mock).mockReturnValue(true);
 
-      await expect(prService.push(1, false)).rejects.toThrow(GhitgudError);
-      await expect(prService.push(1, false)).rejects.toThrow("diverged");
+      await expect(prService.push(1, "owner/repo", false)).rejects.toThrow(
+        GhitgudError,
+      );
+
+      await expect(prService.push(1, "owner/repo", false)).rejects.toThrow(
+        "diverged",
+      );
     });
 
     it("pushes to fork remote successfully", async () => {
@@ -283,7 +319,7 @@ describe("pr service", () => {
       (git.branchExistsOnRemote as Mock).mockReturnValue(false);
       (git.pushToRemote as Mock).mockReturnValue(undefined);
 
-      await prService.push(1, false);
+      await prService.push(1, "owner/repo", false);
       expect(git.pushToRemote).toHaveBeenCalledWith(
         "fork-owner-repo",
         "feature",
@@ -304,7 +340,7 @@ describe("pr service", () => {
       (git.branchExistsOnRemote as Mock).mockReturnValue(false);
       (git.pushToRemote as Mock).mockReturnValue(undefined);
 
-      await prService.push(1, false);
+      await prService.push(1, "owner/repo", false);
       expect(git.addRemote).toHaveBeenCalledWith(
         "fork-owner-repo",
         "https://github.com/owner/repo",
@@ -322,7 +358,7 @@ describe("pr service", () => {
       (git.remoteExists as Mock).mockReturnValue(true);
       (git.pushToRemote as Mock).mockReturnValue(undefined);
 
-      await prService.push(1, true);
+      await prService.push(1, "owner/repo", true);
       expect(git.pushToRemote).toHaveBeenCalledWith(
         "fork-owner-repo",
         "feature",

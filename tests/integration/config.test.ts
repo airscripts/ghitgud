@@ -5,13 +5,13 @@ import configCommand from "@/commands/config";
 
 vi.mock("@/services/config", () => ({
   default: {
-    read: vi.fn(() => "airscripts/ghitgud"),
     set: vi.fn(() => Promise.resolve({ success: true })),
-    unset: vi.fn(() => Promise.resolve({ success: true })),
 
     get: vi.fn(() =>
-      Promise.resolve({ success: true, value: "airscripts/ghitgud" }),
+      Promise.resolve({ success: true, value: "ghp_testtoken" }),
     ),
+
+    unset: vi.fn(() => Promise.resolve({ success: true })),
   },
 }));
 
@@ -32,14 +32,11 @@ describe("integration > config commands", () => {
       "test",
       "config",
       "set",
-      "repo",
-      "airscripts/ghitgud",
+      "token",
+      "ghp_testtoken",
     ]);
 
-    expect(configService.set).toHaveBeenCalledWith(
-      "repo",
-      "airscripts/ghitgud",
-    );
+    expect(configService.set).toHaveBeenCalledWith("token", "ghp_testtoken");
   });
 
   it("get calls service.get with key", async () => {
@@ -47,8 +44,8 @@ describe("integration > config commands", () => {
     program.exitOverride();
     configCommand.register(program);
 
-    await program.parseAsync(["node", "test", "config", "get", "repo"]);
-    expect(configService.get).toHaveBeenCalledWith("repo");
+    await program.parseAsync(["node", "test", "config", "get", "token"]);
+    expect(configService.get).toHaveBeenCalledWith("token");
   });
 
   it("unset calls service.unset with key", async () => {
@@ -56,7 +53,7 @@ describe("integration > config commands", () => {
     program.exitOverride();
     configCommand.register(program);
 
-    await program.parseAsync(["node", "test", "config", "unset", "repo"]);
-    expect(configService.unset).toHaveBeenCalledWith("repo");
+    await program.parseAsync(["node", "test", "config", "unset", "token"]);
+    expect(configService.unset).toHaveBeenCalledWith("token");
   });
 });

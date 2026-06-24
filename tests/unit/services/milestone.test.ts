@@ -49,15 +49,18 @@ describe("milestone service", () => {
       json: () => Promise.resolve(MILESTONE),
     });
 
-    const result = await milestoneService.create({
+    const result = await milestoneService.create("owner/repo", {
       title: "v2.10.0",
       due: "2026-06-30",
     });
 
-    expect(api.create).toHaveBeenCalledWith({
-      title: "v2.10.0",
-      dueOn: "2026-06-30T00:00:00.000Z",
-    });
+    expect(api.create).toHaveBeenCalledWith(
+      {
+        title: "v2.10.0",
+        dueOn: "2026-06-30T00:00:00.000Z",
+      },
+      "owner/repo",
+    );
 
     expect(result).toEqual({ success: true, milestone: MILESTONE });
     expect(logger.success).toHaveBeenCalledWith('Created milestone "v2.10.0".');
@@ -68,7 +71,7 @@ describe("milestone service", () => {
       .mockResolvedValueOnce({ json: () => Promise.resolve([MILESTONE]) })
       .mockResolvedValueOnce({ json: () => Promise.resolve([]) });
 
-    const result = await milestoneService.progress("v2.10.0");
+    const result = await milestoneService.progress("owner/repo", "v2.10.0");
 
     expect(result).toEqual({
       success: true,
@@ -92,8 +95,8 @@ describe("milestone service", () => {
       json: () => Promise.resolve({ ...MILESTONE, state: "closed" }),
     });
 
-    await milestoneService.close("v2.10.0");
-    expect(api.close).toHaveBeenCalledWith(7);
+    await milestoneService.close("owner/repo", "v2.10.0");
+    expect(api.close).toHaveBeenCalledWith(7, "owner/repo");
   });
 
   it("throws when milestone is missing", async () => {
@@ -101,9 +104,9 @@ describe("milestone service", () => {
       json: () => Promise.resolve([]),
     });
 
-    await expect(milestoneService.progress("missing")).rejects.toThrow(
-      'Milestone "missing" was not found.',
-    );
+    await expect(
+      milestoneService.progress("owner/repo", "missing"),
+    ).rejects.toThrow('Milestone "missing" was not found.');
 
     expect(output.renderSummary).not.toHaveBeenCalled();
   });

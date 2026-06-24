@@ -3,7 +3,16 @@ import { Command } from "commander";
 import parse from "@/core/parse";
 import prompt from "@/core/prompt";
 import command from "@/core/command";
+import repoResolver from "@/core/repo";
 import service from "@/services/notifications";
+import reposService from "@/services/repos/index";
+
+const addTargetOptions = (cmd: Command) => {
+  return cmd
+    .option("--org <org>", "Target all repositories in an organization")
+    .option("--repos <repos>", "Comma-separated owner/repo list")
+    .option("--file <path>", "JSON or text file containing repositories");
+};
 
 const register = (program: Command) => {
   const notifications = program
@@ -15,6 +24,8 @@ const register = (program: Command) => {
     `
 Examples:
   ghg notifications list
+  ghg notifications list --repo owner/repo
+  ghg notifications list --org my-org
   ghg notifications read 12345
 `,
   );
@@ -27,15 +38,55 @@ Examples:
     .option("-r, --repo <owner/repo>", "Filter by repository")
     .option("-l, --limit <n>", "Max results")
     .action(async (options) => {
+      const repo = options.repo
+        ? await repoResolver.resolveRepo(options.repo)
+        : undefined;
+
       await command.run(() =>
         service.list({
+          repo,
           all: options.all,
-          repo: options.repo,
           participating: options.participating,
 
           limit: options.limit
             ? parse.parsePositiveInt(options.limit, "limit")
             : undefined,
+        }),
+      );
+    });
+
+  addTargetOptions(
+    notifications
+      .command("list-by-target")
+      .description(
+        "List notifications for a set of repositories (org, repos list, or file).",
+      )
+      .addHelpText(
+        "after",
+        `
+Examples:
+  ghg notifications list-by-target --org my-org
+  ghg notifications list-by-target --repos owner/repo1,owner/repo2
+`,
+      ),
+  )
+    .option("-a, --all", "Include read notifications")
+    .option("-p, --participating", "Only participating notifications")
+    .action(async (options) => {
+      const targets = {
+        org: options.org,
+        file: options.file,
+        repos: options.repos,
+      };
+
+      const repoSummaries = await reposService.resolveTargets(targets);
+      const repos = repoSummaries.map((r) => r.fullName);
+
+      await command.run(() =>
+        service.list({
+          repos,
+          all: options.all,
+          participating: options.participating,
         }),
       );
     });

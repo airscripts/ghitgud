@@ -3,8 +3,8 @@ import { renderApp } from "./render";
 import operations from "./operations";
 import { buildStatusItems } from "./status";
 import outputState from "@/core/output-state";
-import { copyToClipboard } from "./clipboard";
 import { parseMouseEvent, SCROLL_SENSITIVITY } from "./mouse";
+import { copyToClipboard, pasteFromClipboard } from "./clipboard";
 import type { Mode, MouseEvent, TuiInputValues, TuiOperation } from "./types";
 
 import {
@@ -324,27 +324,27 @@ const createTuiApp = (runtime: Runtime) => {
       input: string,
       key: Record<string, unknown>,
     ) => {
-      if (input === "q") {
+      if (input === "q" && input.length === 1) {
         returnToDashboard();
         return;
       }
 
-      if (input === "?") {
+      if (input === "?" && input.length === 1) {
         setShowHelp(true);
         return;
       }
 
-      if (input === "c") {
+      if (input === "c" && input.length === 1) {
         openPalette();
         return;
       }
 
-      if (key.upArrow || input === "k") {
+      if (key.upArrow || (input === "k" && input.length === 1)) {
         chooseInput(-1);
         return;
       }
 
-      if (key.downArrow || input === "j") {
+      if (key.downArrow || (input === "j" && input.length === 1)) {
         chooseInput(1);
         return;
       }
@@ -354,7 +354,7 @@ const createTuiApp = (runtime: Runtime) => {
       input: string,
       key: Record<string, unknown>,
     ) => {
-      if (input === "u" || key.pageUp) {
+      if ((input === "u" && input.length === 1) || key.pageUp) {
         setContextScroll((current) =>
           scrollBy(
             current,
@@ -367,7 +367,7 @@ const createTuiApp = (runtime: Runtime) => {
         return;
       }
 
-      if (input === "d" || key.pageDown) {
+      if ((input === "d" && input.length === 1) || key.pageDown) {
         setContextScroll((current) =>
           scrollBy(
             current,
@@ -380,12 +380,12 @@ const createTuiApp = (runtime: Runtime) => {
         return;
       }
 
-      if (input === "g") {
+      if (input === "g" && input.length === 1) {
         setContextScroll(0);
         return;
       }
 
-      if (input === "G") {
+      if (input === "G" && input.length === 1) {
         setContextScroll(
           clampScroll(
             outputLines.length,
@@ -402,7 +402,7 @@ const createTuiApp = (runtime: Runtime) => {
       input: string,
       key: Record<string, unknown>,
     ) => {
-      if (input === "h" || key.leftArrow) {
+      if ((input === "h" && input.length === 1) || key.leftArrow) {
         setContextHScroll((current) =>
           Math.max(0, current - Math.ceil(layout.outputWidth / 2)),
         );
@@ -410,7 +410,7 @@ const createTuiApp = (runtime: Runtime) => {
         return;
       }
 
-      if (input === "l" || key.rightArrow) {
+      if ((input === "l" && input.length === 1) || key.rightArrow) {
         setContextHScroll(
           (current) => current + Math.ceil(layout.outputWidth / 2),
         );
@@ -434,7 +434,7 @@ const createTuiApp = (runtime: Runtime) => {
         return;
       }
 
-      if (input === "i") {
+      if (input === "i" && input.length === 1) {
         if (field && field.type !== "boolean") {
           updateField(field.key, "");
           setMode("insert");
@@ -443,7 +443,7 @@ const createTuiApp = (runtime: Runtime) => {
         return;
       }
 
-      if (input === "v") {
+      if (input === "v" && input.length === 1) {
         setMode("visual");
         setVisualAnchor(contextScroll);
         setVisualCursor(contextScroll);
@@ -459,7 +459,7 @@ const createTuiApp = (runtime: Runtime) => {
     };
 
     const handlePalette = (input: string, key: Record<string, unknown>) => {
-      if (input === "q" || key.escape) {
+      if ((input === "q" && input.length === 1) || key.escape) {
         closePalette();
         return;
       }
@@ -470,12 +470,12 @@ const createTuiApp = (runtime: Runtime) => {
         return;
       }
 
-      if (key.upArrow || input === "k") {
+      if (key.upArrow || (input === "k" && input.length === 1)) {
         setPaletteIndex((current) => Math.max(0, current - 1));
         return;
       }
 
-      if (key.downArrow || input === "j") {
+      if (key.downArrow || (input === "j" && input.length === 1)) {
         setPaletteIndex((current) =>
           Math.min(current + 1, Math.max(0, paletteOperations.length - 1)),
         );
@@ -494,7 +494,7 @@ const createTuiApp = (runtime: Runtime) => {
     };
 
     const handleInsert = (input: string, key: Record<string, unknown>) => {
-      if (input === "q") {
+      if (input === "q" && input.length === 1) {
         returnToDashboard();
         return;
       }
@@ -510,6 +510,18 @@ const createTuiApp = (runtime: Runtime) => {
 
       if (!field || field.type === "boolean") return;
 
+      if (key.ctrl && input === "v") {
+        try {
+          const pasted = pasteFromClipboard();
+          if (pasted) {
+            updateField(field.key, `${asString(values[field.key])}${pasted}`);
+          }
+        } catch {
+          setStatus("Clipboard paste not available.");
+        }
+        return;
+      }
+
       if (key.backspace || key.delete) {
         updateField(field.key, asString(values[field.key]).slice(0, -1));
         return;
@@ -521,17 +533,17 @@ const createTuiApp = (runtime: Runtime) => {
     };
 
     const handleVisual = (input: string, key: Record<string, unknown>) => {
-      if (input === "q") {
+      if (input === "q" && input.length === 1) {
         returnToDashboard();
         return;
       }
 
-      if (input === "v" || key.escape) {
+      if ((input === "v" && input.length === 1) || key.escape) {
         setMode("normal");
         return;
       }
 
-      if (input === "y") {
+      if (input === "y" && input.length === 1) {
         const start = Math.min(visualAnchor, visualCursor);
         const end = Math.max(visualAnchor, visualCursor);
         const selectedLines = outputLines.slice(start, end + 1);
@@ -549,7 +561,7 @@ const createTuiApp = (runtime: Runtime) => {
         return;
       }
 
-      if (key.upArrow || input === "k") {
+      if (key.upArrow || (input === "k" && input.length === 1)) {
         setVisualCursor((current) => {
           const next = Math.max(0, current - 1);
 
@@ -563,7 +575,7 @@ const createTuiApp = (runtime: Runtime) => {
         return;
       }
 
-      if (key.downArrow || input === "j") {
+      if (key.downArrow || (input === "j" && input.length === 1)) {
         setVisualCursor((current) => {
           const next = Math.min(outputLines.length - 1, current + 1);
           const maxScroll = outputLines.length - layout.outputContentHeight;
@@ -580,7 +592,7 @@ const createTuiApp = (runtime: Runtime) => {
         return;
       }
 
-      if (input === "u" || key.pageUp) {
+      if ((input === "u" && input.length === 1) || key.pageUp) {
         setContextScroll((current) =>
           scrollBy(
             current,
@@ -593,7 +605,7 @@ const createTuiApp = (runtime: Runtime) => {
         return;
       }
 
-      if (input === "d" || key.pageDown) {
+      if ((input === "d" && input.length === 1) || key.pageDown) {
         setContextScroll((current) =>
           scrollBy(
             current,
@@ -606,12 +618,12 @@ const createTuiApp = (runtime: Runtime) => {
         return;
       }
 
-      if (input === "g") {
+      if (input === "g" && input.length === 1) {
         setContextScroll(0);
         return;
       }
 
-      if (input === "G") {
+      if (input === "G" && input.length === 1) {
         setContextScroll(
           clampScroll(
             outputLines.length,
@@ -623,7 +635,7 @@ const createTuiApp = (runtime: Runtime) => {
         return;
       }
 
-      if (input === "h" || key.leftArrow) {
+      if ((input === "h" && input.length === 1) || key.leftArrow) {
         setContextHScroll((current) =>
           Math.max(0, current - Math.ceil(layout.outputWidth / 2)),
         );
@@ -631,7 +643,7 @@ const createTuiApp = (runtime: Runtime) => {
         return;
       }
 
-      if (input === "l" || key.rightArrow) {
+      if ((input === "l" && input.length === 1) || key.rightArrow) {
         setContextHScroll(
           (current) => current + Math.ceil(layout.outputWidth / 2),
         );
@@ -649,12 +661,13 @@ const createTuiApp = (runtime: Runtime) => {
       if (running) return;
 
       if (showHelp) {
-        if (input === "q" || key.escape) setShowHelp(false);
+        if ((input === "q" && input.length === 1) || key.escape)
+          setShowHelp(false);
         return;
       }
 
       if (mode === "dashboard") {
-        if (input === "q") {
+        if (input === "q" && input.length === 1) {
           app.exit();
           return;
         }

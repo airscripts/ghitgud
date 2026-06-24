@@ -1,6 +1,6 @@
 import type { TuiOperation } from "../types";
-import { repoInput, repoValue } from "./shared";
 import insightsService from "@/services/insights";
+import { text, repoInput, inferRepo } from "./shared";
 
 const insightsOperations: TuiOperation[] = [
   {
@@ -10,7 +10,9 @@ const insightsOperations: TuiOperation[] = [
     command: "ghg insights traffic",
     description: "Show repository traffic.",
     inputs: [repoInput],
-    run: ({ values }) => insightsService.traffic(repoValue(values)),
+
+    run: async ({ values }) =>
+      insightsService.traffic(text(values, "repo") || (await inferRepo())),
   },
 
   {
@@ -20,7 +22,9 @@ const insightsOperations: TuiOperation[] = [
     command: "ghg insights contributors",
     description: "Show top contributors.",
     inputs: [repoInput],
-    run: ({ values }) => insightsService.contributors(repoValue(values)),
+
+    run: async ({ values }) =>
+      insightsService.contributors(text(values, "repo") || (await inferRepo())),
   },
 
   {
@@ -30,7 +34,9 @@ const insightsOperations: TuiOperation[] = [
     command: "ghg insights commits",
     description: "Show commit activity.",
     inputs: [repoInput],
-    run: ({ values }) => insightsService.commits(repoValue(values)),
+
+    run: async ({ values }) =>
+      insightsService.commits(text(values, "repo") || (await inferRepo())),
   },
 
   {
@@ -40,7 +46,11 @@ const insightsOperations: TuiOperation[] = [
     command: "ghg insights frequency",
     description: "Show code frequency.",
     inputs: [repoInput],
-    run: ({ values }) => insightsService.codeFrequency(repoValue(values)),
+
+    run: async ({ values }) =>
+      insightsService.codeFrequency(
+        text(values, "repo") || (await inferRepo()),
+      ),
   },
 
   {
@@ -50,7 +60,9 @@ const insightsOperations: TuiOperation[] = [
     command: "ghg insights popularity",
     description: "Show referrers and popular paths.",
     inputs: [repoInput],
-    run: ({ values }) => insightsService.popularity(repoValue(values)),
+
+    run: async ({ values }) =>
+      insightsService.popularity(text(values, "repo") || (await inferRepo())),
   },
 
   {
@@ -60,7 +72,11 @@ const insightsOperations: TuiOperation[] = [
     command: "ghg insights participation",
     description: "Show participation stats.",
     inputs: [repoInput],
-    run: ({ values }) => insightsService.participation(repoValue(values)),
+
+    run: async ({ values }) =>
+      insightsService.participation(
+        text(values, "repo") || (await inferRepo()),
+      ),
   },
 ];
 

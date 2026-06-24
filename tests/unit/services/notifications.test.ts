@@ -64,18 +64,32 @@ describe("notifications service", () => {
       });
 
       const result = await service.list();
+      expect(api.fetch).toHaveBeenCalledWith({
+        all: undefined,
+        repo: undefined,
+        perPage: undefined,
+        participating: undefined,
+      });
+
       expect(result.success).toBe(true);
       expect(result.metadata).toHaveLength(1);
       expect(result.metadata[0].repository).toBe("airscripts/ghitgud");
     });
 
-    it("should filter by repo", async () => {
+    it("should pass repo to the notifications api", async () => {
       (api.fetch as Mock).mockResolvedValue({
         json: () => Promise.resolve(THREAD_RESPONSE),
       });
 
       const result = await service.list({ repo: "other/repo" });
-      expect(result.metadata).toHaveLength(0);
+      expect(api.fetch).toHaveBeenCalledWith({
+        all: undefined,
+        perPage: undefined,
+        repo: "other/repo",
+        participating: undefined,
+      });
+
+      expect(result.metadata).toHaveLength(1);
       expect(output.renderTable).toHaveBeenCalled();
     });
 
@@ -120,7 +134,10 @@ describe("notifications service", () => {
         json: () => Promise.resolve(SEARCH_RESPONSE),
       });
 
-      const result = await service.activity();
+      const result = await service.activity("airscripts/ghitgud");
+      expect(api.assignedIssues).toHaveBeenCalledWith("airscripts/ghitgud");
+      expect(api.reviewRequests).toHaveBeenCalledWith("airscripts/ghitgud");
+      expect(api.mentions).toHaveBeenCalledWith("@me", "airscripts/ghitgud");
       expect(result.success).toBe(true);
       expect(result.metadata.assignedIssues).toHaveLength(0);
       expect(result.metadata.reviewRequests).toHaveLength(1);
@@ -134,7 +151,8 @@ describe("notifications service", () => {
         json: () => Promise.resolve(SEARCH_RESPONSE),
       });
 
-      const result = await service.mentions();
+      const result = await service.mentions("airscripts/ghitgud");
+      expect(api.mentions).toHaveBeenCalledWith("@me", "airscripts/ghitgud");
       expect(result.success).toBe(true);
       expect(result.metadata).toHaveLength(1);
     });

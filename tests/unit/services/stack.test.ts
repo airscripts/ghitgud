@@ -114,7 +114,7 @@ describe("stack service", () => {
       (git.getCurrentBranch as Mock).mockReturnValue("feature");
       (io.fileExists as Mock).mockReturnValue(false);
 
-      const result = await stackService.list();
+      const result = await stackService.list("owner/repo");
       expect(result.success).toBe(true);
       expect(result.current).toBeNull();
 
@@ -137,7 +137,7 @@ describe("stack service", () => {
         json: () => Promise.resolve([]),
       });
 
-      const result = await stackService.list();
+      const result = await stackService.list("owner/repo");
       expect(result.success).toBe(true);
       expect(result.parent).toBe("main");
       expect(result.children).toEqual(["feature-2 (no PR)"]);
@@ -149,7 +149,7 @@ describe("stack service", () => {
       (git.getCurrentBranch as Mock).mockReturnValue("feature");
       (io.fileExists as Mock).mockReturnValue(false);
 
-      await expect(stackService.update()).rejects.toThrow(
+      await expect(stackService.update("owner/repo")).rejects.toThrow(
         "Current branch is not part of a tracked stack.",
       );
     });
@@ -172,7 +172,7 @@ describe("stack service", () => {
       (git.branchExistsLocally as Mock).mockReturnValue(true);
       (git.rebaseBranch as Mock).mockReturnValue(undefined);
 
-      const result = await stackService.update();
+      const result = await stackService.update("owner/repo");
       expect(result.success).toBe(true);
       expect(git.rebaseBranch).toHaveBeenCalledWith("feature-2", "main");
     });
@@ -194,7 +194,7 @@ describe("stack service", () => {
           ]),
       });
 
-      const result = await stackService.update();
+      const result = await stackService.update("owner/repo");
       expect(result.success).toBe(true);
       expect(git.rebaseBranch).not.toHaveBeenCalled();
     });
@@ -205,9 +205,9 @@ describe("stack service", () => {
       (git.getCurrentBranch as Mock).mockReturnValue("feature");
       (io.fileExists as Mock).mockReturnValue(false);
 
-      await expect(stackService.push({ draft: false })).rejects.toThrow(
-        "Current branch is not part of a tracked stack.",
-      );
+      await expect(
+        stackService.push("owner/repo", { draft: false }),
+      ).rejects.toThrow("Current branch is not part of a tracked stack.");
     });
 
     it("pushes branches and creates PRs", async () => {
@@ -228,7 +228,7 @@ describe("stack service", () => {
       (git.pushBranch as Mock).mockReturnValue(undefined);
       (api.createPr as Mock).mockReturnValue(mockPr({ number: 42 }));
 
-      const result = await stackService.push({
+      const result = await stackService.push("owner/repo", {
         draft: false,
         title: "feat: {branch}",
       });
@@ -263,9 +263,12 @@ describe("stack service", () => {
       (git.pushBranch as Mock).mockReturnValue(undefined);
       (api.updatePr as Mock).mockReturnValue(mockPr());
 
-      const result = await stackService.push({ draft: false });
+      const result = await stackService.push("owner/repo", { draft: false });
       expect(result.success).toBe(true);
-      expect(api.updatePr).toHaveBeenCalledWith(5, { base: "main" });
+
+      expect(api.updatePr).toHaveBeenCalledWith("owner/repo", 5, {
+        base: "main",
+      });
     });
   });
 

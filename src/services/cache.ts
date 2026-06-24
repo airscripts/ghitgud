@@ -5,19 +5,12 @@ import io from "@/core/io";
 import api from "@/api/cache";
 import output from "@/core/output";
 import logger from "@/core/logger";
-import config from "@/core/config";
+import repoResolver from "@/core/repo";
 import artifactsApi from "@/api/artifacts";
 import workflowsApi from "@/api/workflows";
-
 import { ActionsCacheEntry } from "@/types";
-
-import {
-  ERROR_NO_REPO,
-  DEFAULT_OUTPUT_DIR,
-  INFO_CACHE_METADATA_ONLY,
-} from "@/core/constants";
-
-import { ConfigError, GhitgudError } from "@/core/errors";
+import { GhitgudError } from "@/core/errors";
+import { DEFAULT_OUTPUT_DIR, INFO_CACHE_METADATA_ONLY } from "@/core/constants";
 
 interface CacheListResponse {
   actions_caches?: CacheApiEntry[];
@@ -45,15 +38,9 @@ function normalize(entry: CacheApiEntry): ActionsCacheEntry {
   };
 }
 
-function resolveRepo(repo?: string): string {
-  const resolved = repo || config.getRepoOptional();
-  if (!resolved) throw new ConfigError(ERROR_NO_REPO);
-  return resolved;
-}
-
 const inspect = async (key: string, repo?: string) => {
   logger.start(`Inspecting cache entries matching "${key}".`);
-  const targetRepo = resolveRepo(repo);
+  const targetRepo = await repoResolver.resolveRepo(repo);
   const response = await api.listCaches(targetRepo, key);
   const data = (await response.json()) as CacheListResponse;
   const entries = (data.actions_caches ?? []).map(normalize);
@@ -66,6 +53,7 @@ const inspect = async (key: string, repo?: string) => {
       createdAt: entry.createdAt,
       lastAccessedAt: entry.lastAccessedAt,
     })),
+
     { emptyMessage: "No matching caches were found." },
   );
 
@@ -82,7 +70,7 @@ const download = async (
   options: { repo?: string; outputDir?: string },
 ) => {
   logger.start(`Preparing cache debug bundle for "${key}".`);
-  const targetRepo = resolveRepo(options.repo);
+  const targetRepo = await repoResolver.resolveRepo(options.repo);
   const cacheRes = await api.listCaches(targetRepo, key);
   const cacheData = (await cacheRes.json()) as CacheListResponse;
   const entries = (cacheData.actions_caches ?? []).map(normalize);

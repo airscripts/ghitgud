@@ -1,6 +1,6 @@
 import cacheService from "@/services/cache";
 import type { TuiOperation } from "../types";
-import { repoInput, text, requiredText } from "./shared";
+import { text, requiredText, repoInput, inferRepo } from "./shared";
 
 const cacheOperations: TuiOperation[] = [
   {
@@ -11,12 +11,15 @@ const cacheOperations: TuiOperation[] = [
     description: "Inspect GitHub Actions cache metadata.",
 
     inputs: [
-      { key: "key", label: "Cache key", type: "string", required: true },
       repoInput,
+      { key: "key", label: "Cache key", type: "string", required: true },
     ],
 
-    run: ({ values }) =>
-      cacheService.inspect(requiredText(values, "key"), text(values, "repo")),
+    run: async ({ values }) =>
+      cacheService.inspect(
+        requiredText(values, "key"),
+        text(values, "repo") || (await inferRepo()),
+      ),
   },
 
   {
@@ -28,14 +31,14 @@ const cacheOperations: TuiOperation[] = [
     description: "Download cache-related debug artifacts.",
 
     inputs: [
-      { key: "key", label: "Cache key", type: "string", required: true },
       repoInput,
+      { key: "key", label: "Cache key", type: "string", required: true },
       { key: "outputDir", label: "Output dir", type: "string" },
     ],
 
-    run: ({ values }) =>
+    run: async ({ values }) =>
       cacheService.download(requiredText(values, "key"), {
-        repo: text(values, "repo"),
+        repo: text(values, "repo") || (await inferRepo()),
         outputDir: text(values, "outputDir"),
       }),
   },

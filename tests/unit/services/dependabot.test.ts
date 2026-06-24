@@ -1,6 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
-import config from "@/core/config";
 import repoService from "@/services/repos";
 import { GhitgudError } from "@/core/errors";
 import dependabotApi from "@/api/dependabot";
@@ -13,9 +12,10 @@ vi.mock("@/api/dependabot", () => ({
   },
 }));
 
-vi.mock("@/core/config", () => ({
+vi.mock("@/core/repo", () => ({
   default: {
-    getRepo: vi.fn(() => "owner/repo"),
+    resolveRepoSync: vi.fn(() => "owner/repo"),
+    resolveRepo: vi.fn(() => Promise.resolve("owner/repo")),
   },
 }));
 
@@ -149,11 +149,11 @@ describe("dependabot service", () => {
   });
 
   it("dismisses alerts with a valid reason", async () => {
-    vi.mocked(config.getRepo).mockReturnValue("owner/repo");
     vi.mocked(dependabotApi.dismissAlert).mockResolvedValue({} as Response);
 
     const result = await dependabotService.dismiss(1, {
       yes: true,
+      repo: "owner/repo",
       reason: "tolerable_risk",
     });
 

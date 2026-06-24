@@ -36,8 +36,8 @@ describe("issue service", () => {
       json: () => Promise.resolve(subIssues),
     });
 
-    const result = await issueService.subtasks("1");
-    expect(api.listSubIssues).toHaveBeenCalledWith(1);
+    const result = await issueService.subtasks("owner/repo", "1");
+    expect(api.listSubIssues).toHaveBeenCalledWith(1, "owner/repo");
     expect(result).toEqual({ success: true, subIssues });
   });
 
@@ -46,9 +46,11 @@ describe("issue service", () => {
       json: () => Promise.resolve({ id: 99, number: 2, title: "Child" }),
     });
 
-    const result = await issueService.subtasks("1", { link: "2" });
+    const result = await issueService.subtasks("owner/repo", "1", {
+      link: "2",
+    });
 
-    expect(api.addSubIssue).toHaveBeenCalledWith(1, 99);
+    expect(api.addSubIssue).toHaveBeenCalledWith(1, 99, "owner/repo");
     expect(result).toEqual({
       success: true,
 
@@ -68,22 +70,25 @@ describe("issue service", () => {
       json: () => Promise.resolve({ id: 100, number: 3, title: "New child" }),
     });
 
-    await issueService.subtasks("1", {
+    await issueService.subtasks("owner/repo", "1", {
       create: true,
       title: "New child",
     });
 
-    expect(api.create).toHaveBeenCalledWith({
-      body: undefined,
-      title: "New child",
-    });
+    expect(api.create).toHaveBeenCalledWith(
+      {
+        body: undefined,
+        title: "New child",
+      },
+      "owner/repo",
+    );
 
-    expect(api.addSubIssue).toHaveBeenCalledWith(1, 100);
+    expect(api.addSubIssue).toHaveBeenCalledWith(1, 100, "owner/repo");
   });
 
   it("rejects conflicting create and link options", async () => {
     await expect(
-      issueService.subtasks("1", { create: true, link: "2" }),
+      issueService.subtasks("owner/repo", "1", { create: true, link: "2" }),
     ).rejects.toThrow("Use either --create or --link, not both.");
   });
 });

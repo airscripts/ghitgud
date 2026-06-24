@@ -8,7 +8,6 @@ import { CredentialsFile, Profile, ProfileRcFile } from "@/types";
 
 import {
   ENCODING,
-  ERROR_NO_REPO,
   ERROR_NO_TOKEN,
   GHITGUD_FOLDER,
   GHITGUD_RC_FILE,
@@ -78,11 +77,10 @@ function normalizeCredentials(
   }
 
   const legacyProfile: Profile = {
-    repo: credentials.repo,
     token: credentials.token,
   };
 
-  const hasLegacyData = legacyProfile.repo || legacyProfile.token;
+  const hasLegacyData = legacyProfile.token;
 
   const profiles: Record<string, Profile> = hasLegacyData
     ? { [DEFAULT_PROFILE_NAME]: legacyProfile }
@@ -176,7 +174,6 @@ function listProfiles() {
     name,
     active: name === activeProfile,
     hasToken: !!credentials.profiles[name].token,
-    repo: credentials.profiles[name].repo ?? null,
   }));
 }
 
@@ -223,17 +220,6 @@ function setRepoLocalProfile(name: string): void {
   );
 }
 
-function findProfileByRepo(repo: string): string | null {
-  const normalizedRepo = repo.toLowerCase();
-  const credentials = readCredentials();
-
-  const profile = Object.entries(credentials.profiles).find(
-    ([, value]) => value.repo?.toLowerCase() === normalizedRepo,
-  );
-
-  return profile?.[0] ?? null;
-}
-
 function read(key: string): string | null {
   const credentials = readCredentials();
   const profileName = getResolvedProfileName(credentials);
@@ -244,8 +230,7 @@ function read(key: string): string | null {
 }
 
 function has(key: string): boolean {
-  const envKey =
-    key === "repo" ? "GHITGUD_GITHUB_REPO" : "GHITGUD_GITHUB_TOKEN";
+  const envKey = "GHITGUD_GITHUB_TOKEN";
 
   if (process.env[envKey]) return true;
 
@@ -290,23 +275,6 @@ function unset(key: string): void {
   });
 }
 
-function getRepo(): string {
-  const repo = getRepoOptional();
-  if (repo) return repo;
-
-  throw new ConfigError(ERROR_NO_REPO);
-}
-
-function getRepoOptional(): string | null {
-  const repo = process.env.GHITGUD_GITHUB_REPO;
-  if (repo) return repo;
-
-  const value = read("repo");
-  if (value) return value;
-
-  return null;
-}
-
 function getToken(): string {
   const token = getTokenOptional();
   if (token) return token;
@@ -329,15 +297,12 @@ const config = {
   read,
   write,
   unset,
-  getRepo,
   getToken,
   getProfile,
   addProfile,
   listProfiles,
-  getRepoOptional,
   getTokenOptional,
   setActiveProfile,
-  findProfileByRepo,
   getRepoLocalProfile,
   setRepoLocalProfile,
 };

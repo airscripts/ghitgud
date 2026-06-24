@@ -22,6 +22,12 @@ vi.mock("@/services/environments", () => ({
   },
 }));
 
+vi.mock("@/core/repo", () => ({
+  default: {
+    resolveRepo: vi.fn(() => Promise.resolve("owner/repo")),
+  },
+}));
+
 import environmentsService from "@/services/environments";
 
 describe("integration > environment commands", () => {
@@ -35,7 +41,7 @@ describe("integration > environment commands", () => {
     environmentCommand.register(program);
 
     await program.parseAsync(["node", "test", "environment", "list"]);
-    expect(environmentsService.list).toHaveBeenCalledTimes(1);
+    expect(environmentsService.list).toHaveBeenCalledWith("owner/repo");
   });
 
   it("create calls service.create with name and wait timer", async () => {
@@ -54,7 +60,7 @@ describe("integration > environment commands", () => {
       "30",
     ]);
 
-    expect(environmentsService.create).toHaveBeenCalledWith({
+    expect(environmentsService.create).toHaveBeenCalledWith("owner/repo", {
       name: "staging",
       waitTimer: 30,
     });
@@ -76,6 +82,7 @@ describe("integration > environment commands", () => {
     ]);
 
     expect(environmentsService.listProtectionRules).toHaveBeenCalledWith(
+      "owner/repo",
       "staging",
     );
   });
@@ -99,11 +106,14 @@ describe("integration > environment commands", () => {
       '{"timer": 30}',
     ]);
 
-    expect(environmentsService.addProtectionRule).toHaveBeenCalledWith({
-      env: "staging",
-      type: "wait_timer",
-      value: { timer: 30 },
-    });
+    expect(environmentsService.addProtectionRule).toHaveBeenCalledWith(
+      "owner/repo",
+      {
+        env: "staging",
+        type: "wait_timer",
+        value: { timer: 30 },
+      },
+    );
   });
 
   it("protection remove calls service with env and ruleId", async () => {
@@ -123,9 +133,12 @@ describe("integration > environment commands", () => {
       "42",
     ]);
 
-    expect(environmentsService.removeProtectionRule).toHaveBeenCalledWith({
-      env: "staging",
-      ruleId: 42,
-    });
+    expect(environmentsService.removeProtectionRule).toHaveBeenCalledWith(
+      "owner/repo",
+      {
+        env: "staging",
+        ruleId: 42,
+      },
+    );
   });
 });

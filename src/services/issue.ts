@@ -20,18 +20,21 @@ function parseIssueNumber(value: string | number): number {
   return issueNumber;
 }
 
-async function fetchIssue(issueNumber: number): Promise<IssueSummary> {
-  const response = await api.get(issueNumber);
+async function fetchIssue(
+  repo: string,
+  issueNumber: number,
+): Promise<IssueSummary> {
+  const response = await api.get(issueNumber, repo);
   return (await response.json()) as IssueSummary;
 }
 
-async function linkSubIssue(parent: number, child: number) {
-  const childIssue = await fetchIssue(child);
+async function linkSubIssue(repo: string, parent: number, child: number) {
+  const childIssue = await fetchIssue(repo, child);
   if (!childIssue.id) {
     throw new GhitgudError(`Issue #${child} does not include an API id.`);
   }
 
-  await api.addSubIssue(parent, childIssue.id);
+  await api.addSubIssue(parent, childIssue.id, repo);
   logger.success(`Linked issue #${child} under issue #${parent}.`);
 
   output.renderSummary("Sub-Issue Linked", [
@@ -48,7 +51,11 @@ async function linkSubIssue(parent: number, child: number) {
   };
 }
 
-const subtasks = async (issue: string, options: SubtaskOptions = {}) => {
+const subtasks = async (
+  repo: string,
+  issue: string,
+  options: SubtaskOptions = {},
+) => {
   const parent = parseIssueNumber(issue);
 
   if (options.create && options.link) {
@@ -61,26 +68,30 @@ const subtasks = async (issue: string, options: SubtaskOptions = {}) => {
     }
 
     logger.start(`Creating sub-issue for issue #${parent}.`);
-    const response = await api.create({
-      body: options.body,
-      title: options.title,
-    });
+    const response = await api.create(
+      {
+        body: options.body,
+        title: options.title,
+      },
+
+      repo,
+    );
 
     const child = (await response.json()) as IssueSummary;
     if (!child.number) {
       throw new GhitgudError("Created issue did not include a number.");
     }
 
-    return linkSubIssue(parent, child.number);
+    return linkSubIssue(repo, parent, child.number);
   }
 
   if (options.link) {
     logger.start(`Linking sub-issue to issue #${parent}.`);
-    return linkSubIssue(parent, parseIssueNumber(options.link));
+    return linkSubIssue(repo, parent, parseIssueNumber(options.link));
   }
 
   logger.start(`Loading sub-issues for issue #${parent}.`);
-  const response = await api.listSubIssues(parent);
+  const response = await api.listSubIssues(parent, repo);
   const subIssues = (await response.json()) as SubIssueSummary[];
 
   output.renderTable(
@@ -99,7 +110,11 @@ const subtasks = async (issue: string, options: SubtaskOptions = {}) => {
   return { success: true, subIssues };
 };
 
-const parent = async (childValue: string, options: { parent?: string }) => {
+const parent = async (
+  repo: string,
+  childValue: string,
+  options: { parent?: string },
+) => {
   if (!options.parent) {
     throw new GhitgudError("--parent is required.");
   }
@@ -107,8 +122,7 @@ const parent = async (childValue: string, options: { parent?: string }) => {
   const child = parseIssueNumber(childValue);
   const parentIssue = parseIssueNumber(options.parent);
   logger.start(`Linking issue #${child} under issue #${parentIssue}.`);
-
-  return linkSubIssue(parentIssue, child);
+  return linkSubIssue(repo, parentIssue, child);
 };
 
 export default {

@@ -1,9 +1,9 @@
 import fs from "fs";
 import api from "@/api/repos";
-import config from "@/core/config";
 import output from "@/core/output";
 import logger from "@/core/logger";
 import progress from "@/core/progress";
+import repoResolver from "@/core/repo";
 import { GhitgudError } from "@/core/errors";
 
 import {
@@ -103,7 +103,8 @@ const resolveRepos = async (
   if (options.repos) return parseReposInput(options.repos);
   if (options.file) return readReposFromFile(options.file);
   if (options.org) return await api.fetchOrg(options.org);
-  return [toRepoSummary(config.getRepo())];
+  const repo = await repoResolver.resolveRepo();
+  return [toRepoSummary(repo)];
 };
 
 const resolveTargets = async (

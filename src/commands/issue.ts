@@ -1,6 +1,7 @@
 import { Command } from "commander";
 
 import command from "@/core/command";
+import repoResolver from "@/core/repo";
 import issueService from "@/services/issue";
 
 const register = (program: Command) => {
@@ -10,6 +11,7 @@ const register = (program: Command) => {
     .command("subtasks")
     .description("List, create, or link sub-issues.")
     .argument("<issue>", "Parent issue number")
+    .option("--repo <repo>", "Repository (owner/repo)")
     .option("--create", "Create a new sub-issue", false)
     .option("--title <title>", "Title for a created sub-issue")
     .option("--body <body>", "Body for a created sub-issue")
@@ -22,9 +24,14 @@ const register = (program: Command) => {
           link?: string;
           title?: string;
           create?: boolean;
+          repo?: string;
         },
       ) => {
-        await command.run(() => issueService.subtasks(issueNumber, options));
+        const repo = await repoResolver.resolveRepo(options.repo);
+
+        await command.run(() =>
+          issueService.subtasks(repo, issueNumber, options),
+        );
       },
     );
 
@@ -32,10 +39,20 @@ const register = (program: Command) => {
     .command("parent")
     .description("Link an issue to a parent issue.")
     .argument("<child>", "Child issue number")
+    .option("--repo <repo>", "Repository (owner/repo)")
     .requiredOption("--parent <parent>", "Parent issue number")
-    .action(async (child: string, options: { parent?: string }) => {
-      await command.run(() => issueService.parent(child, options));
-    });
+    .action(
+      async (
+        child: string,
+        options: {
+          parent?: string;
+          repo?: string;
+        },
+      ) => {
+        const repo = await repoResolver.resolveRepo(options.repo);
+        await command.run(() => issueService.parent(repo, child, options));
+      },
+    );
 };
 
 export default { register };

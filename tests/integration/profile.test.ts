@@ -30,15 +30,12 @@ describe("integration > profile commands", () => {
       "profile",
       "add",
       "work",
-      "--repo",
-      "airscripts/ghitgud",
       "--token",
       "ghp_test",
     ]);
 
     expect(profileService.add).toHaveBeenCalledWith("work", {
       token: "ghp_test",
-      repo: "airscripts/ghitgud",
     });
   });
 

@@ -10,6 +10,12 @@ vi.mock("@/services/issue", () => ({
   },
 }));
 
+vi.mock("@/core/repo", () => ({
+  default: {
+    resolveRepo: vi.fn(() => Promise.resolve("owner/repo")),
+  },
+}));
+
 import issueService from "@/services/issue";
 
 describe("integration > issue commands", () => {
@@ -35,7 +41,7 @@ describe("integration > issue commands", () => {
       "Desc",
     ]);
 
-    expect(issueService.subtasks).toHaveBeenCalledWith("42", {
+    expect(issueService.subtasks).toHaveBeenCalledWith("owner/repo", "42", {
       create: true,
       body: "Desc",
       title: "Child",
@@ -57,6 +63,8 @@ describe("integration > issue commands", () => {
       "1",
     ]);
 
-    expect(issueService.parent).toHaveBeenCalledWith("42", { parent: "1" });
+    expect(issueService.parent).toHaveBeenCalledWith("owner/repo", "42", {
+      parent: "1",
+    });
   });
 });

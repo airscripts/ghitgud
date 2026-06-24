@@ -1,6 +1,6 @@
+import { requiredText } from "./shared";
 import type { TuiOperation } from "../types";
 import profileService from "@/services/profile";
-import { repoInput, text, requiredText } from "./shared";
 
 const profileOperations: TuiOperation[] = [
   {
@@ -13,7 +13,6 @@ const profileOperations: TuiOperation[] = [
 
     inputs: [
       { key: "name", label: "Name", type: "string", required: true },
-      repoInput,
       {
         key: "token",
         secret: true,
@@ -25,7 +24,6 @@ const profileOperations: TuiOperation[] = [
 
     run: ({ values }) =>
       profileService.add(requiredText(values, "name"), {
-        repo: text(values, "repo"),
         token: requiredText(values, "token"),
       }),
   },

@@ -10,6 +10,14 @@ vi.mock("@/services/dependabot", () => ({
   },
 }));
 
+vi.mock("@/core/repo", () => ({
+  default: {
+    resolveRepo: vi.fn().mockResolvedValue("airscripts/ghitgud"),
+    resolveRepoSync: vi.fn().mockReturnValue("airscripts/ghitgud"),
+    resolveRepos: vi.fn().mockResolvedValue(["airscripts/ghitgud"]),
+  },
+}));
+
 describe("tui dependabot operations", () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -46,8 +54,8 @@ describe("tui dependabot operations", () => {
       metadata: {
         alert: 1,
         dismissed: true,
-        repo: "owner/repo",
         reason: "fix_started",
+        repo: "airscripts/ghitgud",
       },
     });
 
@@ -58,9 +66,9 @@ describe("tui dependabot operations", () => {
 
     expect(dependabotService.dismiss).toHaveBeenCalledWith(1, {
       yes: true,
-      repo: undefined,
       comment: undefined,
       reason: "fix_started",
+      repo: "airscripts/ghitgud",
     });
   });
 });

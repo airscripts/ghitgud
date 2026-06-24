@@ -8,14 +8,13 @@ vi.mock("@/api/client", () => ({
     post: vi.fn(),
     patch: vi.fn(),
     delete: vi.fn(),
-    getRepo: vi.fn(() => "owner/repo"),
   },
 }));
 
 describe("labels api", () => {
   it("should call client.get for fetch", async () => {
     (client.get as Mock).mockResolvedValue({ status: 200 });
-    await labels.fetch();
+    await labels.fetch("owner/repo");
     expect(client.get).toHaveBeenCalledWith("/repos/owner/repo/labels");
   });
 
@@ -27,13 +26,13 @@ describe("labels api", () => {
 
   it("should call client.get for get with name", async () => {
     (client.get as Mock).mockResolvedValue({ status: 200 });
-    await labels.get("bug");
+    await labels.get("bug", "owner/repo");
     expect(client.get).toHaveBeenCalledWith("/repos/owner/repo/labels/bug");
   });
 
   it("should encode label names in path segments", async () => {
     (client.get as Mock).mockResolvedValue({ status: 200 });
-    await labels.get("needs review/a+b");
+    await labels.get("needs review/a+b", "owner/repo");
 
     expect(client.get).toHaveBeenCalledWith(
       "/repos/owner/repo/labels/needs%20review%2Fa%2Bb",
@@ -48,7 +47,7 @@ describe("labels api", () => {
       description: "Something isn't working",
     };
 
-    await labels.create(label);
+    await labels.create(label, "owner/repo");
     expect(client.post).toHaveBeenCalledWith("/repos/owner/repo/labels", {
       name: "bug",
       color: "d73a4a",
@@ -65,7 +64,7 @@ describe("labels api", () => {
       newName: "defect",
     };
 
-    await labels.patch(label);
+    await labels.patch(label, "owner/repo");
     expect(client.patch).toHaveBeenCalledWith("/repos/owner/repo/labels/bug", {
       color: "d73a4a",
       new_name: "defect",
@@ -81,7 +80,7 @@ describe("labels api", () => {
       description: "Needs review",
     };
 
-    await labels.patch(label);
+    await labels.patch(label, "owner/repo");
     expect(client.patch).toHaveBeenCalledWith(
       "/repos/owner/repo/labels/needs%20review%2Fa%2Bb",
       {
@@ -94,13 +93,13 @@ describe("labels api", () => {
 
   it("should call client.delete for delete", async () => {
     (client.delete as Mock).mockResolvedValue({ status: 204 });
-    await labels.delete("bug");
+    await labels.delete("bug", "owner/repo");
     expect(client.delete).toHaveBeenCalledWith("/repos/owner/repo/labels/bug");
   });
 
   it("should encode label names when deleting", async () => {
     (client.delete as Mock).mockResolvedValue({ status: 204 });
-    await labels.delete("needs review/a+b");
+    await labels.delete("needs review/a+b", "owner/repo");
 
     expect(client.delete).toHaveBeenCalledWith(
       "/repos/owner/repo/labels/needs%20review%2Fa%2Bb",

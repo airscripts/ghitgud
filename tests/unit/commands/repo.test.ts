@@ -1,6 +1,7 @@
 import { Command } from "commander";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
+import repoResolver from "@/core/repo";
 import repoCommand from "@/commands/repo";
 import { ConfigError } from "@/core/errors";
 import inviteService from "@/services/invites";
@@ -24,19 +25,20 @@ vi.mock("@/core/prompt", () => ({
   },
 }));
 
-vi.mock("@/core/config", () => ({
+vi.mock("@/core/repo", () => ({
   default: {
-    getRepo: vi.fn(),
-    getRepoOptional: vi.fn(),
+    resolveRepo: vi.fn(() => Promise.resolve("owner/repo")),
+    resolveRepos: vi.fn(() => Promise.resolve(["owner/repo"])),
+    resolveRepoSync: vi.fn((repo?: string) => repo || "owner/repo"),
   },
 }));
 
 const mockPrompt = await import("@/core/prompt");
-const mockConfig = await import("@/core/config");
 
 describe("repo command", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    vi.mocked(repoResolver.resolveRepoSync).mockReturnValue("owner/repo");
   });
 
   it("should register repo with subcommands", () => {
@@ -52,6 +54,8 @@ describe("repo command", () => {
   });
 
   it("should reject invalid --repo format", async () => {
+    vi.mocked(repoResolver.resolveRepoSync).mockReturnValue("bad");
+
     const program = new Command();
     program.exitOverride();
     repoCommand.register(program);
@@ -61,8 +65,8 @@ describe("repo command", () => {
     ).rejects.toThrow(ConfigError);
   });
 
-  it("should reject missing configured repo", async () => {
-    vi.mocked(mockConfig.default.getRepo).mockReturnValue("");
+  it("should reject missing repo when not resolvable", async () => {
+    vi.mocked(repoResolver.resolveRepoSync).mockReturnValue("");
 
     const program = new Command();
     program.exitOverride();
@@ -73,8 +77,8 @@ describe("repo command", () => {
     ).rejects.toThrow(ConfigError);
   });
 
-  it("should reject invalid configured repo", async () => {
-    vi.mocked(mockConfig.default.getRepo).mockReturnValue("invalid");
+  it("should reject invalid resolved repo", async () => {
+    vi.mocked(repoResolver.resolveRepoSync).mockReturnValue("invalid");
 
     const program = new Command();
     program.exitOverride();

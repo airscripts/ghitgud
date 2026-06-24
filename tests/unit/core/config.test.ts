@@ -11,7 +11,6 @@ vi.mock("os", () => ({
 import git from "@/core/git";
 
 import {
-  ERROR_NO_REPO,
   ERROR_NO_TOKEN,
   GHITGUD_FOLDER,
   GHITGUD_RC_FILE,
@@ -37,7 +36,6 @@ const repoRcPath = path.join(repoRoot, GHITGUD_RC_FILE);
 
 describe("config", () => {
   beforeEach(() => {
-    delete process.env.GHITGUD_GITHUB_REPO;
     delete process.env.GHITGUD_GITHUB_TOKEN;
     delete process.env.GHITGUD_PROFILE;
 
@@ -57,29 +55,6 @@ describe("config", () => {
     }
 
     vi.restoreAllMocks();
-  });
-
-  describe("getRepo", () => {
-    it("should throw when not set", async () => {
-      vi.resetModules();
-      const { default: config } = await import("@/core/config");
-      expect(() => config.getRepo()).toThrow(ERROR_NO_REPO);
-    });
-
-    it("should return value from environment variable", async () => {
-      process.env.GHITGUD_GITHUB_REPO = "owner/repo";
-      vi.resetModules();
-      const { default: config } = await import("@/core/config");
-      expect(config.getRepo()).toBe("owner/repo");
-    });
-
-    it("should return value from credentials file", async () => {
-      fs.mkdirSync(GHITGUD_FOLDER, { recursive: true });
-      fs.writeFileSync(credentialsPath, JSON.stringify({ repo: "owner/repo" }));
-      vi.resetModules();
-      const { default: config } = await import("@/core/config");
-      expect(config.getRepo()).toBe("owner/repo");
-    });
   });
 
   describe("getToken", () => {
@@ -128,7 +103,7 @@ describe("config", () => {
 
       fs.writeFileSync(
         credentialsPath,
-        JSON.stringify({ repo: "owner/repo", token: "legacy-token" }),
+        JSON.stringify({ token: "legacy-token" }),
       );
 
       vi.resetModules();
@@ -140,7 +115,6 @@ describe("config", () => {
         activeProfile: "default",
         profiles: {
           default: {
-            repo: "owner/repo",
             token: "new-token",
           },
         },
@@ -161,7 +135,6 @@ describe("config", () => {
       const { default: config } = await import("@/core/config");
 
       config.addProfile("work", {
-        repo: "owner/repo",
         token: "work-token",
       });
 
@@ -169,7 +142,6 @@ describe("config", () => {
       expect(profiles).toEqual([
         {
           name: "work",
-          repo: "owner/repo",
           hasToken: true,
           active: true,
         },
@@ -187,11 +159,9 @@ describe("config", () => {
           activeProfile: "default",
           profiles: {
             default: {
-              repo: "owner/default",
               token: "default-token",
             },
             work: {
-              repo: "owner/repo",
               token: "work-token",
             },
           },
@@ -203,7 +173,6 @@ describe("config", () => {
       vi.resetModules();
       const { default: config } = await import("@/core/config");
 
-      expect(config.getRepo()).toBe("owner/repo");
       expect(config.getToken()).toBe("work-token");
     });
 
@@ -216,11 +185,9 @@ describe("config", () => {
           activeProfile: "work",
           profiles: {
             default: {
-              repo: "owner/default",
               token: "default-token",
             },
             work: {
-              repo: "owner/repo",
               token: "work-token",
             },
           },
@@ -230,34 +197,7 @@ describe("config", () => {
       vi.resetModules();
       const { default: config } = await import("@/core/config");
 
-      expect(config.getRepo()).toBe("owner/repo");
       expect(config.getToken()).toBe("work-token");
-      expect(config.findProfileByRepo("owner/repo")).toBe("work");
-    });
-
-    it("should match repository names case-insensitively", async () => {
-      fs.mkdirSync(GHITGUD_FOLDER, { recursive: true });
-
-      fs.writeFileSync(
-        credentialsPath,
-        JSON.stringify({
-          activeProfile: "default",
-          profiles: {
-            default: {
-              repo: "owner/default",
-              token: "default-token",
-            },
-            work: {
-              repo: "owner/repo",
-              token: "work-token",
-            },
-          },
-        }),
-      );
-
-      vi.resetModules();
-      const { default: config } = await import("@/core/config");
-      expect(config.findProfileByRepo("Owner/Repo")).toBe("work");
     });
 
     it("should set the active profile explicitly", async () => {
@@ -268,11 +208,9 @@ describe("config", () => {
           activeProfile: "default",
           profiles: {
             default: {
-              repo: "owner/default",
               token: "default-token",
             },
             work: {
-              repo: "owner/repo",
               token: "work-token",
             },
           },
@@ -289,16 +227,16 @@ describe("config", () => {
 
   describe("has", () => {
     it("should return true when env var is set", async () => {
-      process.env.GHITGUD_GITHUB_REPO = "owner/repo";
+      process.env.GHITGUD_GITHUB_TOKEN = "my-token";
       vi.resetModules();
       const { default: config } = await import("@/core/config");
-      expect(config.has("repo")).toBe(true);
+      expect(config.has("token")).toBe(true);
     });
 
     it("should return false when not set anywhere", async () => {
       vi.resetModules();
       const { default: config } = await import("@/core/config");
-      expect(config.has("repo")).toBe(false);
+      expect(config.has("token")).toBe(false);
     });
   });
 });

@@ -1,6 +1,6 @@
 import type { TuiOperation } from "../types";
-import { text, requiredText } from "./shared";
 import variablesService from "@/services/variables";
+import { text, requiredText, repoInput, inferRepoOptional } from "./shared";
 
 const variableOperations: TuiOperation[] = [
   {
@@ -11,15 +11,20 @@ const variableOperations: TuiOperation[] = [
     description: "List repository, environment, or organization variables.",
 
     inputs: [
+      repoInput,
       { key: "env", label: "Environment", type: "string", required: false },
       { key: "org", label: "Organization", type: "string", required: false },
     ],
 
-    run: ({ values }) =>
-      variablesService.list({
+    run: async ({ values }) => {
+      const repo = text(values, "repo") || (await inferRepoOptional());
+
+      return variablesService.list({
+        repo,
         env: text(values, "env"),
         org: text(values, "org"),
-      }),
+      });
+    },
   },
 
   {
@@ -31,19 +36,24 @@ const variableOperations: TuiOperation[] = [
     command: "ghg variable set --name <key> --value <val>",
 
     inputs: [
+      repoInput,
       { key: "name", label: "Name", type: "string", required: true },
       { key: "value", label: "Value", type: "string", required: true },
       { key: "env", label: "Environment", type: "string", required: false },
       { key: "org", label: "Organization", type: "string", required: false },
     ],
 
-    run: ({ values }) =>
-      variablesService.set({
+    run: async ({ values }) => {
+      const repo = text(values, "repo") || (await inferRepoOptional());
+
+      return variablesService.set({
+        repo,
         env: text(values, "env"),
         org: text(values, "org"),
         name: requiredText(values, "name"),
         value: requiredText(values, "value"),
-      }),
+      });
+    },
   },
 
   {
@@ -55,17 +65,22 @@ const variableOperations: TuiOperation[] = [
     command: "ghg variable delete --name <key>",
 
     inputs: [
+      repoInput,
       { key: "name", label: "Name", type: "string", required: true },
       { key: "env", label: "Environment", type: "string", required: false },
       { key: "org", label: "Organization", type: "string", required: false },
     ],
 
-    run: ({ values }) =>
-      variablesService.remove({
+    run: async ({ values }) => {
+      const repo = text(values, "repo") || (await inferRepoOptional());
+
+      return variablesService.remove({
+        repo,
         env: text(values, "env"),
         org: text(values, "org"),
         name: requiredText(values, "name"),
-      }),
+      });
+    },
   },
 ];
 

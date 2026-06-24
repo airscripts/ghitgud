@@ -13,6 +13,13 @@ vi.mock("@/services/release", () => ({
   },
 }));
 
+vi.mock("@/core/repo", () => ({
+  default: {
+    resolveRepo: vi.fn(() => Promise.resolve("owner/repo")),
+    resolveRepoSync: vi.fn(() => "owner/repo"),
+  },
+}));
+
 import releaseService from "@/services/release";
 
 describe("integration > release commands", () => {
@@ -71,7 +78,9 @@ describe("integration > release commands", () => {
     releaseCommand.register(program);
 
     await program.parseAsync(["node", "test", "release", "verify", "v2.10.0"]);
-    expect(releaseService.verify).toHaveBeenCalledWith("v2.10.0", {});
+    expect(releaseService.verify).toHaveBeenCalledWith("v2.10.0", {
+      repo: "owner/repo",
+    });
   });
 
   it("notes calls service with template, since, and out", async () => {
@@ -95,6 +104,7 @@ describe("integration > release commands", () => {
     expect(releaseService.notes).toHaveBeenCalledWith({
       since: "v2.0.0",
       out: "notes.md",
+      repo: "owner/repo",
       templateFile: "custom.md",
     });
   });
@@ -121,6 +131,7 @@ describe("integration > release commands", () => {
       level: "minor",
       title: "v2.11.0",
       notes: "generated",
+      repo: "owner/repo",
     });
   });
 });

@@ -1,6 +1,6 @@
 import type { TuiOperation } from "../types";
 import invitesService from "@/services/invites";
-import { text, requiredText, repoInput } from "./shared";
+import { text, requiredText, repoInput, inferRepo } from "./shared";
 
 const repoOperations: TuiOperation[] = [
   {
@@ -9,7 +9,7 @@ const repoOperations: TuiOperation[] = [
     workspace: "Repository Access",
     title: "Invite Collaborator",
     description: "Invite a collaborator to a repository.",
-    command: "ghg repo invite --user \u003cuser\u003e --role \u003crole\u003e",
+    command: "ghg repo invite --user <user> --role <role>",
 
     inputs: [
       repoInput,
@@ -23,8 +23,8 @@ const repoOperations: TuiOperation[] = [
       },
     ],
 
-    run: ({ values }) => {
-      const repo = text(values, "repo") ?? "";
+    run: async ({ values }) => {
+      const repo = text(values, "repo") || (await inferRepo());
       const parts = repo.split("/");
 
       if (parts.length !== 2) {
@@ -46,7 +46,7 @@ const repoOperations: TuiOperation[] = [
     workspace: "Repository Access",
     title: "Grant Team Access",
     description: "Grant team access to a repository.",
-    command: "ghg repo grant --team \u003cteam\u003e --role \u003crole\u003e",
+    command: "ghg repo grant --team <team> --role <role>",
 
     inputs: [
       repoInput,
@@ -60,8 +60,8 @@ const repoOperations: TuiOperation[] = [
       },
     ],
 
-    run: ({ values }) => {
-      const repo = text(values, "repo") ?? "";
+    run: async ({ values }) => {
+      const repo = text(values, "repo") || (await inferRepo());
       const parts = repo.split("/");
 
       if (parts.length !== 2) {

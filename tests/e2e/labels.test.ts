@@ -16,14 +16,13 @@ describe("e2e > labels", () => {
     "lists labels from a real public repository via the GitHub API",
     { timeout: 15_000 },
     async () => {
-      await run(["config", "set", "repo", "vim/vim"], { home: tempHome });
-
       let output: string;
 
       try {
-        const result = await run(["labels", "list", "--json"], {
-          home: tempHome,
-        });
+        const result = await run(
+          ["labels", "list", "--repo", "vim/vim", "--json"],
+          { home: tempHome },
+        );
 
         output = result.stdout;
       } catch (error: unknown) {

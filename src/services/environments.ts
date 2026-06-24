@@ -1,6 +1,5 @@
 import output from "@/core/output";
 import logger from "@/core/logger";
-import config from "@/core/config";
 import { GhitgudError } from "@/core/errors";
 import environmentsApi from "@/api/environments";
 import { ERROR_ENVIRONMENT_NAME_REQUIRED } from "@/core/constants";
@@ -11,21 +10,22 @@ import {
   EnvironmentProtectionRule,
 } from "@/types";
 
-function extractOwnerRepo(): [string, string] {
-  const repo = config.getRepo();
+function extractOwnerRepo(repo: string): [string, string] {
   const parts = repo.split("/");
   if (parts.length < 2) throw new GhitgudError("Invalid repository format.");
   return [parts[0], parts[1]];
 }
 
-const list = async (): Promise<{
+const list = async (
+  repo: string,
+): Promise<{
   success: boolean;
   environments: Environment[];
 }> => {
-  const [owner, repo] = extractOwnerRepo();
-  logger.start(`Loading environments for ${owner}/${repo}.`);
+  const [owner, name] = extractOwnerRepo(repo);
+  logger.start(`Loading environments for ${owner}/${name}.`);
 
-  const response = await environmentsApi.list(owner, repo);
+  const response = await environmentsApi.list(owner, name);
   const data = (await response.json()) as EnvironmentListResponse;
   const environments = data.environments ?? [];
 
@@ -43,21 +43,25 @@ const list = async (): Promise<{
   return { success: true, environments };
 };
 
-const create = async (options: {
-  name: string;
-  waitTimer?: number;
-}): Promise<{ success: boolean }> => {
+const create = async (
+  repo: string,
+  options: {
+    name: string;
+    waitTimer?: number;
+  },
+): Promise<{ success: boolean }> => {
   if (!options.name) throw new GhitgudError(ERROR_ENVIRONMENT_NAME_REQUIRED);
 
-  const [owner, repo] = extractOwnerRepo();
+  const [owner, name] = extractOwnerRepo(repo);
   logger.start(`Creating environment ${options.name}.`);
 
-  await environmentsApi.create(owner, repo, options.name, options.waitTimer);
+  await environmentsApi.create(owner, name, options.name, options.waitTimer);
   logger.success(`Created environment ${options.name}.`);
   return { success: true };
 };
 
 const listProtectionRules = async (
+  repo: string,
   env: string,
 ): Promise<{
   success: boolean;
@@ -65,10 +69,10 @@ const listProtectionRules = async (
 }> => {
   if (!env) throw new GhitgudError(ERROR_ENVIRONMENT_NAME_REQUIRED);
 
-  const [owner, repo] = extractOwnerRepo();
+  const [owner, name] = extractOwnerRepo(repo);
   logger.start(`Loading protection rules for environment ${env}.`);
 
-  const response = await environmentsApi.listProtectionRules(owner, repo, env);
+  const response = await environmentsApi.listProtectionRules(owner, name, env);
   const rules = (await response.json()) as EnvironmentProtectionRule[];
 
   output.renderTable(
@@ -94,19 +98,22 @@ const listProtectionRules = async (
   return { success: true, rules };
 };
 
-const addProtectionRule = async (options: {
-  env: string;
-  type: "required_reviewers" | "branch_policy" | "wait_timer";
-  value: Record<string, unknown>;
-}): Promise<{ success: boolean }> => {
+const addProtectionRule = async (
+  repo: string,
+  options: {
+    env: string;
+    type: "required_reviewers" | "branch_policy" | "wait_timer";
+    value: Record<string, unknown>;
+  },
+): Promise<{ success: boolean }> => {
   if (!options.env) throw new GhitgudError(ERROR_ENVIRONMENT_NAME_REQUIRED);
 
-  const [owner, repo] = extractOwnerRepo();
+  const [owner, name] = extractOwnerRepo(repo);
   logger.start(`Adding ${options.type} protection rule to ${options.env}.`);
 
   await environmentsApi.addProtectionRule(
     owner,
-    repo,
+    name,
     options.env,
     options.type,
     options.value,
@@ -116,20 +123,23 @@ const addProtectionRule = async (options: {
   return { success: true };
 };
 
-const removeProtectionRule = async (options: {
-  env: string;
-  ruleId: number;
-}): Promise<{ success: boolean }> => {
+const removeProtectionRule = async (
+  repo: string,
+  options: {
+    env: string;
+    ruleId: number;
+  },
+): Promise<{ success: boolean }> => {
   if (!options.env) throw new GhitgudError(ERROR_ENVIRONMENT_NAME_REQUIRED);
 
-  const [owner, repo] = extractOwnerRepo();
+  const [owner, name] = extractOwnerRepo(repo);
   logger.start(
     `Removing protection rule ${options.ruleId} from ${options.env}.`,
   );
 
   await environmentsApi.removeProtectionRule(
     owner,
-    repo,
+    name,
     options.env,
     options.ruleId,
   );

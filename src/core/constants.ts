@@ -41,7 +41,7 @@ export const ERROR_NO_GIT_ROOT = "Git repository root not found.";
 export const ERROR_NO_REMOTE_URL = "Unable to detect repository remote.";
 
 export const ERROR_NO_REPO =
-  "Repository not configured. Set it with: ghg config set repo owner/repo.";
+  "No repository specified. Use --repo owner/repo or run inside a git repository with a GitHub remote.";
 
 export const ERROR_NO_TOKEN =
   "Token not configured. Set it with: ghg config set token <your-token>.";
@@ -123,7 +123,7 @@ export const DEPENDABOT_DISMISS_REASONS = [
   "tolerable_risk",
 ] as const;
 
-export const SUPPORTED_CONFIG_KEYS = ["token", "repo"] as const;
+export const SUPPORTED_CONFIG_KEYS = ["token"] as const;
 export type SupportedKey = (typeof SUPPORTED_CONFIG_KEYS)[number];
 
 export const ERROR_REVIEW_PR_REQUIRED = "PR number is required.";

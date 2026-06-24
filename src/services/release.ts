@@ -6,12 +6,12 @@ import git from "@/core/git";
 import api from "@/api/releases";
 import output from "@/core/output";
 import logger from "@/core/logger";
-import config from "@/core/config";
 import template from "@/core/template";
 import { GhitgudError, NotFoundError } from "@/core/errors";
 
 import {
   TEMPLATES_DIR,
+  ERROR_NO_REPO,
   RELEASE_FALLBACK_SINCE,
   RELEASE_DEFAULT_GENERATED,
 } from "@/core/constants";
@@ -41,11 +41,13 @@ interface VerifyOptions {
 
 interface NotesOptions {
   out?: string;
+  repo: string;
   since?: string;
   templateFile?: string;
 }
 
 interface DraftOptions {
+  repo: string;
   title?: string;
   notes?: string;
   level?: BumpLevel;
@@ -189,7 +191,7 @@ const bump = async (options: BumpOptions) => {
 };
 
 const verify = async (tag: string, options: VerifyOptions) => {
-  const repo = options.repo ?? config.getRepoOptional();
+  const repo = options.repo;
 
   logger.start(`Verifying tag ${tag}.`);
 
@@ -266,7 +268,7 @@ const notes = async (options: NotesOptions) => {
       })()
     : "{{CHANGELOG}}";
 
-  const repo = config.getRepoOptional() ?? "unknown";
+  const repo = options.repo;
   const rendered = template.render(templateContent, {
     VERSION: nextVersion,
     CHANGELOG: changelogBody,
@@ -298,9 +300,10 @@ const notes = async (options: NotesOptions) => {
 };
 
 const draft = async (options: DraftOptions) => {
-  const repo = config.getRepoOptional();
+  const repo = options.repo;
+
   if (!repo) {
-    throw new GhitgudError("Repository is required.");
+    throw new GhitgudError(ERROR_NO_REPO);
   }
 
   const latestTag = getLatestTag();

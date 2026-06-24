@@ -40,12 +40,6 @@ describe("config service", () => {
       );
     });
 
-    it("should set repo config key", () => {
-      const result = configService.set("repo", "owner/repo");
-      expect(result).toEqual({ success: true });
-      expect(config.write).toHaveBeenCalledWith("repo", "owner/repo");
-    });
-
     it("should throw ConfigError for unsupported key", () => {
       expect(() => configService.set("invalid", "value")).toThrow(ConfigError);
       expect(() => configService.set("invalid", "value")).toThrow(

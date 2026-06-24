@@ -3,12 +3,6 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 
 import insightsCommand from "@/commands/insights";
 
-vi.mock("@/core/config", () => ({
-  default: {
-    getRepoOptional: vi.fn(() => "airscripts/ghitgud"),
-  },
-}));
-
 vi.mock("@/services/insights", () => ({
   default: {
     formatCommits: vi.fn(),

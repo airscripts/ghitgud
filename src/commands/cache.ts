@@ -2,6 +2,7 @@ import { Command } from "commander";
 
 import prompt from "@/core/prompt";
 import command from "@/core/command";
+import repoResolver from "@/core/repo";
 import cacheService from "@/services/cache";
 
 const register = (program: Command) => {
@@ -15,13 +16,14 @@ const register = (program: Command) => {
     .argument("[key]", "Cache key or prefix")
     .option("--repo <repo>", "Repository (owner/repo)")
     .action(async (key: string | undefined, options: { repo?: string }) => {
+      const repo = await repoResolver.resolveRepo(options.repo);
       const value =
         key ??
         (await prompt.text("Enter cache key to inspect:", {
           placeholder: "linux-node-modules",
         }));
 
-      await command.run(() => cacheService.inspect(value, options.repo));
+      await command.run(() => cacheService.inspect(value, repo));
     });
 
   cache
@@ -37,13 +39,16 @@ const register = (program: Command) => {
         key: string | undefined,
         options: { repo?: string; outputDir?: string },
       ) => {
+        const repo = await repoResolver.resolveRepo(options.repo);
         const value =
           key ??
           (await prompt.text("Enter cache key to download:", {
             placeholder: "linux-node-modules",
           }));
 
-        await command.run(() => cacheService.download(value, options));
+        await command.run(() =>
+          cacheService.download(value, { ...options, repo }),
+        );
       },
     );
 };

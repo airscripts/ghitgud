@@ -9,7 +9,6 @@ vi.mock("@/api/client", () => ({
     get: vi.fn(),
     getTokenRequired: vi.fn(),
     postTokenRequired: vi.fn(),
-    getRepo: vi.fn(() => "owner/repo"),
   },
 }));
 
@@ -23,7 +22,7 @@ describe("issues api", () => {
       status: 200,
     } as Response);
 
-    await issues.get(42);
+    await issues.get(42, "owner/repo");
     expect(client.getTokenRequired).toHaveBeenCalledWith(
       "/repos/owner/repo/issues/42",
     );

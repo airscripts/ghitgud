@@ -2,6 +2,7 @@ import { describe, expect, it, vi } from "vitest";
 
 import git from "@/core/git";
 import config from "@/core/config";
+import repoResolver from "@/core/repo";
 
 import {
   asString,
@@ -24,8 +25,15 @@ vi.mock("@/core/git", () => ({
 vi.mock("@/core/config", () => ({
   default: {
     listProfiles: vi.fn(),
-    getRepoOptional: vi.fn(),
     getTokenOptional: vi.fn(),
+  },
+}));
+
+vi.mock("@/core/repo", () => ({
+  default: {
+    resolveRepo: vi.fn(),
+    resolveRepos: vi.fn(),
+    resolveRepoSync: vi.fn(),
   },
 }));
 
@@ -227,8 +235,14 @@ describe("tui state", () => {
       expect(printable("\u001f")).toBe(false);
     });
 
-    it("returns false for multi-char strings", () => {
-      expect(printable("ab")).toBe(false);
+    it("returns true for multi-char printable strings", () => {
+      expect(printable("ab")).toBe(true);
+      expect(printable("hello world")).toBe(true);
+    });
+
+    it("returns false for multi-char strings with control chars", () => {
+      expect(printable("a\0b")).toBe(false);
+      expect(printable("a\u007f")).toBe(false);
     });
   });
 
@@ -377,7 +391,7 @@ describe("tui state", () => {
         false,
       );
 
-      expect(lines).toContain("> Name: alice *");
+      expect(lines).toContain("> Name*: alice");
     });
 
     it("shows No inputs when inputs array is empty", () => {
@@ -406,12 +420,12 @@ describe("tui state", () => {
   describe("buildDashboardData", () => {
     it("should build dashboard data from config and git", () => {
       vi.mocked(config.listProfiles).mockReturnValue([
-        { name: "default", active: false, hasToken: false, repo: null },
-        { name: "work", active: true, hasToken: true, repo: "owner/repo" },
+        { name: "default", active: false, hasToken: false },
+        { name: "work", active: true, hasToken: true },
       ]);
 
-      vi.mocked(config.getRepoOptional).mockReturnValue("owner/repo");
       vi.mocked(config.getTokenOptional).mockReturnValue("token");
+      vi.mocked(repoResolver.resolveRepoSync).mockReturnValue("owner/repo");
       vi.mocked(git.isInsideRepo).mockReturnValue(true);
       vi.mocked(git.getCurrentBranch).mockReturnValue("main");
 
@@ -429,10 +443,12 @@ describe("tui state", () => {
         throw new Error("missing config");
       });
 
-      vi.mocked(config.getRepoOptional).mockReturnValue(null);
       vi.mocked(config.getTokenOptional).mockReturnValue(null);
-      vi.mocked(git.isInsideRepo).mockReturnValue(false);
+      vi.mocked(repoResolver.resolveRepoSync).mockImplementation(() => {
+        throw new Error("no repo");
+      });
 
+      vi.mocked(git.isInsideRepo).mockReturnValue(false);
       expect(buildDashboardData("1.2.3")).toEqual({
         repo: null,
         branch: null,
@@ -444,10 +460,12 @@ describe("tui state", () => {
 
     it("should tolerate git branch failure inside repo", () => {
       vi.mocked(config.listProfiles).mockReturnValue([]);
-      vi.mocked(config.getRepoOptional).mockReturnValue(null);
       vi.mocked(config.getTokenOptional).mockReturnValue(null);
-      vi.mocked(git.isInsideRepo).mockReturnValue(true);
+      vi.mocked(repoResolver.resolveRepoSync).mockImplementation(() => {
+        throw new Error("no repo");
+      });
 
+      vi.mocked(git.isInsideRepo).mockReturnValue(true);
       vi.mocked(git.getCurrentBranch).mockImplementation(() => {
         throw new Error("git error");
       });

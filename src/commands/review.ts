@@ -3,6 +3,7 @@ import { Command } from "commander";
 import parse from "@/core/parse";
 import prompt from "@/core/prompt";
 import command from "@/core/command";
+import repoResolver from "@/core/repo";
 import reviewService from "@/services/review";
 
 type ReviewSide = "LEFT" | "RIGHT";
@@ -89,6 +90,7 @@ const register = (program: Command) => {
     .option("--side <side>", "Side of diff (LEFT or RIGHT)", "RIGHT")
     .option("--repo <repo>", "Repository (owner/repo)")
     .action(async (prArg: string | undefined, options: CommentOptions) => {
+      const repo = await repoResolver.resolveRepo(options.repo);
       const pr = await promptPr(prArg);
       const file = await promptFile(options.file);
       const line = await promptLine(options.line);
@@ -101,7 +103,7 @@ const register = (program: Command) => {
           line,
           body,
           side: options.side as ReviewSide,
-          repo: options.repo,
+          repo,
         }),
       );
     });
@@ -112,8 +114,9 @@ const register = (program: Command) => {
     .argument("[pr]", "Pull request number")
     .option("--repo <repo>", "Repository (owner/repo)")
     .action(async (prArg: string | undefined, options: ReviewOptions) => {
+      const repo = await repoResolver.resolveRepo(options.repo);
       const pr = await promptPr(prArg);
-      await command.run(() => reviewService.threads(pr, options.repo));
+      await command.run(() => reviewService.threads(pr, repo));
     });
 
   review
@@ -128,12 +131,11 @@ const register = (program: Command) => {
         prArg: string | undefined,
         options: ReviewOptions,
       ) => {
+        const repo = await repoResolver.resolveRepo(options.repo);
         const threadId = await promptThreadId(threadIdArg);
         const pr = await promptPr(prArg);
 
-        await command.run(() =>
-          reviewService.resolve(threadId, options.repo, pr),
-        );
+        await command.run(() => reviewService.resolve(threadId, repo, pr));
       },
     );
 
@@ -146,6 +148,7 @@ const register = (program: Command) => {
     .option("--replace <text>", "Replacement text")
     .option("--repo <repo>", "Repository (owner/repo)")
     .action(async (prArg: string | undefined, options: SuggestOptions) => {
+      const repo = await repoResolver.resolveRepo(options.repo);
       const pr = await promptPr(prArg);
       const file = await promptFile(options.file);
       const line = await promptLine(options.line);
@@ -157,7 +160,7 @@ const register = (program: Command) => {
           file,
           line,
           replace,
-          repo: options.repo,
+          repo,
         }),
       );
     });
@@ -169,11 +172,10 @@ const register = (program: Command) => {
     .option("--repo <repo>", "Repository (owner/repo)")
     .option("--push", "Push after applying", false)
     .action(async (prArg: string | undefined, options: ApplyOptions) => {
+      const repo = await repoResolver.resolveRepo(options.repo);
       const pr = await promptPr(prArg);
 
-      await command.run(() =>
-        reviewService.apply(pr, options.repo, options.push),
-      );
+      await command.run(() => reviewService.apply(pr, repo, options.push));
     });
 };
 

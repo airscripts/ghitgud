@@ -12,6 +12,12 @@ vi.mock("@/services/milestone", () => ({
   },
 }));
 
+vi.mock("@/core/repo", () => ({
+  default: {
+    resolveRepo: vi.fn(() => Promise.resolve("owner/repo")),
+  },
+}));
+
 import milestoneService from "@/services/milestone";
 
 describe("integration > milestone commands", () => {
@@ -35,7 +41,7 @@ describe("integration > milestone commands", () => {
       "2026-12-31",
     ]);
 
-    expect(milestoneService.create).toHaveBeenCalledWith({
+    expect(milestoneService.create).toHaveBeenCalledWith("owner/repo", {
       title: "v2.10.0",
       due: "2026-12-31",
     });
@@ -55,7 +61,9 @@ describe("integration > milestone commands", () => {
       "closed",
     ]);
 
-    expect(milestoneService.list).toHaveBeenCalledWith({ status: "closed" });
+    expect(milestoneService.list).toHaveBeenCalledWith("owner/repo", {
+      status: "closed",
+    });
   });
 
   it("list defaults status to open", async () => {
@@ -64,7 +72,9 @@ describe("integration > milestone commands", () => {
     milestoneCommand.register(program);
 
     await program.parseAsync(["node", "test", "milestone", "list"]);
-    expect(milestoneService.list).toHaveBeenCalledWith({ status: "open" });
+    expect(milestoneService.list).toHaveBeenCalledWith("owner/repo", {
+      status: "open",
+    });
   });
 
   it("close calls service with milestone name", async () => {
@@ -73,7 +83,10 @@ describe("integration > milestone commands", () => {
     milestoneCommand.register(program);
 
     await program.parseAsync(["node", "test", "milestone", "close", "v2.10.0"]);
-    expect(milestoneService.close).toHaveBeenCalledWith("v2.10.0");
+    expect(milestoneService.close).toHaveBeenCalledWith(
+      "owner/repo",
+      "v2.10.0",
+    );
   });
 
   it("progress calls service with milestone name", async () => {
@@ -89,6 +102,9 @@ describe("integration > milestone commands", () => {
       "v2.10.0",
     ]);
 
-    expect(milestoneService.progress).toHaveBeenCalledWith("v2.10.0");
+    expect(milestoneService.progress).toHaveBeenCalledWith(
+      "owner/repo",
+      "v2.10.0",
+    );
   });
 });

@@ -1,6 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
-import config from "@/core/config";
 import reposApi from "@/api/repos";
 import secretsApi from "@/api/secrets";
 import { encryptSecret } from "@/core/secrets";
@@ -33,8 +32,11 @@ vi.mock("@/core/secrets", () => ({
   encryptSecret: vi.fn(() => "encrypted"),
 }));
 
-vi.mock("@/core/config", () => ({
-  default: { getRepo: vi.fn() },
+vi.mock("@/core/repo", () => ({
+  default: {
+    resolveRepoSync: vi.fn(() => "owner/repo"),
+    resolveRepo: vi.fn(() => Promise.resolve("owner/repo")),
+  },
 }));
 
 vi.mock("@/core/output", () => ({
@@ -48,7 +50,6 @@ vi.mock("@/core/logger", () => ({
 describe("secrets service", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    vi.mocked(config.getRepo).mockReturnValue("owner/repo");
   });
 
   const mockResponse = (body: unknown) =>
@@ -62,7 +63,8 @@ describe("secrets service", () => {
     vi.mocked(secretsApi.listRepo).mockReturnValue(
       mockResponse({ total_count: 0, secrets: [] }),
     );
-    const result = await secretsService.list({});
+
+    const result = await secretsService.list({ repo: "owner/repo" });
     expect(result.success).toBe(true);
   });
 
@@ -70,7 +72,12 @@ describe("secrets service", () => {
     vi.mocked(secretsApi.listOrg).mockReturnValue(
       mockResponse({ total_count: 0, secrets: [] }),
     );
-    const result = await secretsService.list({ org: "my-org" });
+
+    const result = await secretsService.list({
+      repo: "owner/repo",
+      org: "my-org",
+    });
+
     expect(result.success).toBe(true);
   });
 
@@ -79,7 +86,11 @@ describe("secrets service", () => {
       mockResponse({ total_count: 0, secrets: [] }),
     );
 
-    const result = await secretsService.list({ env: "prod" });
+    const result = await secretsService.list({
+      repo: "owner/repo",
+      env: "prod",
+    });
+
     expect(result.success).toBe(true);
   });
 
@@ -87,8 +98,14 @@ describe("secrets service", () => {
     vi.mocked(secretsApi.getRepoPublicKey).mockReturnValue(
       mockResponse({ key_id: "key-1", key: "bXlrZXk=" }),
     );
+
     vi.mocked(secretsApi.setRepo).mockResolvedValue(new Response("{}"));
-    const result = await secretsService.set({ name: "FOO", value: "bar" });
+    const result = await secretsService.set({
+      repo: "owner/repo",
+      name: "FOO",
+      value: "bar",
+    });
+
     expect(result.success).toBe(true);
     expect(encryptSecret).toHaveBeenCalled();
   });
@@ -101,6 +118,7 @@ describe("secrets service", () => {
     vi.mocked(secretsApi.setEnv).mockResolvedValue(new Response("{}"));
 
     const result = await secretsService.set({
+      repo: "owner/repo",
       name: "FOO",
       env: "prod",
       value: "bar",
@@ -141,19 +159,29 @@ describe("secrets service", () => {
 
   it("deletes repo secret", async () => {
     vi.mocked(secretsApi.deleteRepo).mockResolvedValue(new Response("{}"));
-    const result = await secretsService.remove({ name: "FOO" });
+    const result = await secretsService.remove({
+      repo: "owner/repo",
+      name: "FOO",
+    });
+
     expect(result.success).toBe(true);
   });
 
   it("deletes org secret", async () => {
     vi.mocked(secretsApi.deleteOrg).mockResolvedValue(new Response("{}"));
-    const result = await secretsService.remove({ name: "FOO", org: "my-org" });
+    const result = await secretsService.remove({
+      repo: "owner/repo",
+      name: "FOO",
+      org: "my-org",
+    });
+
     expect(result.success).toBe(true);
   });
 
   it("deletes environment secret", async () => {
     vi.mocked(secretsApi.deleteEnv).mockResolvedValue(new Response("{}"));
     const result = await secretsService.remove({
+      repo: "owner/repo",
       name: "FOO",
       env: "prod",
     });
@@ -163,13 +191,13 @@ describe("secrets service", () => {
 
   it("throws when name is missing", async () => {
     await expect(
-      secretsService.set({ name: "", value: "bar" }),
+      secretsService.set({ repo: "owner/repo", name: "", value: "bar" }),
     ).rejects.toThrow("Secret name is required.");
   });
 
   it("throws when value is missing", async () => {
     await expect(
-      secretsService.set({ name: "FOO", value: "" }),
+      secretsService.set({ repo: "owner/repo", name: "FOO", value: "" }),
     ).rejects.toThrow("Secret value is required.");
   });
 });

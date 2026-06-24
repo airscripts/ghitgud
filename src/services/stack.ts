@@ -139,7 +139,7 @@ const create = async (options: { base?: string }) => {
   }
 };
 
-const list = async () => {
+const list = async (repo: string) => {
   if (!git.isInsideRepo()) {
     throw new GhitgudError(
       "Not in a git repository. Run this command from inside a git repo.",
@@ -155,7 +155,7 @@ const list = async () => {
     return { success: true, stacks: data.stacks, current: null };
   }
 
-  const response = await api.listOpen();
+  const response = await api.listOpen(repo);
   const prs: PullRequest[] = await response.json();
   const prMap = getOpenPrsMap(prs);
 
@@ -183,7 +183,7 @@ const list = async () => {
   };
 };
 
-const update = async () => {
+const update = async (repo: string) => {
   if (!git.isInsideRepo()) {
     throw new GhitgudError(
       "Not in a git repository. Run this command from inside a git repo.",
@@ -198,7 +198,7 @@ const update = async () => {
     throw new GhitgudError("Current branch is not part of a tracked stack.");
   }
 
-  const response = await api.listOpen();
+  const response = await api.listOpen(repo);
   const prs: PullRequest[] = await response.json();
   const prMap = getOpenPrsMap(prs);
   const parentPr = stack.parentPr ? prMap[stack.parent] : null;
@@ -215,7 +215,7 @@ const update = async () => {
 
         const childPr = prMap[child];
         if (childPr) {
-          await api.updatePr(childPr.number, { base: stack.parent });
+          await api.updatePr(repo, childPr.number, { base: stack.parent });
           logger.success(
             `Updated PR #${childPr.number} base to ${stack.parent}.`,
           );
@@ -235,7 +235,10 @@ const update = async () => {
   return { success: true };
 };
 
-const pushStack = async (options: { title?: string; draft: boolean }) => {
+const pushStack = async (
+  repo: string,
+  options: { title?: string; draft: boolean },
+) => {
   if (!git.isInsideRepo()) {
     throw new GhitgudError(
       "Not in a git repository. Run this command from inside a git repo.",
@@ -250,7 +253,7 @@ const pushStack = async (options: { title?: string; draft: boolean }) => {
     throw new GhitgudError("Current branch is not part of a tracked stack.");
   }
 
-  const response = await api.listOpen();
+  const response = await api.listOpen(repo);
   const prs: PullRequest[] = await response.json();
   const prMap = getOpenPrsMap(prs);
   const branchesToPush: { branch: string; base: string }[] = [];
@@ -312,7 +315,7 @@ const pushStack = async (options: { title?: string; draft: boolean }) => {
       const existingPr = prMap[b];
       if (existingPr) {
         if (existingPr.base.ref !== base) {
-          await api.updatePr(existingPr.number, { base });
+          await api.updatePr(repo, existingPr.number, { base });
           logger.success(`Updated PR #${existingPr.number} base to ${base}.`);
         } else {
           output.log(`PR #${existingPr.number} already up to date.`);
@@ -327,8 +330,7 @@ const pushStack = async (options: { title?: string; draft: boolean }) => {
           : "";
 
         const body = `Stacked PR for ${b}.${dependsLine}`;
-
-        const newPr = await api.createPr({
+        const newPr = await api.createPr(repo, {
           title,
           head: b,
           base,

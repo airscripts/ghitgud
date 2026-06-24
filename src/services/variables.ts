@@ -1,10 +1,10 @@
 import output from "@/core/output";
 import logger from "@/core/logger";
-import config from "@/core/config";
 import variablesApi from "@/api/variables";
 import { GhitgudError } from "@/core/errors";
 
 import {
+  ERROR_NO_REPO,
   ERROR_VARIABLE_NAME_REQUIRED,
   ERROR_VARIABLE_VALUE_REQUIRED,
 } from "@/core/constants";
@@ -16,14 +16,14 @@ import {
   VariableListResponse,
 } from "@/types";
 
-function extractOwnerRepo(): [string, string] {
-  const repo = config.getRepo();
+function extractOwnerRepo(repo: string): [string, string] {
   const parts = repo.split("/");
   if (parts.length < 2) throw new GhitgudError("Invalid repository format.");
   return [parts[0], parts[1]];
 }
 
 const list = async (options: {
+  repo?: string;
   env?: string;
   org?: string;
 }): Promise<{ success: boolean; variables: unknown[] }> => {
@@ -48,7 +48,8 @@ const list = async (options: {
     return { success: true, variables: vars };
   }
 
-  const [owner, repo] = extractOwnerRepo();
+  if (!options.repo) throw new GhitgudError(ERROR_NO_REPO);
+  const [owner, repo] = extractOwnerRepo(options.repo);
 
   if (options.env) {
     logger.start(
@@ -97,6 +98,7 @@ const list = async (options: {
 const set = async (options: {
   name: string;
   value: string;
+  repo?: string;
   env?: string;
   org?: string;
 }): Promise<{ success: boolean }> => {
@@ -118,7 +120,8 @@ const set = async (options: {
     return { success: true };
   }
 
-  const [owner, repo] = extractOwnerRepo();
+  if (!options.repo) throw new GhitgudError(ERROR_NO_REPO);
+  const [owner, repo] = extractOwnerRepo(options.repo);
 
   if (options.env) {
     logger.start(
@@ -159,6 +162,7 @@ const set = async (options: {
 
 const remove = async (options: {
   name: string;
+  repo?: string;
   env?: string;
   org?: string;
 }): Promise<{ success: boolean }> => {
@@ -174,7 +178,8 @@ const remove = async (options: {
     return { success: true };
   }
 
-  const [owner, repo] = extractOwnerRepo();
+  if (!options.repo) throw new GhitgudError(ERROR_NO_REPO);
+  const [owner, repo] = extractOwnerRepo(options.repo);
 
   if (options.env) {
     logger.start(

@@ -309,7 +309,6 @@ const client = {
       body: { query, variables },
     }),
 
-  getRepo: () => config.getRepo(),
   validateToken: (token: string) => request("/user", {}, token),
   isOk: (status: number) => isSuccessful(status),
   isNotFound: (status: number) => status === STATUS_NOT_FOUND,

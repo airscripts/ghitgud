@@ -11,6 +11,13 @@ vi.mock("@/services/variables", () => ({
   },
 }));
 
+vi.mock("@/core/repo", () => ({
+  default: {
+    resolveRepoSync: vi.fn(() => "airscripts/ghitgud"),
+    resolveRepo: vi.fn(() => Promise.resolve("airscripts/ghitgud")),
+  },
+}));
+
 describe("tui variable operations", () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -28,6 +35,7 @@ describe("tui variable operations", () => {
     expect(variablesService.list).toHaveBeenCalledWith({
       env: undefined,
       org: undefined,
+      repo: "airscripts/ghitgud",
     });
   });
 
@@ -41,6 +49,7 @@ describe("tui variable operations", () => {
       value: "bar",
       env: undefined,
       org: undefined,
+      repo: "airscripts/ghitgud",
     });
   });
 
@@ -53,6 +62,7 @@ describe("tui variable operations", () => {
       name: "FOO",
       env: undefined,
       org: undefined,
+      repo: "airscripts/ghitgud",
     });
   });
 });

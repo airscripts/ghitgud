@@ -1,7 +1,6 @@
 import pc from "picocolors";
 
 import api from "@/api/projects";
-import config from "@/core/config";
 import output from "@/core/output";
 import logger from "@/core/logger";
 import { GhitgudError } from "@/core/errors";
@@ -43,8 +42,8 @@ interface ProjectPayload {
   } | null;
 }
 
-function getDefaultOwner(): string {
-  const [owner] = config.getRepo().split("/");
+function getDefaultOwner(repo: string): string {
+  const [owner] = repo.split("/");
   if (!owner) {
     throw new GhitgudError("Could not resolve project owner.");
   }
@@ -120,13 +119,16 @@ function renderBoard(board: ProjectBoard) {
   }
 }
 
-const board = async (projectNumber: string, options: { owner?: string }) => {
+const board = async (
+  projectNumber: string,
+  options: { repo?: string; owner?: string },
+) => {
   const number = Number(projectNumber);
   if (!Number.isInteger(number) || number <= 0) {
     throw new GhitgudError(`Invalid project id: ${projectNumber}`);
   }
 
-  const owner = options.owner ?? getDefaultOwner();
+  const owner = options.owner ?? getDefaultOwner(options.repo ?? "");
   logger.start(`Loading project board ${owner}/${number}.`);
 
   const response = await api.board(owner, number);

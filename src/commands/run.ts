@@ -3,6 +3,7 @@ import { Command } from "commander";
 import parse from "@/core/parse";
 import prompt from "@/core/prompt";
 import command from "@/core/command";
+import repoResolver from "@/core/repo";
 import runService from "@/services/run";
 
 const register = (program: Command) => {
@@ -27,8 +28,14 @@ const register = (program: Command) => {
             placeholder: "123456",
           }));
 
+        const parsedRunId = parse.parsePositiveInt(value, "run id");
+        const repo = await repoResolver.resolveRepo(options.repo);
+
         await command.run(() =>
-          runService.debugRun(parse.parsePositiveInt(value, "run id"), options),
+          runService.debugRun(parsedRunId, {
+            ...options,
+            repo,
+          }),
         );
       },
     );

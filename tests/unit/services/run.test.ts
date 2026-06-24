@@ -3,8 +3,8 @@ import os from "os";
 import path from "path";
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 
-import config from "@/core/config";
 import checksApi from "@/api/checks";
+import repoResolver from "@/core/repo";
 import runService from "@/services/run";
 import artifactsApi from "@/api/artifacts";
 import workflowsApi from "@/api/workflows";
@@ -38,9 +38,9 @@ vi.mock("@/api/workflows", () => ({
   },
 }));
 
-vi.mock("@/core/config", () => ({
+vi.mock("@/core/repo", () => ({
   default: {
-    getRepoOptional: vi.fn(() => "owner/repo"),
+    resolveRepo: vi.fn(() => Promise.resolve("owner/repo")),
   },
 }));
 
@@ -64,7 +64,7 @@ describe("run service", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "ghg-run-"));
-    vi.mocked(config.getRepoOptional).mockReturnValue("owner/repo");
+    vi.mocked(repoResolver.resolveRepo).mockResolvedValue("owner/repo");
   });
 
   afterEach(() => {
@@ -120,7 +120,7 @@ describe("run service", () => {
     ).toBe(true);
   });
 
-  it("uses configured repo fallback and handles empty jobs/artifacts", async () => {
+  it("uses git remote fallback and handles empty jobs/artifacts", async () => {
     vi.mocked(workflowsApi.getRun).mockResolvedValue(
       jsonResponse(makeWorkflowRun({ conclusion: null })),
     );

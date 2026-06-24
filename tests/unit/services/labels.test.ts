@@ -66,7 +66,7 @@ describe("labels", () => {
   it("should list labels", async () => {
     const mockResponse = { json: () => Promise.resolve(API_LABELS) };
     (api.fetch as Mock).mockResolvedValue(mockResponse);
-    const result = await labelsService.list();
+    const result = await labelsService.list("owner/repo");
 
     expect(result).toEqual({
       success: true,
@@ -79,7 +79,7 @@ describe("labels", () => {
   it("should pull labels", async () => {
     const mockResponse = { json: () => Promise.resolve(API_LABELS) };
     (api.fetch as Mock).mockResolvedValue(mockResponse);
-    const result = await labelsService.pull();
+    const result = await labelsService.pull("owner/repo");
 
     expect(result).toEqual({
       success: true,
@@ -98,7 +98,7 @@ describe("labels", () => {
     vi.spyOn(io, "readJsonFile").mockReturnValue(METADATA_LABELS);
     (api.get as Mock).mockResolvedValue({ status: 200 });
     (api.patch as Mock).mockResolvedValue({ status: 200 });
-    const result = await labelsService.push();
+    const result = await labelsService.push("owner/repo");
 
     expect(result).toEqual({
       success: true,
@@ -123,7 +123,7 @@ describe("labels", () => {
     );
 
     (api.create as Mock).mockResolvedValue({ status: 201 });
-    const result = await labelsService.push();
+    const result = await labelsService.push("owner/repo");
 
     expect(result).toEqual({
       success: true,
@@ -142,23 +142,25 @@ describe("labels", () => {
     vi.spyOn(io, "readJsonFile").mockReturnValue(METADATA_LABELS);
     (api.delete as Mock).mockResolvedValue({ status: 204 });
 
-    const result = await labelsService.prune({ yes: true });
+    const result = await labelsService.prune("owner/repo", { yes: true });
     expect(result).toEqual({ success: true, metadata: { deleted: 1 } });
     expect(logger.success).toHaveBeenCalledWith("Deleted 1 label(s).");
   });
 
   it("should throw when no metadata file for push", async () => {
     vi.spyOn(io, "fileExists").mockReturnValue(false);
-    await expect(labelsService.push()).rejects.toThrow(
+    await expect(labelsService.push("owner/repo")).rejects.toThrow(
       "No metadata file found.",
     );
 
-    await expect(labelsService.push()).rejects.toThrow(GhitgudError);
+    await expect(labelsService.push("owner/repo")).rejects.toThrow(
+      GhitgudError,
+    );
   });
 
   it("should throw when no metadata file for prune", async () => {
     vi.spyOn(io, "fileExists").mockReturnValue(false);
-    await expect(labelsService.prune()).rejects.toThrow(
+    await expect(labelsService.prune("owner/repo")).rejects.toThrow(
       "No metadata file found.",
     );
   });
@@ -198,7 +200,11 @@ describe("labels", () => {
     );
 
     (api.create as Mock).mockResolvedValue({ status: 201 });
-    const result = await labelsService.pushTemplate("base", "/mock/templates");
+    const result = await labelsService.pushTemplate(
+      "base",
+      "/mock/templates",
+      "owner/repo",
+    );
 
     expect(result).toEqual({
       success: true,
@@ -215,7 +221,11 @@ describe("labels", () => {
     (api.get as Mock).mockResolvedValue({ status: 200 });
 
     await expect(
-      labelsService.pushTemplate("nonexistent", "/mock/templates"),
+      labelsService.pushTemplate(
+        "nonexistent",
+        "/mock/templates",
+        "owner/repo",
+      ),
     ).rejects.toThrow(
       /Template "nonexistent" not found at .*mock.*templates.*nonexistent\.json\./,
     );

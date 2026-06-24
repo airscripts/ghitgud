@@ -1,6 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
-import config from "@/core/config";
 import variablesApi from "@/api/variables";
 import variablesService from "@/services/variables";
 
@@ -21,8 +20,11 @@ vi.mock("@/api/variables", () => ({
   },
 }));
 
-vi.mock("@/core/config", () => ({
-  default: { getRepo: vi.fn() },
+vi.mock("@/core/repo", () => ({
+  default: {
+    resolveRepoSync: vi.fn(() => "owner/repo"),
+    resolveRepo: vi.fn(() => Promise.resolve("owner/repo")),
+  },
 }));
 
 vi.mock("@/core/output", () => ({
@@ -36,7 +38,6 @@ vi.mock("@/core/logger", () => ({
 describe("variables service", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    vi.mocked(config.getRepo).mockReturnValue("owner/repo");
   });
 
   const mockResponse = (body: unknown) =>
@@ -62,7 +63,7 @@ describe("variables service", () => {
       }),
     );
 
-    const result = await variablesService.list({});
+    const result = await variablesService.list({ repo: "owner/repo" });
     expect(result.success).toBe(true);
     expect(result.variables.length).toBe(1);
     expect(variablesApi.listRepo).toHaveBeenCalledWith("owner", "repo");
@@ -77,7 +78,11 @@ describe("variables service", () => {
       }),
     );
 
-    const result = await variablesService.list({ org: "my-org" });
+    const result = await variablesService.list({
+      repo: "owner/repo",
+      org: "my-org",
+    });
+
     expect(result.success).toBe(true);
     expect(variablesApi.listOrg).toHaveBeenCalledWith("my-org");
   });
@@ -87,7 +92,11 @@ describe("variables service", () => {
       mockResponse({ total_count: 0, variables: [] }),
     );
 
-    const result = await variablesService.list({ env: "prod" });
+    const result = await variablesService.list({
+      repo: "owner/repo",
+      env: "prod",
+    });
+
     expect(result.success).toBe(true);
     expect(variablesApi.listEnv).toHaveBeenCalledWith("owner", "repo", "prod");
   });
@@ -96,7 +105,12 @@ describe("variables service", () => {
     vi.mocked(variablesApi.updateRepo).mockResolvedValue(new Response("{}"));
     vi.mocked(variablesApi.setRepo).mockResolvedValue(new Response("{}"));
 
-    const result = await variablesService.set({ name: "FOO", value: "bar" });
+    const result = await variablesService.set({
+      repo: "owner/repo",
+      name: "FOO",
+      value: "bar",
+    });
+
     expect(result.success).toBe(true);
   });
 
@@ -105,6 +119,7 @@ describe("variables service", () => {
     vi.mocked(variablesApi.setEnv).mockResolvedValue(new Response("{}"));
 
     const result = await variablesService.set({
+      repo: "owner/repo",
       name: "FOO",
       env: "prod",
       value: "bar",
@@ -129,7 +144,11 @@ describe("variables service", () => {
 
   it("deletes repo variable", async () => {
     vi.mocked(variablesApi.deleteRepo).mockResolvedValue(new Response("{}"));
-    const result = await variablesService.remove({ name: "FOO" });
+    const result = await variablesService.remove({
+      repo: "owner/repo",
+      name: "FOO",
+    });
+
     expect(result.success).toBe(true);
   });
 
@@ -146,25 +165,31 @@ describe("variables service", () => {
 
   it("deletes environment variable", async () => {
     vi.mocked(variablesApi.deleteEnv).mockResolvedValue(new Response("{}"));
-    const result = await variablesService.remove({ name: "FOO", env: "prod" });
+
+    const result = await variablesService.remove({
+      repo: "owner/repo",
+      name: "FOO",
+      env: "prod",
+    });
+
     expect(result.success).toBe(true);
   });
 
   it("throws when name is missing for set", async () => {
     await expect(
-      variablesService.set({ name: "", value: "bar" }),
+      variablesService.set({ repo: "owner/repo", name: "", value: "bar" }),
     ).rejects.toThrow("Variable name is required.");
   });
 
   it("throws when value is missing for set", async () => {
     await expect(
-      variablesService.set({ name: "FOO", value: "" }),
+      variablesService.set({ repo: "owner/repo", name: "FOO", value: "" }),
     ).rejects.toThrow("Variable value is required.");
   });
 
   it("throws when name is missing for delete", async () => {
-    await expect(variablesService.remove({ name: "" })).rejects.toThrow(
-      "Variable name is required.",
-    );
+    await expect(
+      variablesService.remove({ repo: "owner/repo", name: "" }),
+    ).rejects.toThrow("Variable name is required.");
   });
 });

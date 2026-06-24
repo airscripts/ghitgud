@@ -2,6 +2,7 @@ import { Command } from "commander";
 
 import parse from "@/core/parse";
 import command from "@/core/command";
+import repoResolver from "@/core/repo";
 import discussionService from "@/services/discussion";
 
 const register = (program: Command) => {
@@ -12,28 +13,37 @@ const register = (program: Command) => {
   discussion
     .command("list")
     .description("List discussions by category.")
+    .option("--repo <repo>", "Repository (owner/repo)")
     .option("--category <name>", "Filter by category name")
     .option("--limit <n>", "Maximum discussions to fetch", "30")
-    .action(async (options: { category?: string; limit?: string }) => {
-      const limit = options.limit
-        ? parse.parsePositiveInt(options.limit, "limit")
-        : undefined;
+    .action(
+      async (options: { category?: string; limit?: string; repo?: string }) => {
+        const limit = options.limit
+          ? parse.parsePositiveInt(options.limit, "limit")
+          : undefined;
 
-      await command.run(() =>
-        discussionService.list({
-          category: options.category,
-          limit,
-        }),
-      );
-    });
+        const repo = await repoResolver.resolveRepo(options.repo);
+
+        await command.run(() =>
+          discussionService.list(repo, {
+            category: options.category,
+            limit,
+          }),
+        );
+      },
+    );
 
   discussion
     .command("view")
     .description("View a discussion.")
     .argument("<number>", "Discussion number")
-    .action(async (number: string) => {
+    .option("--repo <repo>", "Repository (owner/repo)")
+    .action(async (number: string, options: { repo?: string }) => {
+      const repo = await repoResolver.resolveRepo(options.repo);
+
       await command.run(() =>
         discussionService.view(
+          repo,
           parse.parsePositiveInt(number, "discussion number"),
         ),
       );
@@ -42,12 +52,19 @@ const register = (program: Command) => {
   discussion
     .command("create")
     .description("Create a new discussion.")
+    .option("--repo <repo>", "Repository (owner/repo)")
     .requiredOption("--title <title>", "Discussion title")
     .requiredOption("--category <category>", "Discussion category")
     .option("--body <body>", "Discussion body")
     .action(
-      async (options: { title: string; category: string; body?: string }) => {
-        await command.run(() => discussionService.create(options));
+      async (options: {
+        title: string;
+        category: string;
+        body?: string;
+        repo?: string;
+      }) => {
+        const repo = await repoResolver.resolveRepo(options.repo);
+        await command.run(() => discussionService.create(repo, options));
       },
     );
 
@@ -55,24 +72,35 @@ const register = (program: Command) => {
     .command("comment")
     .description("Add a comment to a discussion.")
     .argument("<number>", "Discussion number")
+    .option("--repo <repo>", "Repository (owner/repo)")
     .requiredOption("--body <body>", "Comment body")
-    .action(async (number: string, options: { body: string }) => {
-      await command.run(() => discussionService.comment(number, options.body));
-    });
+    .action(
+      async (number: string, options: { body: string; repo?: string }) => {
+        const repo = await repoResolver.resolveRepo(options.repo);
+
+        await command.run(() =>
+          discussionService.comment(repo, number, options.body),
+        );
+      },
+    );
 
   discussion
     .command("close")
     .description("Close a discussion.")
     .argument("<number>", "Discussion number")
-    .action(async (number: string) => {
-      await command.run(() => discussionService.close(number));
+    .option("--repo <repo>", "Repository (owner/repo)")
+    .action(async (number: string, options: { repo?: string }) => {
+      const repo = await repoResolver.resolveRepo(options.repo);
+      await command.run(() => discussionService.close(repo, number));
     });
 
   discussion
     .command("categories")
     .description("List available discussion categories.")
-    .action(async () => {
-      await command.run(() => discussionService.categories());
+    .option("--repo <repo>", "Repository (owner/repo)")
+    .action(async (options: { repo?: string }) => {
+      const repo = await repoResolver.resolveRepo(options.repo);
+      await command.run(() => discussionService.categories(repo));
     });
 };
 

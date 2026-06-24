@@ -1,8 +1,8 @@
 import { Command } from "commander";
 
 import prompt from "@/core/prompt";
-import config from "@/core/config";
 import command from "@/core/command";
+import repoResolver from "@/core/repo";
 import { ConfigError } from "@/core/errors";
 import inviteService from "@/services/invites";
 
@@ -25,27 +25,12 @@ const validateRepoRole = (value: string): string => {
 };
 
 const parseRepo = (repo?: string): { owner: string; repo: string } => {
-  if (repo) {
-    const [owner, name] = repo.split("/");
+  const resolved = repoResolver.resolveRepoSync(repo);
+  const [owner, name] = resolved.split("/");
 
-    if (!owner || !name) {
-      throw new ConfigError("Invalid repository format. Expected: owner/repo");
-    }
-
-    return { owner, repo: name };
-  }
-
-  const configuredRepo = config.getRepo();
-  if (!configuredRepo) {
-    throw new ConfigError(
-      "No repository configured. Set one with: ghg config set repo owner/repo",
-    );
-  }
-
-  const [owner, name] = configuredRepo.split("/");
   if (!owner || !name) {
     throw new ConfigError(
-      `Invalid configured repository: ${configuredRepo}. Expected: owner/repo`,
+      `Invalid repository: ${resolved}. Expected: owner/repo`,
     );
   }
 

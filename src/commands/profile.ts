@@ -25,34 +25,30 @@ Examples:
     .command("add")
     .description("Add or update a profile.")
     .arguments("[name]")
-    .option("--repo <owner/repo>", "Associate the profile with a repo")
     .option("--token <token>", "Store the profile token")
-    .action(
-      async (name?: string, options?: { repo?: string; token?: string }) => {
-        let profileName = name;
+    .action(async (name?: string, options?: { token?: string }) => {
+      let profileName = name;
 
-        if (!profileName) {
-          profileName = await prompt.text(
-            "What would you like to name this profile?",
-            { placeholder: "work, personal, client-project, etc." },
-          );
-        }
-
-        let token = options?.token;
-        if (!token) {
-          token = await prompt.text("Enter GitHub token:", {
-            placeholder: "ghp_...",
-          });
-        }
-
-        await command.run(() =>
-          profileService.add(profileName, {
-            ...options,
-            token,
-          }),
+      if (!profileName) {
+        profileName = await prompt.text(
+          "What would you like to name this profile?",
+          { placeholder: "work, personal, client-project, etc." },
         );
-      },
-    );
+      }
+
+      let token = options?.token;
+      if (!token) {
+        token = await prompt.text("Enter GitHub token:", {
+          placeholder: "ghp_...",
+        });
+      }
+
+      await command.run(() =>
+        profileService.add(profileName, {
+          token,
+        }),
+      );
+    });
 
   profile
     .command("list")

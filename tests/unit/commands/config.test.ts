@@ -46,8 +46,8 @@ describe("config command", () => {
   });
 
   it("should prompt for key and value on set when missing", async () => {
-    vi.mocked(mockPrompt.default.select).mockResolvedValue("repo");
-    vi.mocked(mockPrompt.default.text).mockResolvedValue("owner/repo");
+    vi.mocked(mockPrompt.default.select).mockResolvedValue("token");
+    vi.mocked(mockPrompt.default.text).mockResolvedValue("my-token");
     vi.mocked(mockConfig.default.read).mockReturnValue("");
 
     const program = new Command();
@@ -58,37 +58,29 @@ describe("config command", () => {
 
     expect(mockPrompt.default.select).toHaveBeenCalled();
     expect(mockPrompt.default.text).toHaveBeenCalledWith(
-      "Enter value for repo:",
-      expect.objectContaining({ placeholder: "owner/repo" }),
+      "Enter value for token:",
+      expect.objectContaining({ placeholder: "ghp_xxxxxxxxxxxx" }),
     );
-    expect(mockConfig.default.set).toHaveBeenCalledWith("repo", "owner/repo");
+    expect(mockConfig.default.set).toHaveBeenCalledWith("token", "my-token");
   });
 
   it("should prompt for key on set when only value is provided", async () => {
-    vi.mocked(mockPrompt.default.select).mockResolvedValue("repo");
+    vi.mocked(mockPrompt.default.select).mockResolvedValue("token");
     vi.mocked(mockConfig.default.read).mockReturnValue("");
 
     const program = new Command();
     program.exitOverride();
     configCommand.register(program);
 
-    await program.parseAsync([
-      "node",
-      "test",
-      "config",
-      "set",
-      "",
-      "owner/repo",
-    ]);
-
+    await program.parseAsync(["node", "test", "config", "set", "", "my-token"]);
     expect(mockPrompt.default.select).toHaveBeenCalled();
   });
 
   it("should prompt for key on get when missing", async () => {
-    vi.mocked(mockPrompt.default.select).mockResolvedValue("repo");
+    vi.mocked(mockPrompt.default.select).mockResolvedValue("token");
 
     vi.mocked(mockConfig.default.get).mockReturnValue({
-      key: "repo",
+      key: "token",
       value: null,
       success: true,
     });
@@ -100,11 +92,11 @@ describe("config command", () => {
     await program.parseAsync(["node", "test", "config", "get"]);
 
     expect(mockPrompt.default.select).toHaveBeenCalled();
-    expect(mockConfig.default.get).toHaveBeenCalledWith("repo");
+    expect(mockConfig.default.get).toHaveBeenCalledWith("token");
   });
 
   it("should prompt for key on unset when missing", async () => {
-    vi.mocked(mockPrompt.default.select).mockResolvedValue("repo");
+    vi.mocked(mockPrompt.default.select).mockResolvedValue("token");
 
     const program = new Command();
     program.exitOverride();
@@ -113,7 +105,7 @@ describe("config command", () => {
     await program.parseAsync(["node", "test", "config", "unset"]);
 
     expect(mockPrompt.default.select).toHaveBeenCalled();
-    expect(mockConfig.default.unset).toHaveBeenCalledWith("repo");
+    expect(mockConfig.default.unset).toHaveBeenCalledWith("token");
   });
 
   it("should not leak token in placeholder for token key", async () => {
@@ -130,23 +122,6 @@ describe("config command", () => {
     expect(mockPrompt.default.text).toHaveBeenCalledWith(
       "Enter value for token:",
       expect.objectContaining({ placeholder: "ghp_xxxxxxxxxxxx" }),
-    );
-  });
-
-  it("should show truncated initialValue for non-token keys", async () => {
-    vi.mocked(mockPrompt.default.select).mockResolvedValue("repo");
-    vi.mocked(mockPrompt.default.text).mockResolvedValue("new/repo");
-    vi.mocked(mockConfig.default.read).mockReturnValue("old/repo");
-
-    const program = new Command();
-    program.exitOverride();
-    configCommand.register(program);
-
-    await program.parseAsync(["node", "test", "config", "set"]);
-
-    expect(mockPrompt.default.text).toHaveBeenCalledWith(
-      "Enter value for repo:",
-      expect.objectContaining({ initialValue: "old/..." }),
     );
   });
 });

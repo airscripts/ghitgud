@@ -29,9 +29,9 @@ vi.mock("@/core/git", () => ({
   },
 }));
 
-vi.mock("@/core/config", () => ({
+vi.mock("@/core/repo", () => ({
   default: {
-    getRepoOptional: vi.fn(() => "owner/repo"),
+    resolveRepo: vi.fn(() => Promise.resolve("owner/repo")),
   },
 }));
 

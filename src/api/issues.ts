@@ -18,16 +18,13 @@ async function getCount(repo: string, qualifiers: string[]): Promise<number> {
 }
 
 const issues = {
-  get: async (
-    issueNumber: number,
-    repo = client.getRepo(),
-  ): Promise<Response> => {
+  get: async (issueNumber: number, repo: string): Promise<Response> => {
     return client.getTokenRequired(`/repos/${repo}/issues/${issueNumber}`);
   },
 
   create: async (
     options: { title: string; body?: string },
-    repo = client.getRepo(),
+    repo: string,
   ): Promise<Response> => {
     return client.postTokenRequired(`/repos/${repo}/issues`, {
       title: options.title,
@@ -37,7 +34,7 @@ const issues = {
 
   listSubIssues: async (
     issueNumber: number,
-    repo = client.getRepo(),
+    repo: string,
   ): Promise<Response> => {
     return client.getTokenRequired(
       `/repos/${repo}/issues/${issueNumber}/sub_issues`,
@@ -47,7 +44,7 @@ const issues = {
   addSubIssue: async (
     issueNumber: number,
     subIssueNumber: number,
-    repo = client.getRepo(),
+    repo: string,
   ): Promise<Response> => {
     return client.postTokenRequired(
       `/repos/${repo}/issues/${issueNumber}/sub_issues`,

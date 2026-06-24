@@ -1,6 +1,6 @@
 import type { TuiOperation } from "../types";
-import { text, requiredText } from "./shared";
 import secretsService from "@/services/secrets";
+import { text, requiredText, repoInput, inferRepoOptional } from "./shared";
 
 const secretOperations: TuiOperation[] = [
   {
@@ -11,15 +11,20 @@ const secretOperations: TuiOperation[] = [
     description: "List repository, environment, or organization secrets.",
 
     inputs: [
+      repoInput,
       { key: "env", label: "Environment", type: "string", required: false },
       { key: "org", label: "Organization", type: "string", required: false },
     ],
 
-    run: ({ values }) =>
-      secretsService.list({
+    run: async ({ values }) => {
+      const repo = text(values, "repo") || (await inferRepoOptional());
+
+      return secretsService.list({
+        repo,
         env: text(values, "env"),
         org: text(values, "org"),
-      }),
+      });
+    },
   },
 
   {
@@ -31,6 +36,7 @@ const secretOperations: TuiOperation[] = [
     description: "Create or update an encrypted secret.",
 
     inputs: [
+      repoInput,
       { key: "name", label: "Name", type: "string", required: true },
 
       {
@@ -60,15 +66,19 @@ const secretOperations: TuiOperation[] = [
       },
     ],
 
-    run: ({ values }) =>
-      secretsService.set({
+    run: async ({ values }) => {
+      const repo = text(values, "repo") || (await inferRepoOptional());
+
+      return secretsService.set({
+        repo,
         env: text(values, "env"),
         org: text(values, "org"),
         repos: text(values, "repos"),
         name: requiredText(values, "name"),
         value: requiredText(values, "value"),
         visibility: text(values, "visibility"),
-      }),
+      });
+    },
   },
 
   {
@@ -80,17 +90,22 @@ const secretOperations: TuiOperation[] = [
     command: "ghg secret delete --name <key>",
 
     inputs: [
+      repoInput,
       { key: "name", label: "Name", type: "string", required: true },
       { key: "env", label: "Environment", type: "string", required: false },
       { key: "org", label: "Organization", type: "string", required: false },
     ],
 
-    run: ({ values }) =>
-      secretsService.remove({
+    run: async ({ values }) => {
+      const repo = text(values, "repo") || (await inferRepoOptional());
+
+      return secretsService.remove({
+        repo,
         env: text(values, "env"),
         org: text(values, "org"),
         name: requiredText(values, "name"),
-      }),
+      });
+    },
   },
 ];
 

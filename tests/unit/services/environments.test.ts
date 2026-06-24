@@ -1,6 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
-import config from "@/core/config";
 import environmentsApi from "@/api/environments";
 import environmentsService from "@/services/environments";
 
@@ -14,8 +13,11 @@ vi.mock("@/api/environments", () => ({
   },
 }));
 
-vi.mock("@/core/config", () => ({
-  default: { getRepo: vi.fn() },
+vi.mock("@/core/repo", () => ({
+  default: {
+    resolveRepoSync: vi.fn(() => "owner/repo"),
+    resolveRepo: vi.fn(() => Promise.resolve("owner/repo")),
+  },
 }));
 
 vi.mock("@/core/output", () => ({
@@ -29,7 +31,6 @@ vi.mock("@/core/logger", () => ({
 describe("environments service", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    vi.mocked(config.getRepo).mockReturnValue("owner/repo");
   });
 
   const mockResponse = (body: unknown) =>
@@ -59,16 +60,19 @@ describe("environments service", () => {
       }),
     );
 
-    const result = await environmentsService.list();
+    const result = await environmentsService.list("owner/repo");
     expect(result.success).toBe(true);
     expect(result.environments.length).toBe(1);
   });
 
   it("creates environment", async () => {
     vi.mocked(environmentsApi.create).mockResolvedValue(new Response("{}"));
-    const result = await environmentsService.create({ name: "staging" });
-    expect(result.success).toBe(true);
 
+    const result = await environmentsService.create("owner/repo", {
+      name: "staging",
+    });
+
+    expect(result.success).toBe(true);
     expect(environmentsApi.create).toHaveBeenCalledWith(
       "owner",
       "repo",
@@ -90,7 +94,11 @@ describe("environments service", () => {
       ]),
     );
 
-    const result = await environmentsService.listProtectionRules("prod");
+    const result = await environmentsService.listProtectionRules(
+      "owner/repo",
+      "prod",
+    );
+
     expect(result.success).toBe(true);
     expect(result.rules.length).toBe(1);
   });
@@ -100,10 +108,13 @@ describe("environments service", () => {
       new Response("{}"),
     );
 
-    const result = await environmentsService.removeProtectionRule({
-      ruleId: 1,
-      env: "prod",
-    });
+    const result = await environmentsService.removeProtectionRule(
+      "owner/repo",
+      {
+        ruleId: 1,
+        env: "prod",
+      },
+    );
 
     expect(result.success).toBe(true);
   });

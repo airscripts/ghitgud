@@ -3,10 +3,10 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 
 import repoCommand from "@/commands/repo";
 
-vi.mock("@/core/config", () => ({
+vi.mock("@/core/repo", () => ({
   default: {
-    getRepo: vi.fn(() => "airscripts/ghitgud"),
-    getTokenOptional: vi.fn(() => "ghp_test_token"),
+    resolveRepo: vi.fn(() => Promise.resolve("airscripts/ghitgud")),
+    resolveRepoSync: vi.fn((repo?: string) => repo || "airscripts/ghitgud"),
   },
 }));
 
@@ -162,6 +162,8 @@ describe("integration > repo commands", () => {
         "--user",
         "octocat",
       ]),
-    ).rejects.toThrow("Invalid repository format");
+    ).rejects.toThrow(
+      "Invalid repository: invalid-repo-format. Expected: owner/repo",
+    );
   });
 });

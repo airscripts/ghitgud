@@ -4,15 +4,14 @@ import path from "path";
 import io from "@/core/io";
 import output from "@/core/output";
 import logger from "@/core/logger";
-import config from "@/core/config";
 import checksApi from "@/api/checks";
+import repoResolver from "@/core/repo";
 import artifactsApi from "@/api/artifacts";
 import workflowsApi from "@/api/workflows";
 
 import { RunDebugResult } from "@/types";
 
-import { DEFAULT_OUTPUT_DIR, ERROR_NO_REPO } from "@/core/constants";
-import { ConfigError } from "@/core/errors";
+import { DEFAULT_OUTPUT_DIR } from "@/core/constants";
 
 interface WorkflowRunResponse {
   id: number;
@@ -39,17 +38,11 @@ interface ArtifactsResponse {
   }>;
 }
 
-function resolveRepo(repo?: string): string {
-  const resolved = repo || config.getRepoOptional();
-  if (!resolved) throw new ConfigError(ERROR_NO_REPO);
-  return resolved;
-}
-
 const debugRun = async (
   runId: number,
   options: { repo?: string; outputDir?: string } = {},
 ) => {
-  const repo = resolveRepo(options.repo);
+  const repo = await repoResolver.resolveRepo(options.repo);
   logger.start(`Loading debug data for run ${runId}.`);
 
   const runResponse = await workflowsApi.getRun(repo, runId);

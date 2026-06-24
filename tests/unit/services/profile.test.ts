@@ -8,6 +8,7 @@ import profileService from "@/services/profile";
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 
 import {
+  ERROR_NO_REMOTE_URL,
   DEFAULT_PROFILE_NAME,
   ERROR_PROFILE_NOT_FOUND,
   ERROR_PROFILE_TOKEN_REQUIRED,
@@ -25,7 +26,6 @@ vi.mock("@/core/config", () => ({
     getProfile: vi.fn(),
     listProfiles: vi.fn(),
     setActiveProfile: vi.fn(),
-    findProfileByRepo: vi.fn(),
     setRepoLocalProfile: vi.fn(),
   },
 }));
@@ -71,13 +71,11 @@ describe("profile service", () => {
   it("adds a profile", () => {
     const result = profileService.add("work", {
       token: "token",
-      repo: "owner/repo",
     });
 
     expect(result).toEqual({ success: true, profile: "work" });
     expect(config.addProfile).toHaveBeenCalledWith("work", {
       token: "token",
-      repo: "owner/repo",
     });
 
     expect(logger.success).toHaveBeenCalledWith(
@@ -91,7 +89,6 @@ describe("profile service", () => {
         active: true,
         hasToken: true,
         name: "default",
-        repo: "owner/repo",
       },
     ]);
 
@@ -104,7 +101,6 @@ describe("profile service", () => {
           active: true,
           hasToken: true,
           name: "default",
-          repo: "owner/repo",
         },
       ],
     });
@@ -114,7 +110,6 @@ describe("profile service", () => {
 
   it("switches the active profile after validation", async () => {
     (config.getProfile as ReturnType<typeof vi.fn>).mockReturnValue({
-      repo: "owner/repo",
       token: "token",
     });
 
@@ -152,45 +147,13 @@ describe("profile service", () => {
     );
   });
 
-  it("detects a matching profile for the current repository", () => {
+  it("detects default profile for the current repository", () => {
     (git.getRemoteUrl as ReturnType<typeof vi.fn>).mockReturnValue(
       "https://github.com/owner/repo.git",
     );
 
     (git.parseRepoFromRemoteUrl as ReturnType<typeof vi.fn>).mockReturnValue(
       "owner/repo",
-    );
-
-    (config.findProfileByRepo as ReturnType<typeof vi.fn>).mockReturnValue(
-      "work",
-    );
-
-    const result = profileService.detect();
-
-    expect(result).toEqual({
-      success: true,
-      profile: "work",
-      fallback: false,
-      repository: "owner/repo",
-    });
-
-    expect(config.setRepoLocalProfile).toHaveBeenCalledWith("work");
-    expect(logger.success).toHaveBeenCalledWith(
-      'Detected profile "work" for owner/repo.',
-    );
-  });
-
-  it("falls back to default when no profile matches", () => {
-    (git.getRemoteUrl as ReturnType<typeof vi.fn>).mockReturnValue(
-      "https://github.com/owner/repo.git",
-    );
-
-    (git.parseRepoFromRemoteUrl as ReturnType<typeof vi.fn>).mockReturnValue(
-      "owner/repo",
-    );
-
-    (config.findProfileByRepo as ReturnType<typeof vi.fn>).mockReturnValue(
-      null,
     );
 
     const result = profileService.detect();
@@ -199,7 +162,28 @@ describe("profile service", () => {
       success: true,
       profile: DEFAULT_PROFILE_NAME,
       repository: "owner/repo",
-      fallback: true,
+    });
+
+    expect(config.setRepoLocalProfile).toHaveBeenCalledWith(
+      DEFAULT_PROFILE_NAME,
+    );
+
+    expect(logger.success).toHaveBeenCalledWith(
+      `Using profile "${DEFAULT_PROFILE_NAME}" for owner/repo.`,
+    );
+  });
+
+  it("falls back to default when no remote exists", () => {
+    (git.getRemoteUrl as ReturnType<typeof vi.fn>).mockImplementation(() => {
+      throw new ConfigError(ERROR_NO_REMOTE_URL);
+    });
+
+    const result = profileService.detect();
+
+    expect(result).toEqual({
+      success: true,
+      profile: DEFAULT_PROFILE_NAME,
+      repository: null,
     });
 
     expect(config.setRepoLocalProfile).toHaveBeenCalledWith(
@@ -207,7 +191,7 @@ describe("profile service", () => {
     );
 
     expect(logger.warn).toHaveBeenCalledWith(
-      `No matching profile found for owner/repo. Falling back to "${DEFAULT_PROFILE_NAME}".`,
+      "No git remote found. Using default profile.",
     );
   });
 });

@@ -33,6 +33,14 @@ const repos = {
     return data.map(normalizeRepo);
   },
 
+  fetchUserRepos: async (): Promise<RepoSummary[]> => {
+    const data = await client.getPaginated<GitHubRepoResponse>(
+      `/user/repos?per_page=${client.getDefaultPerPage()}&sort=updated`,
+    );
+
+    return data.map(normalizeRepo);
+  },
+
   get: async (repo: string): Promise<GitHubRepoResponse> => {
     const response = await client.get(`/repos/${repo}`);
     return (await response.json()) as GitHubRepoResponse;

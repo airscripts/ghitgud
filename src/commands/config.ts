@@ -24,10 +24,7 @@ const register = (program: Command) => {
           "Which configuration would you like to set?",
           SUPPORTED_CONFIG_KEYS.map((k) => ({
             value: k,
-            label:
-              k === "token"
-                ? "token (GitHub personal access token)"
-                : "repo (default repository)",
+            label: k === "token" ? "token (GitHub personal access token)" : k,
           })),
         );
       }
@@ -35,11 +32,10 @@ const register = (program: Command) => {
       if (!configValue) {
         const currentValue = configService.read(configKey);
 
-        const placeholder =
-          configKey === "token" ? "ghp_xxxxxxxxxxxx" : "owner/repo";
+        const placeholder = configKey === "token" ? "ghp_xxxxxxxxxxxx" : "";
 
         const initialValue =
-          currentValue && configKey !== "token"
+          currentValue && configKey === "token"
             ? `${currentValue.substring(0, 4)}...`
             : undefined;
 

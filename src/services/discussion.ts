@@ -120,7 +120,7 @@ interface CloseResponse extends GraphQlErrorResponse {
   };
 }
 
-function getRepoParts(repo = client.getRepo()): {
+function getRepoParts(repo: string): {
   owner: string;
   name: string;
 } {
@@ -218,8 +218,8 @@ async function resolveCategoryId(
   return match.id;
 }
 
-const list = async (options: ListOptions = {}) => {
-  const { owner, name } = getRepoParts();
+const list = async (repo: string, options: ListOptions = {}) => {
+  const { owner, name } = getRepoParts(repo);
   let categoryId: string | undefined;
 
   if (options.category) {
@@ -252,12 +252,12 @@ const list = async (options: ListOptions = {}) => {
   return { success: true, discussions };
 };
 
-const view = async (number: number) => {
+const view = async (repo: string, number: number) => {
   if (!Number.isInteger(number) || number <= 0) {
     throw new GhitgudError(`Invalid discussion number: ${number}`);
   }
 
-  const { owner, name } = getRepoParts();
+  const { owner, name } = getRepoParts(repo);
   logger.start(`Loading discussion #${number}.`);
   const { discussion, comments } = await fetchDiscussion(owner, name, number);
 
@@ -289,8 +289,8 @@ const view = async (number: number) => {
   return { success: true, discussion, comments };
 };
 
-const categories = async () => {
-  const { owner, name } = getRepoParts();
+const categories = async (repo: string) => {
+  const { owner, name } = getRepoParts(repo);
   logger.start(`Loading discussion categories for ${owner}/${name}.`);
 
   const response = await api.categories(owner, name);
@@ -317,11 +317,14 @@ const categories = async () => {
   return { success: true, categories: items };
 };
 
-const create = async (options: {
-  title: string;
-  body?: string;
-  category: string;
-}) => {
+const create = async (
+  repo: string,
+  options: {
+    title: string;
+    body?: string;
+    category: string;
+  },
+) => {
   if (!options.title) {
     throw new GhitgudError("--title is required.");
   }
@@ -330,7 +333,6 @@ const create = async (options: {
     throw new GhitgudError("--category is required.");
   }
 
-  const repo = client.getRepo();
   const { owner, name } = api.parseRepo(repo);
 
   logger.start(`Resolving category "${options.category}".`);
@@ -390,7 +392,7 @@ const create = async (options: {
   };
 };
 
-const comment = async (numberValue: string, body: string) => {
+const comment = async (repo: string, numberValue: string, body: string) => {
   if (!body) {
     throw new GhitgudError("--body is required.");
   }
@@ -400,9 +402,8 @@ const comment = async (numberValue: string, body: string) => {
     throw new GhitgudError(`Invalid discussion number: ${numberValue}`);
   }
 
-  const { owner, name } = getRepoParts();
+  const { owner, name } = getRepoParts(repo);
   logger.start(`Adding comment to discussion #${number}.`);
-
   const { discussion } = await fetchDiscussion(owner, name, number);
 
   const response = await api.comment(discussion.id, body);
@@ -418,6 +419,7 @@ const comment = async (numberValue: string, body: string) => {
 
   return {
     success: true,
+
     comment: {
       id: commentData.id,
       body: commentData.body,
@@ -426,13 +428,13 @@ const comment = async (numberValue: string, body: string) => {
   };
 };
 
-const close = async (numberValue: string) => {
+const close = async (repo: string, numberValue: string) => {
   const number = Number(numberValue);
   if (!Number.isInteger(number) || number <= 0) {
     throw new GhitgudError(`Invalid discussion number: ${numberValue}`);
   }
 
-  const { owner, name } = getRepoParts();
+  const { owner, name } = getRepoParts(repo);
   logger.start(`Closing discussion #${number}.`);
 
   const { discussion } = await fetchDiscussion(owner, name, number);

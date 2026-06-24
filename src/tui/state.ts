@@ -1,5 +1,6 @@
 import git from "@/core/git";
 import config from "@/core/config";
+import repoResolver from "@/core/repo";
 
 import type {
   TuiInput,
@@ -62,7 +63,9 @@ const stringifyResult = (value: unknown) => {
 };
 
 const printable = (input: string) => {
-  return input.length === 1 && input >= " " && input !== "\u007f";
+  if (input.length === 0) return false;
+  if (input.length === 1) return input >= " " && input !== "\u007f";
+  return [...input].every((ch) => ch >= " " && ch !== "\u007f");
 };
 
 const buildContextLines = (
@@ -95,9 +98,8 @@ const buildContextLines = (
         isActive && insertMode ? masked : masked || input.placeholder || "-";
 
       const marker = isActive ? ">" : " ";
-
       lines.push(
-        `${marker} ${input.label}: ${value}${input.required ? " *" : ""}`,
+        `${marker} ${input.label}${input.required ? "*" : ""}: ${value}`,
       );
     });
   } else {
@@ -144,7 +146,7 @@ const buildDashboardData = (version: string): DashboardData => {
     profile,
     branch: getBranch(),
     tokenSet: !!token,
-    repo: safeRead(() => config.getRepoOptional()),
+    repo: safeRead(() => repoResolver.resolveRepoSync()),
   };
 };
 

@@ -13,6 +13,13 @@ vi.mock("@/services/environments", () => ({
   },
 }));
 
+vi.mock("@/core/repo", () => ({
+  default: {
+    resolveRepoSync: vi.fn(() => "airscripts/ghitgud"),
+    resolveRepo: vi.fn(() => Promise.resolve("airscripts/ghitgud")),
+  },
+}));
+
 describe("tui environment operations", () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -26,7 +33,7 @@ describe("tui environment operations", () => {
 
     const op = environmentOperations.find((o) => o.id === "environment.list")!;
     await op.run({ values: {} });
-    expect(environmentsService.list).toHaveBeenCalled();
+    expect(environmentsService.list).toHaveBeenCalledWith("airscripts/ghitgud");
   });
 
   it("runs environment.create", async () => {
@@ -37,10 +44,13 @@ describe("tui environment operations", () => {
     )!;
 
     await op.run({ values: { name: "staging", waitTimer: 30 } });
-    expect(environmentsService.create).toHaveBeenCalledWith({
-      waitTimer: 30,
-      name: "staging",
-    });
+    expect(environmentsService.create).toHaveBeenCalledWith(
+      "airscripts/ghitgud",
+      {
+        waitTimer: 30,
+        name: "staging",
+      },
+    );
   });
 
   it("runs environment.protection.list", async () => {
@@ -55,6 +65,7 @@ describe("tui environment operations", () => {
 
     await op.run({ values: { env: "prod" } });
     expect(environmentsService.listProtectionRules).toHaveBeenCalledWith(
+      "airscripts/ghitgud",
       "prod",
     );
   });
@@ -76,11 +87,14 @@ describe("tui environment operations", () => {
       },
     });
 
-    expect(environmentsService.addProtectionRule).toHaveBeenCalledWith({
-      env: "prod",
-      type: "wait_timer",
-      value: { wait_timer: 30 },
-    });
+    expect(environmentsService.addProtectionRule).toHaveBeenCalledWith(
+      "airscripts/ghitgud",
+      {
+        env: "prod",
+        type: "wait_timer",
+        value: { wait_timer: 30 },
+      },
+    );
   });
 
   it("runs environment.protection.remove", async () => {
@@ -93,9 +107,12 @@ describe("tui environment operations", () => {
     )!;
 
     await op.run({ values: { env: "prod", ruleId: 1 } });
-    expect(environmentsService.removeProtectionRule).toHaveBeenCalledWith({
-      ruleId: 1,
-      env: "prod",
-    });
+    expect(environmentsService.removeProtectionRule).toHaveBeenCalledWith(
+      "airscripts/ghitgud",
+      {
+        ruleId: 1,
+        env: "prod",
+      },
+    );
   });
 });

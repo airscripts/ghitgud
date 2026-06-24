@@ -1,7 +1,14 @@
 import type { TuiOperation } from "../types";
 import releaseService from "@/services/release";
 import { type BumpLevel } from "@/core/conventional";
-import { text, booleanValue, requiredText } from "./shared";
+
+import {
+  text,
+  inferRepo,
+  repoInput,
+  booleanValue,
+  requiredText,
+} from "./shared";
 
 const releaseOperations: TuiOperation[] = [
   {
@@ -57,8 +64,16 @@ const releaseOperations: TuiOperation[] = [
     workspace: "Release",
     command: "ghg release verify <tag>",
     description: "Verify local tag/commit GPG signatures and release assets.",
-    inputs: [{ key: "tag", label: "Tag", type: "string", required: true }],
-    run: ({ values }) => releaseService.verify(requiredText(values, "tag"), {}),
+
+    inputs: [
+      repoInput,
+      { key: "tag", label: "Tag", type: "string", required: true },
+    ],
+
+    run: async ({ values }) => {
+      const repo = text(values, "repo") || (await inferRepo());
+      return releaseService.verify(requiredText(values, "tag"), { repo });
+    },
   },
 
   {
@@ -69,17 +84,22 @@ const releaseOperations: TuiOperation[] = [
     description: "Generate release notes from a template.",
 
     inputs: [
+      repoInput,
       { key: "template", label: "Template file", type: "string" },
       { key: "since", label: "Since tag", type: "string" },
       { key: "out", label: "Output file", type: "string" },
     ],
 
-    run: ({ values }) =>
-      releaseService.notes({
+    run: async ({ values }) => {
+      const repo = text(values, "repo") || (await inferRepo());
+
+      return releaseService.notes({
         out: text(values, "out") ?? undefined,
         since: text(values, "since") ?? undefined,
         templateFile: text(values, "template") ?? undefined,
-      }),
+        repo,
+      });
+    },
   },
 
   {
@@ -91,6 +111,7 @@ const releaseOperations: TuiOperation[] = [
     description: "Create a draft release on GitHub.",
 
     inputs: [
+      repoInput,
       {
         key: "level",
         label: "Level",
@@ -108,13 +129,16 @@ const releaseOperations: TuiOperation[] = [
       },
     ],
 
-    run: ({ values }) =>
-      releaseService.draft({
-        level: (text(values, "level") as BumpLevel) ?? "patch",
+    run: async ({ values }) => {
+      const repo = text(values, "repo") || (await inferRepo());
 
+      return releaseService.draft({
+        level: (text(values, "level") as BumpLevel) ?? "patch",
         title: text(values, "title") ?? undefined,
         notes: text(values, "notes") ?? undefined,
-      }),
+        repo,
+      });
+    },
   },
 ];
 

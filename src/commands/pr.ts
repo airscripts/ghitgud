@@ -4,6 +4,7 @@ import parse from "@/core/parse";
 import prompt from "@/core/prompt";
 import command from "@/core/command";
 import prService from "@/services/pr";
+import repoResolver from "@/core/repo";
 import stackService from "@/services/stack";
 
 const register = (program: Command) => {
@@ -25,6 +26,7 @@ Examples:
     .description(
       "Delete merged branches locally and remotely, and fast-forward the base branch.",
     )
+    .option("--repo <repo>", "Repository (owner/repo)")
     .option(
       "--dry-run",
       "Show what would be done without making changes",
@@ -32,8 +34,10 @@ Examples:
     )
     .option("--force", "Skip confirmation prompts (commits ahead check)", false)
     .action(async (options) => {
+      const repo = await repoResolver.resolveRepo(options.repo);
+
       await command.run(() =>
-        prService.cleanup({
+        prService.cleanup(repo, {
           force: options.force,
           dryRun: options.dryRun,
         }),
@@ -42,24 +46,29 @@ Examples:
 
   pr.command("push")
     .description("Push current local changes back to a contributor's fork.")
+    .option("--repo <repo>", "Repository (owner/repo)")
     .arguments("[pr-number]")
     .option("-f, --force", "Force push even if there are diverged commits")
-    .action(async (prNumber?: string, options?: { force?: boolean }) => {
-      let prNum = prNumber;
+    .action(
+      async (
+        prNumber?: string,
+        options?: { force?: boolean; repo?: string },
+      ) => {
+        let prNum = prNumber;
 
-      if (!prNum) {
-        prNum = await prompt.text("Enter the PR number to push changes to:", {
-          placeholder: "e.g., 42",
-        });
-      }
+        if (!prNum) {
+          prNum = await prompt.text("Enter the PR number to push changes to:", {
+            placeholder: "e.g., 42",
+          });
+        }
 
-      await command.run(() =>
-        prService.push(
-          parse.parsePositiveInt(prNum, "PR number"),
-          options?.force ?? false,
-        ),
-      );
-    });
+        const parsedPrNumber = parse.parsePositiveInt(prNum, "PR number");
+        const repo = await repoResolver.resolveRepo(options?.repo);
+        await command.run(() =>
+          prService.push(parsedPrNumber, repo, options?.force ?? false),
+        );
+      },
+    );
 
   pr.command("next")
     .description("Checkout the next PR in a dependency chain.")
@@ -93,20 +102,25 @@ Examples:
   stack
     .command("list")
     .description("Show current stack status.")
-    .action(async () => {
-      await command.run(() => stackService.list());
+    .option("--repo <repo>", "Repository (owner/repo)")
+    .action(async (options) => {
+      const repo = await repoResolver.resolveRepo(options.repo);
+      await command.run(() => stackService.list(repo));
     });
 
   stack
     .command("update")
     .description("Update existing stack after parent PR merges.")
-    .action(async () => {
-      await command.run(() => stackService.update());
+    .option("--repo <repo>", "Repository (owner/repo)")
+    .action(async (options) => {
+      const repo = await repoResolver.resolveRepo(options.repo);
+      await command.run(() => stackService.update(repo));
     });
 
   stack
     .command("push")
     .description("Push entire stack and create/update PRs.")
+    .option("--repo <repo>", "Repository (owner/repo)")
     .option("--base <branch>", "Base branch for the stack")
     .option(
       "--title <title>",
@@ -115,8 +129,10 @@ Examples:
     )
     .option("--draft", "Create PRs as drafts", false)
     .action(async (options) => {
+      const repo = await repoResolver.resolveRepo(options.repo);
+
       await command.run(() =>
-        stackService.push({
+        stackService.push(repo, {
           title: options.title,
           draft: options.draft,
         }),

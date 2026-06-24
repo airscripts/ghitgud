@@ -55,9 +55,9 @@ const ping = () => {
   return { success: true, message: PING_RESPONSE };
 };
 
-const list = async () => {
+const list = async (repo: string) => {
   logger.start("Loading labels from the repository.");
-  const response = await api.fetch();
+  const response = await api.fetch(repo);
   const data = await response.json();
   const labels = data.map((label: Label) => normalizeLabel(label));
 
@@ -69,9 +69,9 @@ const list = async () => {
   return { success: true, metadata: labels };
 };
 
-const pull = async () => {
+const pull = async (repo: string) => {
   logger.start("Pulling labels from the repository.");
-  const response = await api.fetch();
+  const response = await api.fetch(repo);
   const data = await response.json();
   const labels = data.map((label: Label) => normalizeLabel(label));
 
@@ -112,7 +112,7 @@ const labelsEqual = (existing: Label, incoming: Label) => {
 
 const upsertLabels = async (
   labels: Label[],
-  repo?: string,
+  repo: string,
   options: { dryRun?: boolean } = {},
 ) => {
   logger.start(
@@ -164,10 +164,10 @@ const upsertLabels = async (
   };
 };
 
-const push = async () => {
+const push = async (repo: string) => {
   logger.start("Syncing local metadata labels to the repository.");
   const labels = loadLabelsFromMetadata();
-  const result = await upsertLabels(labels);
+  const result = await upsertLabels(labels, repo);
 
   output.renderSummary("Label Sync", [
     ["Created", result.created.length],
@@ -179,10 +179,14 @@ const push = async () => {
   return { success: true, metadata: result };
 };
 
-const pushTemplate = async (templateName: string, templatesDir: string) => {
+const pushTemplate = async (
+  templateName: string,
+  templatesDir: string,
+  repo: string,
+) => {
   logger.start(`Syncing the "${templateName}" label template.`);
   const labels = loadLabelsFromTemplate(templateName, templatesDir);
-  const result = await upsertLabels(labels);
+  const result = await upsertLabels(labels, repo);
 
   output.renderSummary("Label Sync", [
     ["Created", result.created.length],
@@ -194,7 +198,10 @@ const pushTemplate = async (templateName: string, templatesDir: string) => {
   return { success: true, metadata: result };
 };
 
-const prune = async (options: { dryRun?: boolean; yes?: boolean } = {}) => {
+const prune = async (
+  repo: string,
+  options: { dryRun?: boolean; yes?: boolean } = {},
+) => {
   const labels = loadLabelsFromMetadata();
 
   if (options.dryRun) {
@@ -224,7 +231,7 @@ const prune = async (options: { dryRun?: boolean; yes?: boolean } = {}) => {
 
   await Promise.all(
     labels.map(async (label) => {
-      await api.delete(label.name);
+      await api.delete(label.name, repo);
     }),
   );
 

@@ -1,5 +1,4 @@
 import api from "@/api/projects";
-import config from "@/core/config";
 import projectService from "@/services/project";
 import { describe, expect, it, Mock, vi, beforeEach } from "vitest";
 
@@ -71,7 +70,7 @@ describe("project service", () => {
         }),
     });
 
-    const result = await projectService.board("1", {});
+    const result = await projectService.board("1", { repo: "owner/repo" });
 
     expect(api.board).toHaveBeenCalledWith("owner", 1);
     expect(result.board.columns).toEqual([
@@ -121,7 +120,6 @@ describe("project service", () => {
     });
 
     await projectService.board("2", { owner: "alice" });
-    expect(config.getRepo).not.toHaveBeenCalled();
     expect(api.board).toHaveBeenCalledWith("alice", 2);
   });
 });

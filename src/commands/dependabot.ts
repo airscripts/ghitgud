@@ -2,6 +2,7 @@ import { Command } from "commander";
 
 import parse from "@/core/parse";
 import command from "@/core/command";
+import repoResolver from "@/core/repo";
 import dependabotService from "@/services/dependabot";
 
 const addTargetOptions = (command: Command) => {
@@ -35,16 +36,17 @@ const register = (program: Command) => {
     .command("dismiss")
     .description("Dismiss a Dependabot alert.")
     .argument("<alert>", "Dependabot alert number")
-    .option("--repo <repo>", "Repository (owner/repo)")
+    .option("--repo <owner/repo>", "Repository")
     .option("--reason <reason>", "Dismissal reason")
     .option("--comment <comment>", "Dismissal comment")
     .option("--yes", "Dismiss the alert", false)
     .action(async (alert: string, options) => {
+      const repo = await repoResolver.resolveRepo(options.repo);
       await command.run(() =>
-        dependabotService.dismiss(
-          parse.parsePositiveInt(alert, "alert"),
-          options,
-        ),
+        dependabotService.dismiss(parse.parsePositiveInt(alert, "alert"), {
+          ...options,
+          repo,
+        }),
       );
     });
 };

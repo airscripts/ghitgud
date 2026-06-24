@@ -1,6 +1,13 @@
 import type { TuiOperation } from "../types";
 import discussionService from "@/services/discussion";
-import { text, numberValue, requiredText } from "./shared";
+
+import {
+  text,
+  repoInput,
+  inferRepo,
+  numberValue,
+  requiredText,
+} from "./shared";
 
 const discussionOperations: TuiOperation[] = [
   {
@@ -10,14 +17,18 @@ const discussionOperations: TuiOperation[] = [
     command: "ghg discussion list",
     description: "List discussions with optional category filter.",
     inputs: [
+      repoInput,
       { key: "category", label: "Category", type: "string" },
       { key: "limit", label: "Limit", type: "number", defaultValue: 30 },
     ],
-    run: ({ values }) =>
-      discussionService.list({
+    run: async ({ values }) => {
+      const repo = text(values, "repo") || (await inferRepo());
+
+      return discussionService.list(repo, {
         category: text(values, "category"),
         limit: Number(values.limit) || undefined,
-      }),
+      });
+    },
   },
 
   {
@@ -28,6 +39,7 @@ const discussionOperations: TuiOperation[] = [
     description: "View a discussion and its comments.",
 
     inputs: [
+      repoInput,
       {
         key: "number",
         type: "number",
@@ -36,7 +48,10 @@ const discussionOperations: TuiOperation[] = [
       },
     ],
 
-    run: ({ values }) => discussionService.view(numberValue(values, "number")),
+    run: async ({ values }) => {
+      const repo = text(values, "repo") || (await inferRepo());
+      return discussionService.view(repo, numberValue(values, "number"));
+    },
   },
 
   {
@@ -48,17 +63,21 @@ const discussionOperations: TuiOperation[] = [
     command: "ghg discussion create --title <title> --category <category>",
 
     inputs: [
+      repoInput,
       { key: "title", label: "Title", type: "string", required: true },
       { key: "category", label: "Category", type: "string", required: true },
       { key: "body", label: "Body", type: "string" },
     ],
 
-    run: ({ values }) =>
-      discussionService.create({
+    run: async ({ values }) => {
+      const repo = text(values, "repo") || (await inferRepo());
+
+      return discussionService.create(repo, {
         body: text(values, "body"),
         title: requiredText(values, "title"),
         category: requiredText(values, "category"),
-      }),
+      });
+    },
   },
 
   {
@@ -70,6 +89,7 @@ const discussionOperations: TuiOperation[] = [
     command: "ghg discussion comment <number> --body <body>",
 
     inputs: [
+      repoInput,
       {
         key: "number",
         label: "Discussion",
@@ -79,11 +99,15 @@ const discussionOperations: TuiOperation[] = [
       { key: "body", label: "Body", type: "string", required: true },
     ],
 
-    run: ({ values }) =>
-      discussionService.comment(
+    run: async ({ values }) => {
+      const repo = text(values, "repo") || (await inferRepo());
+
+      return discussionService.comment(
+        repo,
         String(numberValue(values, "number")),
         requiredText(values, "body"),
-      ),
+      );
+    },
   },
 
   {
@@ -95,6 +119,7 @@ const discussionOperations: TuiOperation[] = [
     command: "ghg discussion close <number>",
 
     inputs: [
+      repoInput,
       {
         key: "number",
         type: "number",
@@ -103,8 +128,14 @@ const discussionOperations: TuiOperation[] = [
       },
     ],
 
-    run: ({ values }) =>
-      discussionService.close(String(numberValue(values, "number"))),
+    run: async ({ values }) => {
+      const repo = text(values, "repo") || (await inferRepo());
+
+      return discussionService.close(
+        repo,
+        String(numberValue(values, "number")),
+      );
+    },
   },
 
   {
@@ -113,7 +144,12 @@ const discussionOperations: TuiOperation[] = [
     id: "discussion.categories",
     command: "ghg discussion categories",
     description: "List available discussion categories.",
-    run: () => discussionService.categories(),
+    inputs: [repoInput],
+
+    run: async ({ values }) => {
+      const repo = text(values, "repo") || (await inferRepo());
+      return discussionService.categories(repo);
+    },
   },
 ];
 

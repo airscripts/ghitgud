@@ -126,7 +126,7 @@ describe("discussion service", () => {
     };
 
     (api.list as Mock).mockResolvedValue(buildListResponse([node]));
-    const result = await discussionService.list();
+    const result = await discussionService.list("owner/repo");
 
     expect(api.list).toHaveBeenCalledWith("owner", "repo", undefined, 30);
     expect(result.success).toBe(true);
@@ -141,7 +141,9 @@ describe("discussion service", () => {
     );
 
     (api.list as Mock).mockResolvedValue(buildListResponse([]));
-    const result = await discussionService.list({ category: "General" });
+    const result = await discussionService.list("owner/repo", {
+      category: "General",
+    });
 
     expect(api.categories).toHaveBeenCalledWith("owner", "repo");
     expect(api.list).toHaveBeenCalledWith("owner", "repo", "C1", 30);
@@ -150,7 +152,7 @@ describe("discussion service", () => {
 
   it("views a discussion", async () => {
     (api.get as Mock).mockResolvedValue(buildDiscussionResponse(42));
-    const result = await discussionService.view(42);
+    const result = await discussionService.view("owner/repo", 42);
 
     expect(api.get).toHaveBeenCalledWith("owner", "repo", 42);
     expect(result.success).toBe(true);
@@ -170,7 +172,7 @@ describe("discussion service", () => {
       ]),
     );
 
-    const result = await discussionService.categories();
+    const result = await discussionService.categories("owner/repo");
     expect(api.categories).toHaveBeenCalledWith("owner", "repo");
     expect(result.success).toBe(true);
     expect(result.categories).toHaveLength(1);
@@ -206,7 +208,7 @@ describe("discussion service", () => {
         }),
     });
 
-    const result = await discussionService.create({
+    const result = await discussionService.create("owner/repo", {
       title: "New",
       body: "Body text",
       category: "General",
@@ -234,7 +236,7 @@ describe("discussion service", () => {
         }),
     });
 
-    const result = await discussionService.comment("7", "Great!");
+    const result = await discussionService.comment("owner/repo", "7", "Great!");
     expect(api.get).toHaveBeenCalledWith("owner", "repo", 7);
     expect(api.comment).toHaveBeenCalledWith("D_7", "Great!");
     expect(result.success).toBe(true);
@@ -253,14 +255,14 @@ describe("discussion service", () => {
         }),
     });
 
-    const result = await discussionService.close("5");
+    const result = await discussionService.close("owner/repo", "5");
     expect(api.close).toHaveBeenCalledWith("D_5");
     expect(result.success).toBe(true);
     expect(result.closed).toBe(true);
   });
 
   it("rejects invalid discussion numbers", async () => {
-    await expect(discussionService.view(-1)).rejects.toThrow(
+    await expect(discussionService.view("owner/repo", -1)).rejects.toThrow(
       "Invalid discussion number: -1",
     );
   });

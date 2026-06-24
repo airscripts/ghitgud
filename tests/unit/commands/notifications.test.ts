@@ -4,11 +4,27 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import service from "@/services/notifications";
 import notificationsCommand from "@/commands/notifications";
 
+vi.mock("@/core/repo", () => ({
+  default: {
+    resolveRepo: vi.fn().mockResolvedValue("airscripts/ghitgud"),
+    resolveRepoSync: vi.fn().mockReturnValue("airscripts/ghitgud"),
+    resolveRepos: vi.fn().mockResolvedValue(["airscripts/ghitgud"]),
+  },
+}));
+
 vi.mock("@/services/notifications", () => ({
   default: {
     list: vi.fn(),
     markRead: vi.fn(),
     markDone: vi.fn(),
+  },
+}));
+
+vi.mock("@/services/repos/index", () => ({
+  default: {
+    resolveTargets: vi
+      .fn()
+      .mockResolvedValue([{ fullName: "airscripts/ghitgud", name: "ghitgud" }]),
   },
 }));
 
@@ -34,6 +50,7 @@ describe("notifications command", () => {
     expect(notifications).toBeDefined();
     const subcommands = notifications!.commands.map((c) => c.name());
     expect(subcommands).toContain("list");
+    expect(subcommands).toContain("list-by-target");
     expect(subcommands).toContain("read");
     expect(subcommands).toContain("done");
   });

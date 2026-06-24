@@ -32,15 +32,18 @@ function calculateProgress(milestone: Milestone): MilestoneProgress {
   };
 }
 
-async function fetchMilestones(state: MilestoneState): Promise<Milestone[]> {
-  const response = await api.list(state);
+async function fetchMilestones(
+  repo: string,
+  state: MilestoneState,
+): Promise<Milestone[]> {
+  const response = await api.list(state, repo);
   return (await response.json()) as Milestone[];
 }
 
-async function findByTitle(title: string): Promise<Milestone> {
+async function findByTitle(repo: string, title: string): Promise<Milestone> {
   const milestones = [
-    ...(await fetchMilestones("open")),
-    ...(await fetchMilestones("closed")),
+    ...(await fetchMilestones(repo, "open")),
+    ...(await fetchMilestones(repo, "closed")),
   ].filter((milestone) => milestone.title === title);
 
   if (milestones.length === 0) {
@@ -54,12 +57,19 @@ async function findByTitle(title: string): Promise<Milestone> {
   return milestones[0];
 }
 
-const create = async (options: { title: string; due: string }) => {
+const create = async (
+  repo: string,
+  options: { title: string; due: string },
+) => {
   logger.start(`Creating milestone "${options.title}".`);
-  const response = await api.create({
-    title: options.title,
-    dueOn: parseDueDate(options.due),
-  });
+
+  const response = await api.create(
+    {
+      title: options.title,
+      dueOn: parseDueDate(options.due),
+    },
+    repo,
+  );
 
   const milestone = (await response.json()) as Milestone;
 
@@ -74,10 +84,10 @@ const create = async (options: { title: string; due: string }) => {
   return { success: true, milestone };
 };
 
-const list = async (options: { status?: MilestoneState }) => {
+const list = async (repo: string, options: { status?: MilestoneState }) => {
   const status = options.status ?? "open";
   logger.start(`Loading ${status} milestones.`);
-  const milestones = await fetchMilestones(status);
+  const milestones = await fetchMilestones(repo, status);
 
   output.renderTable(
     milestones.map((milestone) => {
@@ -99,10 +109,10 @@ const list = async (options: { status?: MilestoneState }) => {
   return { success: true, milestones };
 };
 
-const close = async (title: string) => {
+const close = async (repo: string, title: string) => {
   logger.start(`Closing milestone "${title}".`);
-  const milestone = await findByTitle(title);
-  const response = await api.close(milestone.number);
+  const milestone = await findByTitle(repo, title);
+  const response = await api.close(milestone.number, repo);
   const closed = (await response.json()) as Milestone;
 
   logger.success(`Closed milestone "${closed.title}".`);
@@ -115,9 +125,9 @@ const close = async (title: string) => {
   return { success: true, milestone: closed };
 };
 
-const progress = async (title: string) => {
+const progress = async (repo: string, title: string) => {
   logger.start(`Loading progress for milestone "${title}".`);
-  const milestone = await findByTitle(title);
+  const milestone = await findByTitle(repo, title);
   const metadata = calculateProgress(milestone);
 
   output.renderSummary("Milestone Progress", [

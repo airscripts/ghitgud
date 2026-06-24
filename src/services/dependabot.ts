@@ -1,4 +1,3 @@
-import config from "@/core/config";
 import output from "@/core/output";
 import logger from "@/core/logger";
 import repoService from "@/services/repos";
@@ -7,6 +6,7 @@ import { DependabotAlert, RepoTargetOptions } from "@/types";
 import dependabotApi, { DependabotListOptions } from "@/api/dependabot";
 
 import {
+  ERROR_NO_REPO,
   DEPENDABOT_DISMISS_REASONS,
   ERROR_MUTATION_REQUIRES_YES,
   ERROR_DEPENDABOT_ALERT_REQUIRED,
@@ -86,9 +86,13 @@ const list = async (options: ListOptions = {}) => {
   return result;
 };
 
-const dismiss = async (alertNumber?: number, options: DismissOptions = {}) => {
+const dismiss = async (alertNumber: number, options: DismissOptions) => {
   if (!alertNumber) {
     throw new GhitgudError(ERROR_DEPENDABOT_ALERT_REQUIRED);
+  }
+
+  if (!options.repo) {
+    throw new GhitgudError(ERROR_NO_REPO);
   }
 
   if (!options.reason) {
@@ -103,7 +107,7 @@ const dismiss = async (alertNumber?: number, options: DismissOptions = {}) => {
     throw new GhitgudError(ERROR_MUTATION_REQUIRES_YES);
   }
 
-  const repo = options.repo ?? config.getRepo();
+  const repo = options.repo;
   logger.start(`Dismissing Dependabot alert ${alertNumber}.`);
 
   await dependabotApi.dismissAlert(repo, alertNumber, {

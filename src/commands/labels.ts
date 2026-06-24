@@ -1,9 +1,9 @@
 import { Command } from "commander";
 
 import command from "@/core/command";
-import { TEMPLATES_DIR } from "@/core/constants";
-
+import repoResolver from "@/core/repo";
 import labelsService from "@/services/labels";
+import { TEMPLATES_DIR } from "@/core/constants";
 
 const register = (program: Command) => {
   const labels = program
@@ -23,13 +23,16 @@ Examples:
   labels
     .command("list")
     .description("List all labels for a repository.")
-    .action(async () => {
-      await command.run(() => labelsService.list());
+    .option("--repo <repo>", "Repository (owner/repo)")
+    .action(async (options) => {
+      const repo = await repoResolver.resolveRepo(options.repo);
+      await command.run(() => labelsService.list(repo));
     });
 
   labels
     .command("pull")
     .description("Pull all related labels for a repository.")
+    .option("--repo <repo>", "Repository (owner/repo)")
     .option(
       "-t, --template <name>",
       "Pull from a built-in template instead of the remote repository",
@@ -40,34 +43,44 @@ Examples:
           return labelsService.pullTemplate(options.template, TEMPLATES_DIR);
         }
 
-        return labelsService.pull();
+        const repo = repoResolver.resolveRepoSync(options.repo);
+        return labelsService.pull(repo);
       });
     });
 
   labels
     .command("push")
     .description("Push all related labels for a repository.")
+    .option("--repo <repo>", "Repository (owner/repo)")
     .option(
       "-t, --template <name>",
       "Push from a built-in template instead of the local metadata file",
     )
     .action(async (options) => {
+      const repo = await repoResolver.resolveRepo(options.repo);
+
       await command.run(() => {
         if (options.template) {
-          return labelsService.pushTemplate(options.template, TEMPLATES_DIR);
+          return labelsService.pushTemplate(
+            options.template,
+            TEMPLATES_DIR,
+            repo,
+          );
         }
 
-        return labelsService.push();
+        return labelsService.push(repo);
       });
     });
 
   labels
     .command("prune")
     .description("Prune all related labels for a repository.")
+    .option("--repo <repo>", "Repository (owner/repo)")
     .option("--dry-run", "Preview changes without deleting", false)
     .option("--yes", "Confirm deletion", false)
     .action(async (options) => {
-      await command.run(() => labelsService.prune(options));
+      const repo = await repoResolver.resolveRepo(options.repo);
+      await command.run(() => labelsService.prune(repo, options));
     });
 };
 

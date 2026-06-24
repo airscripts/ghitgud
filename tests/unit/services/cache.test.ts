@@ -4,7 +4,7 @@ import path from "path";
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 
 import api from "@/api/cache";
-import config from "@/core/config";
+import repoResolver from "@/core/repo";
 import artifactsApi from "@/api/artifacts";
 import workflowsApi from "@/api/workflows";
 import cacheService from "@/services/cache";
@@ -32,9 +32,9 @@ vi.mock("@/api/workflows", () => ({
   },
 }));
 
-vi.mock("@/core/config", () => ({
+vi.mock("@/core/repo", () => ({
   default: {
-    getRepoOptional: vi.fn(() => "owner/repo"),
+    resolveRepo: vi.fn(() => Promise.resolve("owner/repo")),
   },
 }));
 
@@ -58,7 +58,7 @@ describe("cache service", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "ghg-cache-"));
-    vi.mocked(config.getRepoOptional).mockReturnValue("owner/repo");
+    vi.mocked(repoResolver.resolveRepo).mockResolvedValue("owner/repo");
   });
 
   afterEach(() => {

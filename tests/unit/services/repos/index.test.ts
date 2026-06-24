@@ -2,14 +2,14 @@ import fs from "fs";
 import { describe, it, expect, vi, Mock, beforeEach, afterEach } from "vitest";
 
 import api from "@/api/repos";
-import config from "@/core/config";
 import logger from "@/core/logger";
 import progress from "@/core/progress";
 import service from "@/services/repos";
 
-vi.mock("@/core/config", () => ({
+vi.mock("@/core/repo", () => ({
   default: {
-    getRepo: vi.fn(() => "owner/default"),
+    resolveRepoSync: vi.fn(() => "owner/default"),
+    resolveRepo: vi.fn(() => Promise.resolve("owner/default")),
   },
 }));
 
@@ -47,7 +47,7 @@ vi.mock("@/core/progress", () => ({
 
 describe("repos service", () => {
   beforeEach(() => {
-    vi.spyOn(config, "getRepo").mockReturnValue("owner/default");
+    vi.clearAllMocks();
   });
 
   afterEach(() => {
@@ -133,8 +133,8 @@ describe("repos service", () => {
     expect(result).toHaveLength(1);
   });
 
-  it("should fall back to configured repo", async () => {
-    const result = await service.resolveTargets();
+  it("should fall back to git remote when no target options", async () => {
+    const result = await service.resolveTargets({});
     expect(result.map((repo) => repo.fullName)).toEqual(["owner/default"]);
   });
 
