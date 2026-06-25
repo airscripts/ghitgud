@@ -559,6 +559,12 @@ ghg ping --theme light
 ghg ping --theme auto
 ```
 
+For debugging, use `--debug` to write a trace log to a temporary file:
+
+```bash
+ghg notifications list --debug
+```
+
 When `--json` is used, success responses are written to stdout and errors to stderr as structured JSON.
 
 Success:
@@ -701,15 +707,16 @@ src/
     leaks.ts            # Secret scanning alerts API.
   core/
     command.ts          # Shared command runner.
+    repo.ts             # Repository target resolution from git remotes.
     config.ts           # Config resolver — env vars, profiles, credentials file.
     constants.ts        # Shared constants, error messages, config keys.
     dates.ts            # Date formatting helpers.
     errors.ts           # Custom error class hierarchy.
     git.ts              # Git operations (branch detection, remote tracking).
     io.ts               # Generic file helpers.
-    logger.ts           # Consola instance for rich CLI output.
+    logger.ts           # Consola instance with debug logging support.
     output.ts           # Terminal rendering (tables, sections, lists, key-values).
-    output-state.ts     # Global output state (JSON mode tracking).
+    output-state.ts     # Global output state (JSON and debug mode tracking).
     progress.ts         # Bulk progress bars.
     prompt.ts           # Interactive prompts.
     spinner.ts          # Async loading spinners.

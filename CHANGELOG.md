@@ -5,6 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.14.3] - 2026-06-25
+
+### Added
+
+- Debug logging capabilities with `--debug` flag for verbose output and enhanced logger functionality
+
+### Changed
+
+- Repository targets are now resolved from git remotes by default, removing the need to pass `--repo` when inside a git repository
+- Updated dependencies: vitest 3.2.6, vite 8.1.0, @clack/prompts 1.6.0, @types/node 24.13.2, typescript-eslint monorepo, date-fns 4.4.0, dotenv 16.6.1, figlet 1.11.0, typescript 5.9.3, prettier 3.8.4, eslint 10.5.0, actions/checkout v7, github artifact actions
+
 ## [2.14.2] - 2026-06-07
 
 ### Fixed
