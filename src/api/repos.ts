@@ -41,6 +41,14 @@ const repos = {
     return data.map(normalizeRepo);
   },
 
+  fetchUser: async (username: string): Promise<RepoSummary[]> => {
+    const data = await client.getPaginated<GitHubRepoResponse>(
+      `/users/${username}/repos?per_page=${client.getDefaultPerPage()}&type=all`,
+    );
+
+    return data.map(normalizeRepo);
+  },
+
   get: async (repo: string): Promise<GitHubRepoResponse> => {
     const response = await client.get(`/repos/${repo}`);
     return (await response.json()) as GitHubRepoResponse;

@@ -2,7 +2,7 @@
 
 ---
 
-## v2.15.0 — GitHub Pages & Wiki
+## a1b2c3d4 — GitHub Pages & Wiki
 
 **Why gh doesn't have it:** No `gh pages` or `gh wiki` commands. Pages deployments and wiki edits require the web UI or Actions.
 
@@ -20,7 +20,7 @@
 
 ---
 
-## v2.16.0 — Merge Queue Management
+## e5f6g7h8 — Merge Queue Management
 
 **Why gh doesn't have it:** Merge queue is configured in repo settings with no CLI visibility. The April 2026 merge queue incident showed teams had no terminal access to queue state.
 
@@ -36,7 +36,7 @@
 
 ---
 
-## v2.17.0 — Workspaces & Multi-Repo Operations
+## i9j0k1l2 — Workspaces & Multi-Repo Operations
 
 **Why gh doesn't have it:** `gh` is strictly single repo. Developers managing many repos resort to tools like `repos` CLI or custom scripts to check status and run commands across projects.
 
@@ -53,7 +53,7 @@
 
 ---
 
-## v2.18.0 — Code Search & Navigation
+## m3n4o5p6 — Code Search & Navigation
 
 **Why gh doesn't have it:** `gh search` is limited to text queries. No symbol navigation, definition lookup, or PR-aware blame exists.
 
@@ -69,7 +69,7 @@
 
 ---
 
-## v2.19.0 — Gists, Reactions & Comments
+## q7r8s9t0 — Gists, Reactions & Comments
 
 **Why gh doesn't have it:** `gh gist` supports create/list/view but lacks editing, forking, and starring. No `gh react` command exists (issue #11248). No thread reply support (issue #11552).
 
@@ -89,7 +89,7 @@
 
 ---
 
-## v2.20.0 — Rulesets & Templates
+## u1v2w3x4 — Rulesets & Templates
 
 **Why gh doesn't have it:** `gh ruleset` only supports `view`. No create/edit/delete commands. Issue template discovery is broken (issue #11681) and label sync across repos requires custom scripts.
 
@@ -109,7 +109,7 @@
 
 ---
 
-## v2.21.0 — Issue Types
+## y5z6a7b8 — Issue Types
 
 **Why gh doesn't have it:** GitHub introduced issue types (Bug, Feature, Task) in 2024. The CLI still has no support (issue #11976). Users must use direct API calls.
 

@@ -7,6 +7,7 @@ interface Label {
 
 interface RepoTargetOptions {
   org?: string;
+  user?: string;
   file?: string;
   repos?: string;
   limit?: number | string;

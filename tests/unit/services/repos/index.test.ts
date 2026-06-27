@@ -22,6 +22,7 @@ vi.mock("fs", () => ({
 vi.mock("@/api/repos", () => ({
   default: {
     fetchOrg: vi.fn(),
+    fetchUser: vi.fn(),
   },
 }));
 
@@ -123,6 +124,24 @@ describe("repos service", () => {
 
     const result = await service.resolveTargets({ org: "owner" });
     expect(result.map((repo) => repo.fullName)).toEqual(["owner/one"]);
+  });
+
+  it("should resolve repos from --user", async () => {
+    (api.fetchUser as Mock).mockResolvedValue([
+      {
+        id: 10,
+        fork: false,
+        private: false,
+        name: "project",
+        archived: false,
+        defaultBranch: "main",
+        pushedAt: "2024-06-01",
+        fullName: "octocat/project",
+      },
+    ]);
+
+    const result = await service.resolveTargets({ user: "octocat" });
+    expect(result.map((repo) => repo.fullName)).toEqual(["octocat/project"]);
   });
 
   it("should deduplicate repositories", async () => {

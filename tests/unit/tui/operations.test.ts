@@ -109,6 +109,12 @@ vi.mock("@/services/repos/report", () => ({
   },
 }));
 
+vi.mock("@/services/repos/clone", () => ({
+  default: {
+    clone: vi.fn(() => Promise.resolve()),
+  },
+}));
+
 vi.mock("@/services/insights", () => ({
   default: {
     traffic: vi.fn(() => Promise.resolve([])),
@@ -191,6 +197,7 @@ import insightsService from "@/services/insights";
 import workflowService from "@/services/workflow";
 import milestoneService from "@/services/milestone";
 import reposLabelService from "@/services/repos/label";
+import reposCloneService from "@/services/repos/clone";
 import reposGovernService from "@/services/repos/govern";
 import reposRetireService from "@/services/repos/retire";
 import reposReportService from "@/services/repos/report";
@@ -587,6 +594,24 @@ describe("tui operations run functions", () => {
       await runOp(repositoryOperations[4], { since: "7d" });
       expect(reposReportService.report).toHaveBeenCalledWith(
         expect.objectContaining({ since: "7d" }),
+      );
+    });
+
+    it("runs repos.clone", async () => {
+      await runOp(repositoryOperations[5], {
+        dryRun: true,
+        protocol: "https",
+        includeForks: false,
+        includePrivate: false,
+      });
+
+      expect(reposCloneService.clone).toHaveBeenCalledWith(
+        expect.objectContaining({
+          dryRun: true,
+          protocol: "https",
+          includeForks: false,
+          includePrivate: false,
+        }),
       );
     });
   });

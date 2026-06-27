@@ -13,10 +13,9 @@ vi.mock("@/api/client", () => ({
 }));
 
 describe("repos", () => {
-  const mockRepo = "owner/repo";
-
   beforeEach(() => {
     vi.clearAllMocks();
+    vi.mocked(client.getDefaultPerPage).mockReturnValue(100);
   });
 
   afterEach(() => {
@@ -71,8 +70,58 @@ describe("repos", () => {
     });
   });
 
+  describe("fetchUser", () => {
+    it("should fetch user repos", async () => {
+      const mockRepos = [
+        {
+          id: 10,
+          fork: false,
+          private: false,
+          archived: false,
+          name: "myproject",
+          default_branch: "main",
+          pushed_at: "2024-06-01",
+          full_name: "octocat/myproject",
+        },
+
+        {
+          id: 11,
+          fork: true,
+          private: true,
+          archived: false,
+          name: "forked-repo",
+          default_branch: "main",
+          pushed_at: "2024-03-01",
+          full_name: "octocat/forked-repo",
+        },
+      ];
+
+      vi.mocked(client.getPaginated).mockResolvedValue(mockRepos);
+      const result = await repos.fetchUser("octocat");
+
+      expect(client.getPaginated).toHaveBeenCalledWith(
+        `/users/octocat/repos?per_page=100&type=all`,
+      );
+
+      expect(result).toHaveLength(2);
+      expect(result[0]).toMatchObject({
+        id: 10,
+        name: "myproject",
+        defaultBranch: "main",
+        fullName: "octocat/myproject",
+      });
+
+      expect(result[1]).toMatchObject({
+        id: 11,
+        fork: true,
+        private: true,
+      });
+    });
+  });
+
   describe("archive", () => {
     it("should archive a repo", async () => {
+      const mockRepo = "owner/repo";
       const mockResponse = { status: 200 } as Response;
       vi.mocked(client.patch).mockResolvedValue(mockResponse);
 

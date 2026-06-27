@@ -1,5 +1,6 @@
 import type { TuiOperation } from "../types";
 import reposLabelService from "@/services/repos/label";
+import reposCloneService from "@/services/repos/clone";
 import reposGovernService from "@/services/repos/govern";
 import reposRetireService from "@/services/repos/retire";
 import reposReportService from "@/services/repos/report";
@@ -115,6 +116,42 @@ const repositoryOperations: TuiOperation[] = [
       reposReportService.report({
         ...targetOptions(values),
         since: text(values, "since"),
+      }),
+  },
+
+  {
+    mutates: true,
+    id: "repos.clone",
+    dryRunDefault: true,
+    workspace: "Repositories",
+    command: "ghg repos clone",
+    title: "Clone Repositories",
+
+    description:
+      "Clone all repositories for a user or org into the current directory.",
+
+    inputs: [
+      ...targetInputs,
+      { key: "includeForks", label: "Include forks", type: "boolean" },
+      { key: "includePrivate", label: "Include private", type: "boolean" },
+
+      {
+        key: "protocol",
+        label: "Protocol",
+        type: "string",
+        placeholder: "https or ssh",
+      },
+
+      { key: "dryRun", label: "Dry run", type: "boolean", defaultValue: true },
+    ],
+
+    run: ({ values }) =>
+      reposCloneService.clone({
+        ...targetOptions(values),
+        includeForks: booleanValue(values, "includeForks"),
+        includePrivate: booleanValue(values, "includePrivate"),
+        protocol: text(values, "protocol") as "https" | "ssh" | undefined,
+        dryRun: booleanValue(values, "dryRun"),
       }),
   },
 ];

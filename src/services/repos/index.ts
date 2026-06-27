@@ -103,6 +103,7 @@ const resolveRepos = async (
   if (options.repos) return parseReposInput(options.repos);
   if (options.file) return readReposFromFile(options.file);
   if (options.org) return await api.fetchOrg(options.org);
+  if (options.user) return await api.fetchUser(options.user);
   const repo = await repoResolver.resolveRepo();
   return [toRepoSummary(repo)];
 };

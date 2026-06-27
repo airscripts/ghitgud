@@ -8,6 +8,12 @@ const orgInput: TuiInput = {
   label: "Organization",
 };
 
+const userInput: TuiInput = {
+  key: "user",
+  type: "string",
+  label: "Username",
+};
+
 const reposInput: TuiInput = {
   key: "repos",
   type: "string",
@@ -34,7 +40,7 @@ const repoInput: TuiInput = {
   placeholder: "owner/repo",
 };
 
-const targetInputs = [orgInput, reposInput, fileInput, limitInput];
+const targetInputs = [orgInput, userInput, reposInput, fileInput, limitInput];
 
 const text = (values: TuiInputValues, key: string): string | undefined => {
   const value = values[key];
@@ -60,6 +66,7 @@ const booleanValue = (values: TuiInputValues, key: string): boolean => {
 
 const targetOptions = (values: TuiInputValues) => ({
   org: text(values, "org"),
+  user: text(values, "user"),
   file: text(values, "file"),
   repos: text(values, "repos"),
   limit: text(values, "limit"),
@@ -80,6 +87,7 @@ const inferRepoOptional = async (): Promise<string | undefined> => {
 export {
   text,
   orgInput,
+  userInput,
   fileInput,
   inferRepo,
   repoInput,
