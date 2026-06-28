@@ -22,16 +22,36 @@ vi.mock("@/core/output", () => ({
   },
 }));
 
+vi.mock("@/core/output-state", () => ({
+  default: {
+    isHumanOutput: () => true,
+    isJsonOutput: () => false,
+    isSilentOutput: () => false,
+  },
+}));
+
+vi.mock("@/core/errors", () => ({
+  GhitgudError: class extends Error {},
+}));
+
 describe("prompt", () => {
   const originalExit = process.exit;
+  const originalCI = process.env.CI;
 
   beforeEach(() => {
     vi.clearAllMocks();
     process.exit = vi.fn() as unknown as typeof process.exit;
+    delete process.env.CI;
   });
 
   afterEach(() => {
     process.exit = originalExit;
+
+    if (originalCI !== undefined) {
+      process.env.CI = originalCI;
+    } else {
+      delete process.env.CI;
+    }
   });
 
   describe("promptIfMissing", () => {
