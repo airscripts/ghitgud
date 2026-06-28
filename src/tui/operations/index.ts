@@ -3,9 +3,11 @@ import runOperations from "./run";
 import orgOperations from "./org";
 import teamOperations from "./team";
 import repoOperations from "./repo";
+import wikiOperations from "./wiki";
 import cacheOperations from "./cache";
 import auditOperations from "./audit";
 import leaksOperations from "./leaks";
+import pagesOperations from "./pages";
 import labelOperations from "./labels";
 import issueOperations from "./issues";
 import reviewOperations from "./review";
@@ -58,6 +60,8 @@ const operations: TuiOperation[] = [
   ...orgOperations,
   ...teamOperations,
   ...repoOperations,
+  ...pagesOperations,
+  ...wikiOperations,
 ];
 
 const workspaces = Array.from(new Set(operations.map((op) => op.workspace)));

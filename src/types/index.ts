@@ -339,6 +339,15 @@ export type { Environment } from "./environments";
 export type { EnvironmentListResponse } from "./environments";
 export type { EnvironmentProtectionRule } from "./environments";
 
+export type {
+  PagesSite,
+  PagesBuild,
+  PagesSource,
+  PagesBuildType,
+} from "./pages";
+
+export type { WikiPage, WikiPageContent } from "./wiki";
+
 export type { OrgSecret } from "./secrets";
 export type { RepoSecret } from "./secrets";
 export type { SecretVisibility } from "./secrets";

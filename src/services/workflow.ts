@@ -1,5 +1,6 @@
 import fs from "fs";
 import path from "path";
+import { load as yamlLoad } from "js-yaml";
 
 import git from "@/core/git";
 import output from "@/core/output";
@@ -60,6 +61,23 @@ function collectIssues(
   filePath: string,
 ): WorkflowValidationIssue[] {
   const issues: WorkflowValidationIssue[] = [];
+
+  try {
+    yamlLoad(content);
+  } catch (yamlError: unknown) {
+    const message =
+      yamlError instanceof Error ? yamlError.message : String(yamlError);
+
+    issues.push({
+      file: filePath,
+      level: "error",
+      message: message,
+      rule: "yaml-syntax",
+    });
+
+    return issues;
+  }
+
   const lines = content.split("\n");
 
   const hasName = lines.some((line) => /^\s*name:\s*/.test(line));

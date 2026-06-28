@@ -13,12 +13,14 @@ import orgCommand from "@/commands/org";
 import pingCommand from "@/commands/ping";
 import teamCommand from "@/commands/team";
 import repoCommand from "@/commands/repo";
+import wikiCommand from "@/commands/wiki";
 import issueCommand from "@/commands/issue";
 import proxyCommand from "@/commands/proxy";
 import reposCommand from "@/commands/repos";
 import cacheCommand from "@/commands/cache";
 import auditCommand from "@/commands/audit";
 import leaksCommand from "@/commands/leaks";
+import pagesCommand from "@/commands/pages";
 import labelsCommand from "@/commands/labels";
 import outputState from "@/core/output-state";
 import configCommand from "@/commands/config";
@@ -93,6 +95,8 @@ if (!proxyCommand.runProxyFromArgv()) {
     pingCommand.register(program);
     labelsCommand.register(program);
     profileCommand.register(program);
+    pagesCommand.register(program);
+    wikiCommand.register(program);
     configCommand.register(program);
     prCommand.register(program);
     issueCommand.register(program);
@@ -159,6 +163,8 @@ Examples:
   ghg variable list --env production
   ghg secret set --name API_KEY --value abc123
   ghg environment create --name staging
+  ghg pages deploy --source main --path /docs
+  ghg wiki view Home
   ghg org members --org airscripts
   ghg team list --org airscripts
   ghg repo invite --user octocat --role push

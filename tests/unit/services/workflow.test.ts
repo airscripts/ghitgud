@@ -105,6 +105,18 @@ describe("workflow service", () => {
     );
   });
 
+  it("fails validation for invalid yaml syntax", async () => {
+    fs.writeFileSync(
+      workflowFile,
+      ["name: CI", "on:", "  push:", "jobs:", "  test: [invalid"].join("\n"),
+      "utf8",
+    );
+
+    await expect(service.validate()).rejects.toThrow(
+      "Workflow validation failed.",
+    );
+  });
+
   it("builds preview with unresolved expressions", async () => {
     fs.writeFileSync(
       workflowFile,
