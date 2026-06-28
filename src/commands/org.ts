@@ -3,6 +3,7 @@ import { Command } from "commander";
 import prompt from "@/core/prompt";
 import command from "@/core/command";
 import orgService from "@/services/org";
+import { GhitgudError } from "@/core/errors";
 
 const register = (program: Command) => {
   const org = program
@@ -24,7 +25,15 @@ Examples:
     .description("List organization members.")
     .option("-o, --org <name>", "Organization name")
     .action(async (options) => {
+      if (!options.org)
+        prompt.guardNonInteractive("Organization name is required.");
+
       const orgName = options.org || (await prompt.text("Organization name:"));
+
+      if (!orgName.trim()) {
+        throw new GhitgudError("Organization name is required.");
+      }
+
       await command.run(() => orgService.list(orgName));
     });
 
@@ -39,10 +48,23 @@ Examples:
       "member",
     )
     .action(async (options) => {
+      if (!options.org)
+        prompt.guardNonInteractive("Organization name is required.");
+
       const orgName = options.org || (await prompt.text("Organization name:"));
+
+      if (!orgName.trim()) {
+        throw new GhitgudError("Organization name is required.");
+      }
+
+      if (!options.user) prompt.guardNonInteractive("Username is required.");
 
       const username =
         options.user || (await prompt.text("Username to invite:"));
+
+      if (!username.trim()) {
+        throw new GhitgudError("Username is required.");
+      }
 
       await command.run(() => orgService.add(orgName, username, options.role));
     });
@@ -53,10 +75,23 @@ Examples:
     .option("-o, --org <name>", "Organization name")
     .option("-u, --user <name>", "Username to remove")
     .action(async (options) => {
+      if (!options.org)
+        prompt.guardNonInteractive("Organization name is required.");
+
       const orgName = options.org || (await prompt.text("Organization name:"));
+
+      if (!orgName.trim()) {
+        throw new GhitgudError("Organization name is required.");
+      }
+
+      if (!options.user) prompt.guardNonInteractive("Username is required.");
 
       const username =
         options.user || (await prompt.text("Username to remove:"));
+
+      if (!username.trim()) {
+        throw new GhitgudError("Username is required.");
+      }
 
       await command.run(() => orgService.remove(orgName, username));
     });

@@ -3,8 +3,8 @@ import { Command } from "commander";
 import prompt from "@/core/prompt";
 import command from "@/core/command";
 import repoResolver from "@/core/repo";
-import { ConfigError } from "@/core/errors";
 import inviteService from "@/services/invites";
+import { ConfigError, GhitgudError } from "@/core/errors";
 
 const VALID_REPO_ROLES = new Set([
   "pull",
@@ -64,7 +64,12 @@ Examples:
     )
     .action(async (options) => {
       const { owner, repo: repoName } = parseRepo(options.repo);
+      if (!options.user) prompt.guardNonInteractive("Username is required.");
       const username = options.user || (await prompt.text("Username:"));
+
+      if (!username.trim()) {
+        throw new GhitgudError("Username is required.");
+      }
 
       await command.run(() =>
         inviteService.invite(owner, repoName, username, options.role),
@@ -84,7 +89,12 @@ Examples:
     )
     .action(async (options) => {
       const { owner, repo: repoName } = parseRepo(options.repo);
+      if (!options.team) prompt.guardNonInteractive("Team slug is required.");
       const teamSlug = options.team || (await prompt.text("Team slug:"));
+
+      if (!teamSlug.trim()) {
+        throw new GhitgudError("Team slug is required.");
+      }
 
       await command.run(() =>
         inviteService.grant(owner, repoName, teamSlug, options.role),

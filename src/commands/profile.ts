@@ -3,8 +3,13 @@ import { Command } from "commander";
 import config from "@/core/config";
 import prompt from "@/core/prompt";
 import command from "@/core/command";
-import { ConfigError } from "@/core/errors";
 import profileService from "@/services/profile";
+import { GhitgudError, ConfigError } from "@/core/errors";
+
+import {
+  ERROR_PROFILE_NAME_REQUIRED,
+  ERROR_PROFILE_TOKEN_REQUIRED,
+} from "@/core/constants";
 
 const register = (program: Command) => {
   const profile = program
@@ -30,17 +35,29 @@ Examples:
       let profileName = name;
 
       if (!profileName) {
+        prompt.guardNonInteractive("Profile name is required.");
+
         profileName = await prompt.text(
           "What would you like to name this profile?",
           { placeholder: "work, personal, client-project, etc." },
         );
       }
 
+      if (!profileName.trim()) {
+        throw new GhitgudError(ERROR_PROFILE_NAME_REQUIRED);
+      }
+
       let token = options?.token;
       if (!token) {
+        prompt.guardNonInteractive("Token is required.");
+
         token = await prompt.text("Enter GitHub token:", {
           placeholder: "ghp_...",
         });
+      }
+
+      if (!token.trim()) {
+        throw new GhitgudError(ERROR_PROFILE_TOKEN_REQUIRED);
       }
 
       await command.run(() =>

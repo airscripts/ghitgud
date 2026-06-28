@@ -22,6 +22,7 @@ vi.mock("@/core/command", () => ({
 vi.mock("@/core/prompt", () => ({
   default: {
     text: vi.fn(),
+    guardNonInteractive: vi.fn(),
   },
 }));
 
@@ -158,6 +159,44 @@ describe("repo command", () => {
       "ops",
       "push",
     );
+  });
+
+  it("should reject blank username on invite", async () => {
+    vi.mocked(mockPrompt.default.text).mockResolvedValue("   ");
+
+    const program = new Command();
+    program.exitOverride();
+    repoCommand.register(program);
+
+    await expect(
+      program.parseAsync([
+        "node",
+        "test",
+        "repo",
+        "invite",
+        "--repo",
+        "owner/repo",
+      ]),
+    ).rejects.toThrow("Username is required.");
+  });
+
+  it("should reject blank team slug on grant", async () => {
+    vi.mocked(mockPrompt.default.text).mockResolvedValue("   ");
+
+    const program = new Command();
+    program.exitOverride();
+    repoCommand.register(program);
+
+    await expect(
+      program.parseAsync([
+        "node",
+        "test",
+        "repo",
+        "grant",
+        "--repo",
+        "owner/repo",
+      ]),
+    ).rejects.toThrow("Team slug is required.");
   });
 
   it("should reject invalid --role on invite", async () => {

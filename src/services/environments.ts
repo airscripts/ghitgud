@@ -73,7 +73,8 @@ const listProtectionRules = async (
   logger.start(`Loading protection rules for environment ${env}.`);
 
   const response = await environmentsApi.listProtectionRules(owner, name, env);
-  const rules = (await response.json()) as EnvironmentProtectionRule[];
+  const data = await response.json();
+  const rules: EnvironmentProtectionRule[] = Array.isArray(data) ? data : [];
 
   output.renderTable(
     rules.map((rule) => ({

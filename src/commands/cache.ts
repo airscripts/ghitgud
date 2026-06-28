@@ -4,6 +4,8 @@ import prompt from "@/core/prompt";
 import command from "@/core/command";
 import repoResolver from "@/core/repo";
 import cacheService from "@/services/cache";
+import { GhitgudError } from "@/core/errors";
+import { ERROR_CACHE_KEY_REQUIRED } from "@/core/constants";
 
 const register = (program: Command) => {
   const cache = program
@@ -17,11 +19,17 @@ const register = (program: Command) => {
     .option("--repo <repo>", "Repository (owner/repo)")
     .action(async (key: string | undefined, options: { repo?: string }) => {
       const repo = await repoResolver.resolveRepo(options.repo);
+      if (!key) prompt.guardNonInteractive("Cache key is required.");
+
       const value =
         key ??
         (await prompt.text("Enter cache key to inspect:", {
           placeholder: "linux-node-modules",
         }));
+
+      if (!value.trim()) {
+        throw new GhitgudError(ERROR_CACHE_KEY_REQUIRED);
+      }
 
       await command.run(() => cacheService.inspect(value, repo));
     });
@@ -40,11 +48,17 @@ const register = (program: Command) => {
         options: { repo?: string; outputDir?: string },
       ) => {
         const repo = await repoResolver.resolveRepo(options.repo);
+        if (!key) prompt.guardNonInteractive("Cache key is required.");
+
         const value =
           key ??
           (await prompt.text("Enter cache key to download:", {
             placeholder: "linux-node-modules",
           }));
+
+        if (!value.trim()) {
+          throw new GhitgudError(ERROR_CACHE_KEY_REQUIRED);
+        }
 
         await command.run(() =>
           cacheService.download(value, { ...options, repo }),

@@ -1,9 +1,19 @@
 import { text, select, confirm, isCancel, multiselect } from "@clack/prompts";
 
 import output from "./output";
+import { GhitgudError } from "./errors";
+import outputState from "./output-state";
+
+const isNonInteractive = (): boolean => {
+  return !outputState.isHumanOutput() || !!process.env.CI;
+};
 
 const handleCancel = <T>(result: T | symbol): T => {
   if (isCancel(result)) {
+    if (isNonInteractive()) {
+      throw new GhitgudError("Operation cancelled (non-interactive mode).");
+    }
+
     output.log("");
     output.log("Operation cancelled.");
     process.exit(0);
@@ -12,12 +22,19 @@ const handleCancel = <T>(result: T | symbol): T => {
   return result as T;
 };
 
+const guardNonInteractive = (message: string): void => {
+  if (isNonInteractive()) {
+    throw new GhitgudError(message);
+  }
+};
+
 const promptIfMissing = async (
   value: string | undefined,
   message: string,
   options: { placeholder?: string } = {},
 ): Promise<string> => {
   if (value) return value;
+  guardNonInteractive(`Required option not provided: ${message}`);
 
   return promptText(message, {
     placeholder: options.placeholder,
@@ -76,6 +93,8 @@ const promptMultiSelect = async <T extends string>(
 export default {
   promptIfMissing,
   text: promptText,
+  isNonInteractive,
+  guardNonInteractive,
   select: promptSelect,
   confirm: promptConfirm,
   multiSelect: promptMultiSelect,

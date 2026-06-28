@@ -1,11 +1,12 @@
 import { Command } from "commander";
 
 import parse from "@/core/parse";
-import prompt from "@/core/prompt";
 import command from "@/core/command";
 import prService from "@/services/pr";
 import repoResolver from "@/core/repo";
 import stackService from "@/services/stack";
+import { GhitgudError } from "@/core/errors";
+import { ERROR_REVIEW_PR_REQUIRED } from "@/core/constants";
 
 const register = (program: Command) => {
   const pr = program
@@ -54,15 +55,11 @@ Examples:
         prNumber?: string,
         options?: { force?: boolean; repo?: string },
       ) => {
-        let prNum = prNumber;
-
-        if (!prNum) {
-          prNum = await prompt.text("Enter the PR number to push changes to:", {
-            placeholder: "e.g., 42",
-          });
+        if (!prNumber) {
+          throw new GhitgudError(ERROR_REVIEW_PR_REQUIRED);
         }
 
-        const parsedPrNumber = parse.parsePositiveInt(prNum, "PR number");
+        const parsedPrNumber = parse.parsePositiveInt(prNumber, "PR number");
         const repo = await repoResolver.resolveRepo(options?.repo);
         await command.run(() =>
           prService.push(parsedPrNumber, repo, options?.force ?? false),

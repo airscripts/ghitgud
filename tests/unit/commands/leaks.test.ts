@@ -1,9 +1,26 @@
 import { Command } from "commander";
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi, beforeEach } from "vitest";
 
 import leaksCommand from "@/commands/leaks";
 
+vi.mock("@/services/leaks", () => ({
+  default: {
+    scan: vi.fn(),
+    alerts: vi.fn(),
+  },
+}));
+
+vi.mock("@/core/command", () => ({
+  default: {
+    run: (task: () => unknown) => task(),
+  },
+}));
+
 describe("leaks command", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
   it("registers leaks subcommands", () => {
     const program = new Command();
     leaksCommand.register(program);
@@ -17,5 +34,15 @@ describe("leaks command", () => {
       "scan",
       "alerts",
     ]);
+  });
+
+  it("should reject leaks alerts with no repo target", async () => {
+    const program = new Command();
+    program.exitOverride();
+    leaksCommand.register(program);
+
+    await expect(
+      program.parseAsync(["node", "test", "leaks", "alerts"]),
+    ).rejects.toThrow("No repository target provided.");
   });
 });

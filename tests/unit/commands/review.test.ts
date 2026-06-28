@@ -32,8 +32,8 @@ vi.mock("@/core/prompt", () => ({
   default: {
     text: vi.fn((message: string, options: { placeholder?: string }) => {
       if (options?.placeholder === "42") return "42";
-      if (options?.placeholder === "123456") return "123456";
       if (options?.placeholder === "10") return "10";
+      if (options?.placeholder === "123456") return "123456";
       if (options?.placeholder === "src/main.ts") return "src/main.ts";
 
       if (options?.placeholder === "Consider using a constant here.")
@@ -42,6 +42,8 @@ vi.mock("@/core/prompt", () => ({
       if (options?.placeholder === "const x = 1;") return "const x = 1;";
       return "mocked";
     }),
+
+    guardNonInteractive: vi.fn(),
   },
 }));
 
@@ -207,6 +209,52 @@ describe("review command", () => {
       "airscripts/ghitgud",
       true,
     );
+  });
+
+  it("should reject missing PR number on threads", async () => {
+    const program = new Command();
+    program.exitOverride();
+    reviewCommand.register(program);
+
+    await expect(
+      program.parseAsync(["node", "test", "review", "threads"]),
+    ).rejects.toThrow("PR number is required.");
+
+    expect(reviewService.threads).not.toHaveBeenCalled();
+  });
+
+  it("should reject missing thread id on resolve", async () => {
+    const program = new Command();
+    program.exitOverride();
+    reviewCommand.register(program);
+
+    await expect(
+      program.parseAsync(["node", "test", "review", "resolve"]),
+    ).rejects.toThrow("Thread id is required.");
+
+    expect(reviewService.resolve).not.toHaveBeenCalled();
+  });
+
+  it("should reject missing comment body on comment", async () => {
+    const program = new Command();
+    program.exitOverride();
+    reviewCommand.register(program);
+
+    await expect(
+      program.parseAsync([
+        "node",
+        "test",
+        "review",
+        "comment",
+        "42",
+        "--file",
+        "src/main.ts",
+        "--line",
+        "10",
+      ]),
+    ).rejects.toThrow("Comment body is required.");
+
+    expect(reviewService.comment).not.toHaveBeenCalled();
   });
 
   it("should call comment service with all args", async () => {

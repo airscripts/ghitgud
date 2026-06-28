@@ -1,10 +1,11 @@
 import { Command } from "commander";
 
 import parse from "@/core/parse";
-import prompt from "@/core/prompt";
 import command from "@/core/command";
 import repoResolver from "@/core/repo";
 import runService from "@/services/run";
+import { GhitgudError } from "@/core/errors";
+import { ERROR_RUN_ID_REQUIRED } from "@/core/constants";
 
 const register = (program: Command) => {
   const run = program
@@ -22,13 +23,11 @@ const register = (program: Command) => {
         runId: string | undefined,
         options: { repo?: string; outputDir?: string },
       ) => {
-        const value =
-          runId ??
-          (await prompt.text("Enter workflow run id:", {
-            placeholder: "123456",
-          }));
+        if (!runId) {
+          throw new GhitgudError(ERROR_RUN_ID_REQUIRED);
+        }
 
-        const parsedRunId = parse.parsePositiveInt(value, "run id");
+        const parsedRunId = parse.parsePositiveInt(runId, "run id");
         const repo = await repoResolver.resolveRepo(options.repo);
 
         await command.run(() =>

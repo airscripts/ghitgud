@@ -4,7 +4,13 @@ import parse from "@/core/parse";
 import prompt from "@/core/prompt";
 import command from "@/core/command";
 import repoResolver from "@/core/repo";
+import { GhitgudError } from "@/core/errors";
 import reviewService from "@/services/review";
+
+import {
+  ERROR_REVIEW_PR_REQUIRED,
+  ERROR_REVIEW_BODY_REQUIRED,
+} from "@/core/constants";
 
 type ReviewSide = "LEFT" | "RIGHT";
 
@@ -48,27 +54,63 @@ const promptNumber = async (
 ): Promise<number> =>
   parse.parsePositiveInt(await promptValue(value, message, options), label);
 
-const promptPr = (value: string | undefined): Promise<number> =>
-  promptNumber(value, "Enter the PR number:", { placeholder: "42" }, "PR");
+const promptPr = (value: string | undefined): Promise<number> => {
+  if (!value) {
+    prompt.guardNonInteractive("PR number is required.");
+    throw new GhitgudError(ERROR_REVIEW_PR_REQUIRED);
+  }
 
-const promptThreadId = (value: string | undefined): Promise<number> =>
-  promptNumber(
+  return promptNumber(
+    value,
+    "Enter the PR number:",
+    { placeholder: "42" },
+    "PR",
+  );
+};
+
+const promptThreadId = (value: string | undefined): Promise<number> => {
+  if (!value) {
+    prompt.guardNonInteractive("Thread ID is required.");
+    throw new GhitgudError("Thread id is required.");
+  }
+
+  return promptNumber(
     value,
     "Enter the thread ID:",
     { placeholder: "123456" },
     "thread id",
   );
+};
 
-const promptFile = (value: string | undefined): Promise<string> =>
-  promptValue(value, "Enter the file path:", { placeholder: "src/main.ts" });
+const promptFile = (value: string | undefined): Promise<string> => {
+  if (!value) prompt.guardNonInteractive("File path is required.");
 
-const promptLine = (value: string | undefined): Promise<number> =>
-  promptNumber(value, "Enter the line number:", { placeholder: "10" }, "line");
+  return promptValue(value, "Enter the file path:", {
+    placeholder: "src/main.ts",
+  });
+};
 
-const promptCommentBody = (value: string | undefined): Promise<string> =>
-  promptValue(value, "Enter the comment body:", {
+const promptLine = (value: string | undefined): Promise<number> => {
+  if (!value) prompt.guardNonInteractive("Line number is required.");
+
+  return promptNumber(
+    value,
+    "Enter the line number:",
+    { placeholder: "10" },
+    "line",
+  );
+};
+
+const promptCommentBody = (value: string | undefined): Promise<string> => {
+  if (!value) {
+    prompt.guardNonInteractive("Comment body is required.");
+    throw new GhitgudError(ERROR_REVIEW_BODY_REQUIRED);
+  }
+
+  return promptValue(value, "Enter the comment body:", {
     placeholder: "Consider using a constant here.",
   });
+};
 
 const promptReplacement = (value: string | undefined): Promise<string> =>
   promptValue(value, "Enter the replacement text:", {

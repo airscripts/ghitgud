@@ -99,6 +99,8 @@ Examples:
       let notificationId = id;
 
       if (!notificationId) {
+        prompt.guardNonInteractive("Notification ID is required.");
+
         notificationId = await prompt.text(
           "Enter the notification ID to mark as read:",
           { placeholder: "e.g., 123456789" },
@@ -116,6 +118,8 @@ Examples:
       let notificationId = id;
 
       if (!notificationId) {
+        prompt.guardNonInteractive("Notification ID is required.");
+
         notificationId = await prompt.text(
           "Enter the notification ID to mark as done:",
           { placeholder: "e.g., 123456789" },

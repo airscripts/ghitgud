@@ -3,6 +3,7 @@ import { Command } from "commander";
 import prompt from "@/core/prompt";
 import command from "@/core/command";
 import teamService from "@/services/team";
+import { GhitgudError } from "@/core/errors";
 
 const register = (program: Command) => {
   const team = program
@@ -25,7 +26,15 @@ Examples:
     .description("List teams in an organization.")
     .option("-o, --org <name>", "Organization name")
     .action(async (options) => {
+      if (!options.org)
+        prompt.guardNonInteractive("Organization name is required.");
+
       const orgName = options.org || (await prompt.text("Organization name:"));
+
+      if (!orgName.trim()) {
+        throw new GhitgudError("Organization name is required.");
+      }
+
       await command.run(() => teamService.list(orgName));
     });
 
@@ -41,8 +50,21 @@ Examples:
       "secret",
     )
     .action(async (options) => {
+      if (!options.org)
+        prompt.guardNonInteractive("Organization name is required.");
+
       const orgName = options.org || (await prompt.text("Organization name:"));
+
+      if (!orgName.trim()) {
+        throw new GhitgudError("Organization name is required.");
+      }
+
+      if (!options.name) prompt.guardNonInteractive("Team name is required.");
       const name = options.name || (await prompt.text("Team name:"));
+
+      if (!name.trim()) {
+        throw new GhitgudError("Team name is required.");
+      }
 
       const description =
         options.description || (await prompt.text("Team description:"));
@@ -60,9 +82,28 @@ Examples:
     .option("-u, --user <name>", "Username")
     .option("-r, --role <role>", "Team role (maintainer, member)", "member")
     .action(async (options) => {
+      if (!options.org)
+        prompt.guardNonInteractive("Organization name is required.");
+
       const orgName = options.org || (await prompt.text("Organization name:"));
+
+      if (!orgName.trim()) {
+        throw new GhitgudError("Organization name is required.");
+      }
+
+      if (!options.team) prompt.guardNonInteractive("Team slug is required.");
       const teamSlug = options.team || (await prompt.text("Team slug:"));
+
+      if (!teamSlug.trim()) {
+        throw new GhitgudError("Team slug is required.");
+      }
+
+      if (!options.user) prompt.guardNonInteractive("Username is required.");
       const username = options.user || (await prompt.text("Username:"));
+
+      if (!username.trim()) {
+        throw new GhitgudError("Username is required.");
+      }
 
       await command.run(() =>
         teamService.addMember(orgName, teamSlug, username, options.role),
@@ -76,9 +117,28 @@ Examples:
     .option("-t, --team <name>", "Team slug")
     .option("-u, --user <name>", "Username")
     .action(async (options) => {
+      if (!options.org)
+        prompt.guardNonInteractive("Organization name is required.");
+
       const orgName = options.org || (await prompt.text("Organization name:"));
+
+      if (!orgName.trim()) {
+        throw new GhitgudError("Organization name is required.");
+      }
+
+      if (!options.team) prompt.guardNonInteractive("Team slug is required.");
       const teamSlug = options.team || (await prompt.text("Team slug:"));
+
+      if (!teamSlug.trim()) {
+        throw new GhitgudError("Team slug is required.");
+      }
+
+      if (!options.user) prompt.guardNonInteractive("Username is required.");
       const username = options.user || (await prompt.text("Username:"));
+
+      if (!username.trim()) {
+        throw new GhitgudError("Username is required.");
+      }
 
       await command.run(() =>
         teamService.removeMember(orgName, teamSlug, username),
