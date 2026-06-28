@@ -262,6 +262,21 @@ Conventions:
 - Do not make real HTTP calls in tests.
 - Do not rely on real filesystem state unless a test is explicitly about file I/O and is isolated.
 
+## 10b. Playbooks
+
+Playbooks are shell scripts in `playbooks/` that verify `ghg` works correctly against the live GitHub API. Every command family has a corresponding playbook. When adding a new command, you must also add a playbook.
+
+- Each playbook is named `<command>.sh` (e.g., `pages.sh`, `wiki.sh`).
+- Every playbook sources `playbooks/env.sh` for shared configuration (`REPO`, `ORG`, `TMPDIR`, `GHG_TOKEN` validation) and assertion helpers (`step`, `pass`, `fail`, `skip`, `expect_exit_0`, `expect_exit_non0`, `expect_output`, `expect_json_field`).
+- Each playbook defines `setup()` and `teardown()` functions with `trap teardown EXIT` to guarantee cleanup.
+- Playbooks test both positive and negative cases. Every mutation is reverted in teardown.
+- Non-reversible resources (environments, open PRs) are moved to a closed terminal state with a `[noop]` title.
+- Test resources are prefixed with `ghg-test-` or `ghg_` for easy identification.
+- The `config.sh` playbook never modifies the `token` key — it uses a dedicated `ghg_playbook_test_key`.
+- The orchestrator `playbooks/all.sh` runs every playbook sequentially. Use `SKIP="run.sh,project.sh"` to skip playbooks or `PARALLEL=1` for concurrent execution.
+- Output uses `[INFO]`, `[OK]`, `[ERROR]`, `[WARN]`, and `[DEBUG]` prefixes — no emojis or decorative lines.
+- Step labels use Title Case: `step "Deploy With Workflow Build Type"`.
+
 ## 11. Git and Release Conventions
 
 Observed commit prefixes are mostly:
@@ -333,6 +348,7 @@ Node and package manager expectations come from `package.json`:
 - Never add new magic strings or duplicated shared messages when they belong in `src/core/constants.ts`.
 - Never throw bare `Error` for expected domain failures when a custom `GhitgudError` subclass is appropriate.
 - Never put new commands directly in `src/cli/index.ts`.
+- Never add a command without also adding a corresponding playbook in `playbooks/`.
 - Never place tests beside source files.
 - Never introduce formatting drift from Prettier or lint drift from ESLint.
 - Never assume JSON mode is the default. Human-mode UX is the default interface now.

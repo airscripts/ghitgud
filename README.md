@@ -4,7 +4,7 @@
 [![Release](https://github.com/airscripts/ghitgud/actions/workflows/release.yml/badge.svg)](https://github.com/airscripts/ghitgud/actions/workflows/release.yml)
 [![npm](https://img.shields.io/npm/v/@airscript/ghitgud)](https://www.npmjs.com/package/@airscript/ghitgud)
 [![License](https://img.shields.io/github/license/airscripts/ghitgud)](https://github.com/airscripts/ghitgud/blob/main/LICENSE)
-[![Coverage](https://img.shields.io/badge/coverage-87%25-brightgreen)](./coverage)
+[![Coverage](https://img.shields.io/badge/coverage-88%25-brightgreen)](./coverage)
 
 A better GitHub CLI that extends the official gh CLI.
 
@@ -26,6 +26,7 @@ A better GitHub CLI that extends the official gh CLI.
 - [PR Workflow](#pr-workflow)
 - [Templates](#templates)
 - [Output Format](#output-format)
+- [Playbooks](#playbooks)
 - [Development Checks](#development-checks)
 - [Repository Structure](#repository-structure)
 - [Contributing](#contributing)
@@ -89,6 +90,7 @@ Every command reads from `src/core/config.ts`, which resolves values in this ord
 - **Variables & Environments** — list, set, and delete repository, environment, and organization variables; create environments and manage protection rules
 - **Secrets** — list, set, and delete encrypted repository, environment, and organization secrets with libsodium public-key encryption
 - **Organization & Team Management** — list organization members, invite and remove users, manage teams and team membership, invite collaborators and grant team access to repositories
+- **GitHub Pages & Wiki** — configure and deploy branch-based Pages sites, inspect build status, and manage wiki pages from the terminal
 
 ---
 
@@ -129,13 +131,73 @@ Retrieve a configured value:
 ghg config get token
 ```
 
-> **Token type recommendation:** Use a **classic personal access token** with at least `repo`, `notifications`, `read:user`, and `read:org` scopes. Fine-grained PATs are repository-scoped and will fail with 403 errors on user-scoped endpoints such as notifications, activity, and mentions.
->
-> Create a token at: https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens
-
-> **Repository target resolution:** For commands that need a repository, ghg resolves the target from the `--repo` flag or the current git remote. If neither is available, the command throws an error.
-
 Configuration is stored in `~/.config/ghitgud/credentials.json`.
+
+### Token Scopes
+
+Use a **classic personal access token** (PAT). Fine-grained PATs are repository-scoped and will fail with 403 errors on user-scoped endpoints such as notifications, activity, and mentions.
+
+Create a token at: https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens
+
+#### Required Scopes
+
+These scopes are needed for core functionality:
+
+| Scope           | Why                                              |
+| --------------- | ------------------------------------------------ |
+| `repo`          | Full repository access (issues, PRs, code, wiki) |
+| `read:org`      | List org members, teams, audit logs              |
+| `read:user`     | Activity feed, profile detection                 |
+| `notifications` | List, read, and dismiss notifications            |
+
+#### Optional Scopes
+
+Some commands require additional scopes. Add these only if you use the corresponding features:
+
+| Scope              | Commands                                                     |
+| ------------------ | ------------------------------------------------------------ |
+| `admin:org`        | `org invite`, `org remove`, `team create`, `team add/remove` |
+| `read:project`     | `project board`                                              |
+| `delete_repo`      | `repos retire` (archives and deletes)                        |
+| `admin:public_key` | Included in some token defaults; not directly used by ghg    |
+
+### Non-Interactive Mode (CI)
+
+When running in CI pipelines or other non-interactive contexts, set the `CI` environment variable:
+
+```bash
+CI=true ghg team list --org myorg
+```
+
+In non-interactive mode, commands that normally prompt for missing required arguments (such as org name, team name, username) will throw an error instead of opening an interactive prompt. This ensures commands fail fast with clear messages in automation.
+
+You can also use `--json` mode, which implies non-interactive behavior:
+
+```bash
+ghg team list --org myorg --json
+```
+
+### Repository Target Resolution
+
+For commands that need a repository, ghg resolves the target from the `--repo` flag or the current git remote. If neither is available, the command throws an error.
+
+### Wiki Initialization
+
+Wiki commands (`ghg wiki list`, `ghg wiki view`, `ghg wiki create`, `ghg wiki edit`, `ghg wiki delete`) require the repository's wiki to be initialized first. If the wiki has never been used, you will see:
+
+```
+ERROR  The wiki does not exist or has not been initialized for this repository.
+```
+
+To initialize a wiki, visit `https://github.com/<owner>/<repo>/wiki` and click "Create the first page", or push a `Home.md` file to the wiki Git endpoint:
+
+```bash
+git clone https://github.com/<owner>/<repo>.wiki.git /tmp/wiki-init
+cd /tmp/wiki-init
+echo "# Home" > Home.md
+git add Home.md && git commit -m "Initialize wiki"
+git push
+```
 
 ---
 
@@ -445,6 +507,36 @@ ghg secret delete --name <key>
 - `set` creates or updates an encrypted secret.
 - `delete` removes a secret.
 
+### GitHub Pages
+
+```bash
+ghg pages status
+ghg pages deploy --source main
+ghg pages deploy --source main --path /docs
+ghg pages deploy --source main --build-type workflow
+ghg pages unpublish --yes
+```
+
+- `status` shows the Pages configuration and latest build.
+- `deploy` creates or updates a branch source and requests a build. Use `--build-type` to select `legacy` (default) or `workflow` (GitHub Actions).
+- `unpublish` removes the Pages site after confirmation.
+
+### Wiki
+
+```bash
+ghg wiki list
+ghg wiki view Home
+ghg wiki edit "Getting Started" --file ./getting-started.md
+ghg wiki create FAQ --file ./faq.md
+ghg wiki delete OldPage
+```
+
+- `list` lists wiki pages and their source formats.
+- `view` prints a page's source.
+- `edit` replaces, commits, and publishes an existing page.
+- `create` commits and publishes a new page.
+- `delete` removes a wiki page permanently.
+
 ### Organization
 
 ```bash
@@ -653,6 +745,8 @@ src/
     secrets.ts          # ghg secret <list|set|delete>.
     variable.ts         # ghg variable <list|set|delete>.
     environment.ts      # ghg environment <list|create|protection>.
+    pages.ts            # ghg pages <status|deploy|unpublish>.
+    wiki.ts             # ghg wiki <list|view|edit|create|delete>.
     workflow.ts         # ghg workflow <validate|preview>.
   services/
     labels.ts           # Label business logic.
@@ -676,6 +770,8 @@ src/
     secrets.ts          # Repository, environment, and organization secrets business logic.
     variables.ts        # Repository, environment, and organization variables business logic.
     environments.ts     # Environment and protection rules business logic.
+    pages.ts            # GitHub Pages configuration and deployment logic.
+    wiki.ts             # Wiki clone, read, commit, and publish logic.
     repos/
       govern.ts         # Repository rulesets.
       index.ts          # Repos services index.
@@ -704,7 +800,8 @@ src/
     secrets.ts          # Repository, environment, and organization secrets API.
     variables.ts        # Repository, environment, and organization variables API.
     environments.ts     # Environment and protection rules API.
-    leaks.ts            # Secret scanning alerts API.
+        pages.ts            # GitHub Pages API.
+
   core/
     command.ts          # Shared command runner.
     repo.ts             # Repository target resolution from git remotes.
@@ -713,6 +810,7 @@ src/
     dates.ts            # Date formatting helpers.
     errors.ts           # Custom error class hierarchy.
     git.ts              # Git operations (branch detection, remote tracking).
+    wiki-git.ts         # Authenticated temporary wiki Git operations.
     io.ts               # Generic file helpers.
     logger.ts           # Consola instance with debug logging support.
     output.ts           # Terminal rendering (tables, sections, lists, key-values).
@@ -738,6 +836,106 @@ tests/
 - All constants live in `src/core/constants.ts`. No magic strings or numbers elsewhere.
 - All custom errors live in `src/core/errors.ts`. No bare `new Error()` for domain errors.
 - `@/` import aliases are used throughout. Resolved by Vite at build time and by `tsconfig.json` paths for type checking.
+
+---
+
+## Playbooks
+
+Playbooks are shell scripts that run `ghg` against the live GitHub API to verify the CLI works end to end. Each playbook covers one command family, tests positive and negative cases, and reverts all mutations on exit.
+
+### Setup
+
+```bash
+export GHG_TOKEN=ghp_...
+export REPO=airscripts/chore    # Default repo for repo-scoped commands.
+export ORG=airchive             # Default org for org-scoped commands.
+```
+
+Change `REPO` and `ORG` in `playbooks/env.sh` or override them with environment variables.
+
+#### Prerequisites
+
+- **Node.js >= 24** and **pnpm >= 10** for building from source.
+- **GitHub CLI (`gh`)** is required for some playbooks that create or clean up test resources (issues, teams, environments, wiki initialization). Install it from https://cli.github.com and run `gh auth login`.
+- **Python 3** is required by some playbook teardown helpers for parsing JSON output.
+- **Git** is required for wiki operations (`ghg wiki create`, `ghg wiki edit`, `ghg wiki delete`).
+
+#### Wiki Prerequisite
+
+The wiki playbooks require the repository's wiki to be initialized. If the wiki has never been used, visit `https://github.com/<owner>/<repo>/wiki` and create the first page, or push a `Home.md` to the wiki Git endpoint (see [Wiki Initialization](#wiki-initialization) under Configuration).
+
+#### Optional Environment Variables
+
+Some playbooks require additional context that cannot be created automatically:
+
+| Variable      | Playbooks    | What to Set                                                      |
+| ------------- | ------------ | ---------------------------------------------------------------- |
+| `REVIEW_PR`   | `review.sh`  | An open pull request number on the test repo                     |
+| `PROJECT_ID`  | `project.sh` | A GitHub Project v2 number (requires `read:project` token scope) |
+| `RUN_ID`      | `run.sh`     | An existing workflow run ID on the test repo                     |
+| `INVITE_USER` | `org.sh`     | A GitHub username to invite (defaults to `github-actions[bot]`)  |
+
+If these variables are not set, the corresponding test steps are skipped automatically.
+
+### Run a Playbook
+
+```bash
+bash playbooks/pages.sh
+bash playbooks/wiki.sh
+bash playbooks/config.sh
+```
+
+### Run All Playbooks
+
+```bash
+bash playbooks/all.sh
+```
+
+- `SKIP="run.sh,project.sh"` skips specific playbooks.
+- `PARALLEL=1` runs playbooks concurrently (teardown order is not guaranteed).
+
+### Coverage
+
+- `ping.sh` — `ghg ping`
+- `config.sh` — `ghg config set/get/unset`
+- `profile.sh` — `ghg profile detect/list/add/switch`
+- `activity.sh` — `ghg activity`
+- `mentions.sh` — `ghg mentions`
+- `cache.sh` — `ghg cache inspect/download`
+- `insights.sh` — `ghg insights traffic/contributors/commits/frequency/popularity/participation`
+- `notifications.sh` — `ghg notifications list/read/done`
+- `dependabot.sh` — `ghg dependabot list/dismiss`
+- `leaks.sh` — `ghg leaks alerts`
+- `audit.sh` — `ghg audit`
+- `compliance.sh` — `ghg compliance check`
+- `workflow.sh` — `ghg workflow validate/preview`
+- `labels.sh` — `ghg labels list/pull/push/prune`
+- `pages.sh` — `ghg pages status/deploy/unpublish`
+- `wiki.sh` — `ghg wiki list/view/edit/create/delete`
+- `environment.sh` — `ghg environment list/create`
+- `variable.sh` — `ghg variable list/set/delete`
+- `secret.sh` — `ghg secret list/set/delete`
+- `milestone.sh` — `ghg milestone create/list/close/progress`
+- `discussion.sh` — `ghg discussion list/view/create/comment/close/categories`
+- `org.sh` — `ghg org members/invite/remove`
+- `team.sh` — `ghg team list/create/add/remove`
+- `issue.sh` — `ghg issue subtasks/parent`
+- `review.sh` — `ghg review comment/threads/resolve/suggest/apply`
+- `repos.sh` — `ghg repos inspect/govern/label/retire/report/clone`
+- `repo.sh` — `ghg repo invite/grant`
+- `release.sh` — `ghg release changelog/bump/verify/notes/draft`
+- `pr.sh` — `ghg pr cleanup/push/next/stack`
+- `project.sh` — `ghg project board`
+- `run.sh` — `ghg run debug`
+
+### Conventions
+
+- Every playbook sources `playbooks/env.sh` for configuration and assertion helpers.
+- Each playbook defines `setup()` and `teardown()` with `trap teardown EXIT` to guarantee cleanup.
+- Test resources are prefixed with `ghg-test-` or `ghg_` for easy identification.
+- Non-reversible resources (environments, open PRs) are moved to a closed terminal state with a `[noop]` title.
+- The `config.sh` playbook never modifies the `token` key — it uses a dedicated `ghg_playbook_test_key`.
+- Set `REVIEW_PR`, `PROJECT_ID`, or `RUN_ID` to enable playbooks that require specific resource IDs.
 
 ---
 
