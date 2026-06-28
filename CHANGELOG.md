@@ -5,6 +5,30 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.15.0] - 2026-06-28
+
+### Added
+
+- GitHub Pages commands: `ghg pages status`, `ghg pages deploy`, `ghg pages unpublish`
+- Wiki commands: `ghg wiki list`, `ghg wiki view`, `ghg wiki edit`, `ghg wiki create`, `ghg wiki delete`
+- Non-interactive mode (CI): commands throw `GhitgudError` instead of prompting when `CI=true` or `--json` is set
+- Missing argument validation for org, team, profile, cache, compliance, leaks, notifications, repo, review, and run commands
+- YAML syntax validation in `ghg workflow validate` using `js-yaml`
+- Playbooks for all command families under `playbooks/` with `all.sh` orchestrator
+- TUI workspace operations for Pages and Wiki
+- `ghg wiki delete` removes a wiki page permanently via git operations
+
+### Fixed
+
+- `listProtectionRules` in environments service now handles non-array API responses with `Array.isArray` guard
+- Wiki service uses `ora` spinner instead of consola logger to prevent duplicate output during long git clone operations
+- Playbook wiki backup uses `--json` extraction to avoid capturing spinner artifacts in restored content
+
+### Changed
+
+- Profile, cache, compliance, leaks, notifications, org, team, repo, review, and run commands reject blank or missing required arguments in non-interactive mode
+- ROADMAP.md milestone `a1b2c3d4` (GitHub Pages & Wiki) removed — shipped in this release
+
 ## [2.14.3] - 2026-06-25
 
 ### Added

@@ -2,24 +2,6 @@
 
 ---
 
-## a1b2c3d4 — GitHub Pages & Wiki
-
-**Why gh doesn't have it:** No `gh pages` or `gh wiki` commands. Pages deployments and wiki edits require the web UI or Actions.
-
-**Commands:**
-
-- `ghg pages status` — current deployment status
-- `ghg pages deploy --source <branch/folder>`
-- `ghg pages unpublish`
-- `ghg wiki list` — list wiki pages
-- `ghg wiki view <page>`
-- `ghg wiki edit <page> --file <path>`
-- `ghg wiki create <page> --file <path>`
-
-**Value:** Docs as code workflows get terminal native publishing and wiki editing without breaking flow.
-
----
-
 ## e5f6g7h8 — Merge Queue Management
 
 **Why gh doesn't have it:** Merge queue is configured in repo settings with no CLI visibility. The April 2026 merge queue incident showed teams had no terminal access to queue state.
