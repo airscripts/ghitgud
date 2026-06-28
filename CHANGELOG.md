@@ -27,7 +27,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Profile, cache, compliance, leaks, notifications, org, team, repo, review, and run commands reject blank or missing required arguments in non-interactive mode
-- ROADMAP.md milestone `a1b2c3d4` (GitHub Pages & Wiki) removed — shipped in this release
 
 ## [2.14.3] - 2026-06-25
 
