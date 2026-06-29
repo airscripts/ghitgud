@@ -12,8 +12,13 @@ describe("labels command", () => {
     const subcommands = labels!.commands.map((c) => c.name());
 
     expect(subcommands).toContain("list");
+    expect(subcommands).toContain("add");
+    expect(subcommands).toContain("get");
+    expect(subcommands).toContain("edit");
+    expect(subcommands).toContain("remove");
     expect(subcommands).toContain("pull");
     expect(subcommands).toContain("push");
+    expect(subcommands).toContain("clone");
     expect(subcommands).toContain("prune");
   });
 });

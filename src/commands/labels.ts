@@ -17,6 +17,11 @@ Examples:
   ghg labels list
   ghg labels pull -t conventional
   ghg labels push
+  ghg labels add bug --color ff0000 --description "Bug report"
+  ghg labels get bug
+  ghg labels edit bug --new-name "Bug Report" --color 00ff00
+  ghg labels remove bug --yes
+  ghg labels clone --source owner/source --target owner/target
 `,
   );
 
@@ -27,6 +32,72 @@ Examples:
     .action(async (options) => {
       const repo = await repoResolver.resolveRepo(options.repo);
       await command.run(() => labelsService.list(repo));
+    });
+
+  labels
+    .command("add <name>")
+    .description("Create a new label.")
+    .option("--color <hex>", "Label color hex code (default: ededed)", "ededed")
+    .option("--description <text>", "Label description")
+    .option("--repo <repo>", "Repository (owner/repo)")
+    .action(async (name: string, options) => {
+      const repo = await repoResolver.resolveRepo(options.repo);
+
+      await command.run(() =>
+        labelsService.create(
+          name,
+          {
+            color: options.color,
+            description: options.description,
+          },
+          repo,
+        ),
+      );
+    });
+
+  labels
+    .command("get <name>")
+    .description("View details for a label.")
+    .option("--repo <repo>", "Repository (owner/repo)")
+    .action(async (name: string, options) => {
+      const repo = await repoResolver.resolveRepo(options.repo);
+      await command.run(() => labelsService.get(name, repo));
+    });
+
+  labels
+    .command("edit <name>")
+    .description("Update a label.")
+    .option("--new-name <name>", "New label name")
+    .option("--color <hex>", "New color hex code")
+    .option("--description <text>", "New description")
+    .option("--repo <repo>", "Repository (owner/repo)")
+    .action(async (name: string, options) => {
+      const repo = await repoResolver.resolveRepo(options.repo);
+
+      await command.run(() =>
+        labelsService.update(
+          name,
+          {
+            newName: options.newName,
+            color: options.color,
+            description: options.description,
+          },
+          repo,
+        ),
+      );
+    });
+
+  labels
+    .command("remove <name>")
+    .description("Delete a label.")
+    .option("--yes", "Confirm deletion")
+    .option("--repo <repo>", "Repository (owner/repo)")
+    .action(async (name: string, options) => {
+      const repo = await repoResolver.resolveRepo(options.repo);
+
+      await command.run(() =>
+        labelsService.deleteLabel(name, repo, { yes: options.yes }),
+      );
     });
 
   labels
@@ -70,6 +141,16 @@ Examples:
 
         return labelsService.push(repo);
       });
+    });
+
+  labels
+    .command("clone")
+    .description("Clone labels from one repository to another.")
+    .requiredOption("--source <repo>", "Source repository (owner/repo)")
+    .option("--target <repo>", "Target repository (owner/repo)")
+    .action(async (options) => {
+      const target = await repoResolver.resolveRepo(options.target);
+      await command.run(() => labelsService.clone(options.source, target));
     });
 
   labels

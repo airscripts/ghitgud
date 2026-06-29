@@ -198,6 +198,117 @@ const pushTemplate = async (
   return { success: true, metadata: result };
 };
 
+const create = async (
+  name: string,
+  options: { color?: string; description?: string } = {},
+  repo: string,
+) => {
+  const color = options.color ?? "ededed";
+  const description = options.description ?? "";
+
+  logger.start(`Creating label "${name}".`);
+  const response = await api.create({ name, color, description }, repo);
+  const data = (await response.json()) as Label;
+  const label = normalizeLabel(data);
+
+  output.renderSummary(`Label "${name}"`, [
+    ["Name", label.name],
+    ["Color", label.color],
+    ["Description", label.description || "-"],
+  ]);
+
+  logger.success(`Label "${name}" created.`);
+  return { success: true, label };
+};
+
+const get = async (name: string, repo: string) => {
+  logger.start(`Loading label "${name}".`);
+  const response = await api.get(name, repo);
+  const data = (await response.json()) as Label;
+  const label = normalizeLabel(data);
+
+  output.renderSummary(`Label "${name}"`, [
+    ["Name", label.name],
+    ["Color", label.color],
+    ["Description", label.description || "-"],
+  ]);
+
+  logger.success(`Label "${name}" loaded.`);
+  return { success: true, label };
+};
+
+const update = async (
+  name: string,
+  options: { newName?: string; color?: string; description?: string },
+  repo: string,
+) => {
+  if (!options.newName && !options.color && !options.description) {
+    throw new GhitgudError(
+      "At least one of --new-name, --color, or --description is required.",
+    );
+  }
+
+  logger.start(`Updating label "${name}".`);
+  const label: Label = {
+    name,
+    color: options.color ?? "",
+    description: options.description ?? "",
+  };
+
+  if (options.newName) {
+    label.newName = options.newName;
+  }
+
+  const response = await api.patch(label, repo);
+  const data = (await response.json()) as Label;
+  const updated = normalizeLabel(data);
+
+  output.renderSummary(`Label "${name}" updated`, [
+    ["Name", updated.name],
+    ["Color", updated.color],
+    ["Description", updated.description || "-"],
+  ]);
+
+  logger.success(`Label "${name}" updated.`);
+  return { success: true, label: updated };
+};
+
+const deleteLabel = async (
+  name: string,
+  repo: string,
+  options: { yes?: boolean } = {},
+) => {
+  if (!options.yes) {
+    throw new GhitgudError(
+      "This operation deletes a label. Re-run with --yes to apply.",
+    );
+  }
+
+  logger.start(`Deleting label "${name}".`);
+  await api.delete(name, repo);
+  logger.success(`Label "${name}" deleted.`);
+  return { success: true, deleted: name };
+};
+
+const clone = async (sourceRepo: string, targetRepo: string) => {
+  logger.start(`Cloning labels from ${sourceRepo} to ${targetRepo}.`);
+  const response = await api.fetch(sourceRepo);
+  const data = await response.json();
+  const labels = data.map((label: Label) => normalizeLabel(label));
+  const result = await upsertLabels(labels, targetRepo);
+
+  output.renderSummary("Label Clone", [
+    ["Source", sourceRepo],
+    ["Target", targetRepo],
+    ["Created", result.created.length],
+    ["Updated", result.updated.length],
+    ["Unchanged", result.unchanged.length],
+  ]);
+
+  logger.success(`Cloned ${labels.length} label(s) to ${targetRepo}.`);
+  return { success: true, metadata: result };
+};
+
 const prune = async (
   repo: string,
   options: { dryRun?: boolean; yes?: boolean } = {},
@@ -240,11 +351,16 @@ const prune = async (
 };
 
 export default {
+  get,
   ping,
   list,
   pull,
   push,
   prune,
+  clone,
+  create,
+  update,
+  deleteLabel,
   pullTemplate,
   pushTemplate,
   upsertLabels,

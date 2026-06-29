@@ -120,23 +120,6 @@
 
 ---
 
-## i0j1k2l3 — Label CRUD
-
-**Why gh doesn't have it:** `gh label` covers create/delete/edit/list/clone. ghg has list/pull/push/prune — template-driven bulk operations — but no individual label CRUD.
-
-**Gap:** No create, edit, delete, or clone for individual labels. The API layer already has `labels.create`, `labels.patch`, and `labels.delete`.
-
-**Commands:**
-
-- `ghg label create <name> [--color <hex>] [--description <text>]` — uses existing `labels.create` API
-- `ghg label edit <name> [--new-name <name>] [--color <hex>] [--description <text>]` — uses existing `labels.patch` API
-- `ghg label delete <name> [--yes]` — uses existing `labels.delete` API
-- `ghg label clone --source <repo> [--target <repo>]`
-
-**Value:** Individual label management is a common task. The API layer already supports this. The template system handles bulk operations.
-
----
-
 ## m4n5o6p7 — Project CRUD
 
 **Why gh doesn't have it:** `gh project` covers close/copy/create/delete/edit/field-create/field-delete/field-list/item-add/item-archive/item-create/item-edit/item-list/link/list/mark-template/unlink/view. ghg has `project board` — a beautiful ASCII kanban — but no project management commands.

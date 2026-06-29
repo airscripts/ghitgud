@@ -230,4 +230,151 @@ describe("labels", () => {
       /Template "nonexistent" not found at .*mock.*templates.*nonexistent\.json\./,
     );
   });
+
+  it("should create a label", async () => {
+    const createdLabel = {
+      id: 99,
+      color: "a2eeef",
+      name: "enhancement",
+      description: "New feature or request",
+    };
+
+    (api.create as Mock).mockResolvedValue({
+      json: () => Promise.resolve(createdLabel),
+    });
+
+    const result = await labelsService.create(
+      "enhancement",
+      {
+        color: "a2eeef",
+        description: "New feature or request",
+      },
+      "owner/repo",
+    );
+
+    expect(result.success).toBe(true);
+    expect(result.label.name).toBe("enhancement");
+    expect(result.label.color).toBe("a2eeef");
+    expect(api.create).toHaveBeenCalledWith(
+      {
+        color: "a2eeef",
+        name: "enhancement",
+        description: "New feature or request",
+      },
+      "owner/repo",
+    );
+  });
+
+  it("should create a label with defaults", async () => {
+    const createdLabel = {
+      id: 100,
+      color: "ededed",
+      description: "",
+      name: "question",
+    };
+
+    (api.create as Mock).mockResolvedValue({
+      json: () => Promise.resolve(createdLabel),
+    });
+
+    const result = await labelsService.create("question", {}, "owner/repo");
+
+    expect(result.success).toBe(true);
+    expect(api.create).toHaveBeenCalledWith(
+      { name: "question", color: "ededed", description: "" },
+      "owner/repo",
+    );
+  });
+
+  it("should get a label", async () => {
+    const labelData = {
+      id: 1,
+      name: "bug",
+      color: "d73a4a",
+      description: "Something isn't working",
+    };
+
+    (api.get as Mock).mockResolvedValue({
+      json: () => Promise.resolve(labelData),
+    });
+
+    const result = await labelsService.get("bug", "owner/repo");
+    expect(result.success).toBe(true);
+    expect(result.label.name).toBe("bug");
+    expect(result.label.color).toBe("d73a4a");
+    expect(api.get).toHaveBeenCalledWith("bug", "owner/repo");
+  });
+
+  it("should update a label", async () => {
+    const updatedLabel = {
+      id: 1,
+      color: "00ff00",
+      name: "Bug Report",
+      description: "Updated description",
+    };
+
+    (api.patch as Mock).mockResolvedValue({
+      json: () => Promise.resolve(updatedLabel),
+    });
+
+    const result = await labelsService.update(
+      "bug",
+      {
+        color: "00ff00",
+        newName: "Bug Report",
+        description: "Updated description",
+      },
+      "owner/repo",
+    );
+
+    expect(result.success).toBe(true);
+    expect(result.label.name).toBe("Bug Report");
+    expect(api.patch).toHaveBeenCalled();
+  });
+
+  it("should throw when updating a label with no options", async () => {
+    await expect(labelsService.update("bug", {}, "owner/repo")).rejects.toThrow(
+      "At least one of --new-name, --color, or --description is required.",
+    );
+  });
+
+  it("should delete a label", async () => {
+    (api.delete as Mock).mockResolvedValue({ status: 204 });
+
+    const result = await labelsService.deleteLabel("bug", "owner/repo", {
+      yes: true,
+    });
+
+    expect(result.success).toBe(true);
+    expect(result.deleted).toBe("bug");
+    expect(api.delete).toHaveBeenCalledWith("bug", "owner/repo");
+  });
+
+  it("should throw when deleting a label without --yes", async () => {
+    await expect(
+      labelsService.deleteLabel("bug", "owner/repo"),
+    ).rejects.toThrow("This operation deletes a label.");
+  });
+
+  it("should clone labels from one repo to another", async () => {
+    const sourceLabels = [
+      { id: 1, name: "bug", color: "d73a4a", description: "Bug report" },
+      { id: 2, name: "feature", color: "a2eeef", description: "New feature" },
+    ];
+
+    (api.fetch as Mock).mockResolvedValue({
+      json: () => Promise.resolve(sourceLabels),
+    });
+
+    (api.get as Mock).mockRejectedValue(
+      new NotFoundError("Resource not found."),
+    );
+
+    (api.create as Mock).mockResolvedValue({ status: 201 });
+    const result = await labelsService.clone("owner/source", "owner/target");
+
+    expect(result.success).toBe(true);
+    expect(api.fetch).toHaveBeenCalledWith("owner/source");
+    expect(api.create).toHaveBeenCalledTimes(2);
+  });
 });

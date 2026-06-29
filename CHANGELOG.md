@@ -14,6 +14,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `getSearchPaginated` client method for GitHub Search API pagination with `total_count`, `incomplete_results`, and `items` envelope handling
 - Shared `SearchResult<T>` type and normalizer functions for search item types in `src/types/search.ts`
 - Playbook for search commands (`playbooks/search.sh`)
+- Label CRUD commands: `ghg labels add`, `ghg labels get`, `ghg labels edit`, `ghg labels remove`, and `ghg labels clone` for individual label management
+- Label CRUD operations in the TUI workspace
 - Complete issue lifecycle commands for creating, listing, viewing, editing, closing, reopening, commenting, deleting, locking, pinning, transferring, and showing assigned, created, or mentioned issue status
 - Issue type support plus repeatable label and assignee options for issue creation and filtering
 - Full issue lifecycle operations in the TUI and expanded live issue playbook coverage

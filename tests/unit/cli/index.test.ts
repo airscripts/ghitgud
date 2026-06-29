@@ -14,11 +14,16 @@ vi.mock("@/core/logger", () => ({
 
 vi.mock("@/services/labels", () => ({
   default: {
+    get: vi.fn(),
     ping: vi.fn(),
     list: vi.fn(),
     pull: vi.fn(),
     push: vi.fn(),
     prune: vi.fn(),
+    clone: vi.fn(),
+    create: vi.fn(),
+    update: vi.fn(),
+    deleteLabel: vi.fn(),
   },
 }));
 

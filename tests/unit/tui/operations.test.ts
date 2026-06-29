@@ -27,6 +27,11 @@ vi.mock("@/services/labels", () => ({
     list: vi.fn(() => Promise.resolve([])),
     pullTemplate: vi.fn(() => Promise.resolve()),
     pushTemplate: vi.fn(() => Promise.resolve()),
+    get: vi.fn(() => Promise.resolve({ success: true })),
+    clone: vi.fn(() => Promise.resolve({ success: true })),
+    create: vi.fn(() => Promise.resolve({ success: true })),
+    update: vi.fn(() => Promise.resolve({ success: true })),
+    deleteLabel: vi.fn(() => Promise.resolve({ success: true })),
   },
 }));
 
@@ -322,8 +327,51 @@ describe("tui operations run functions", () => {
       expect(labelsService.list).toHaveBeenCalledWith("airscripts/ghitgud");
     });
 
+    it("runs labels.add", async () => {
+      await runOp(labelOperations[1], {
+        name: "bug",
+        color: "ff0000",
+        description: "Bug report",
+      });
+      expect(labelsService.create).toHaveBeenCalledWith(
+        "bug",
+        { color: "ff0000", description: "Bug report" },
+        "airscripts/ghitgud",
+      );
+    });
+
+    it("runs labels.get", async () => {
+      await runOp(labelOperations[2], { name: "bug" });
+      expect(labelsService.get).toHaveBeenCalledWith(
+        "bug",
+        "airscripts/ghitgud",
+      );
+    });
+
+    it("runs labels.edit", async () => {
+      await runOp(labelOperations[3], {
+        name: "bug",
+        newName: "Bug Report",
+        color: "00ff00",
+      });
+      expect(labelsService.update).toHaveBeenCalledWith(
+        "bug",
+        { newName: "Bug Report", color: "00ff00" },
+        "airscripts/ghitgud",
+      );
+    });
+
+    it("runs labels.remove", async () => {
+      await runOp(labelOperations[4], { name: "bug" });
+      expect(labelsService.deleteLabel).toHaveBeenCalledWith(
+        "bug",
+        "airscripts/ghitgud",
+        { yes: true },
+      );
+    });
+
     it("runs labels.pull with template", async () => {
-      await runOp(labelOperations[1], { template: "conventional" });
+      await runOp(labelOperations[5], { template: "conventional" });
       expect(labelsService.pullTemplate).toHaveBeenCalledWith(
         "conventional",
         "templates",
@@ -331,12 +379,12 @@ describe("tui operations run functions", () => {
     });
 
     it("runs labels.pull without template", async () => {
-      await runOp(labelOperations[1]);
+      await runOp(labelOperations[5]);
       expect(labelsService.pull).toHaveBeenCalledWith("airscripts/ghitgud");
     });
 
     it("runs labels.push with template", async () => {
-      await runOp(labelOperations[2], { template: "base" });
+      await runOp(labelOperations[6], { template: "base" });
       expect(labelsService.pushTemplate).toHaveBeenCalledWith(
         "base",
         "templates",
@@ -345,12 +393,20 @@ describe("tui operations run functions", () => {
     });
 
     it("runs labels.push without template", async () => {
-      await runOp(labelOperations[2]);
+      await runOp(labelOperations[6]);
       expect(labelsService.push).toHaveBeenCalledWith("airscripts/ghitgud");
     });
 
+    it("runs labels.clone", async () => {
+      await runOp(labelOperations[7], { source: "owner/source" });
+      expect(labelsService.clone).toHaveBeenCalledWith(
+        "owner/source",
+        "airscripts/ghitgud",
+      );
+    });
+
     it("runs labels.prune", async () => {
-      await runOp(labelOperations[3]);
+      await runOp(labelOperations[8]);
       expect(labelsService.prune).toHaveBeenCalledWith("airscripts/ghitgud");
     });
   });
