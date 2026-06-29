@@ -74,8 +74,22 @@ vi.mock("@/services/project", () => ({
 
 vi.mock("@/services/issue", () => ({
   default: {
-    subtasks: vi.fn(() => Promise.resolve([])),
+    pin: vi.fn(() => Promise.resolve()),
+    view: vi.fn(() => Promise.resolve()),
+    edit: vi.fn(() => Promise.resolve()),
+    lock: vi.fn(() => Promise.resolve()),
+    close: vi.fn(() => Promise.resolve()),
+    unpin: vi.fn(() => Promise.resolve()),
+    status: vi.fn(() => Promise.resolve()),
+    create: vi.fn(() => Promise.resolve()),
+    list: vi.fn(() => Promise.resolve([])),
+    reopen: vi.fn(() => Promise.resolve()),
+    unlock: vi.fn(() => Promise.resolve()),
     parent: vi.fn(() => Promise.resolve()),
+    delete: vi.fn(() => Promise.resolve()),
+    comment: vi.fn(() => Promise.resolve()),
+    transfer: vi.fn(() => Promise.resolve()),
+    subtasks: vi.fn(() => Promise.resolve([])),
   },
 }));
 
@@ -533,6 +547,31 @@ describe("tui operations run functions", () => {
           parent: "2",
         },
       );
+    });
+
+    it("runs issue.create with structured values", async () => {
+      await runOp(issueOperations[4], {
+        title: "Bug",
+        body: "Details",
+        labels: "bug, urgent",
+        assignees: "octocat",
+        issueType: "Bug",
+      });
+
+      expect(issueService.create).toHaveBeenCalledWith("airscripts/ghitgud", {
+        title: "Bug",
+        body: "Details",
+        labels: ["bug", "urgent"],
+        assignees: ["octocat"],
+        type: "Bug",
+      });
+    });
+
+    it("runs issue lifecycle and status operations", async () => {
+      await runOp(issueOperations[8], { issue: 42 });
+      await runOp(issueOperations.at(-1)!, {});
+      expect(issueService.close).toHaveBeenCalledWith("airscripts/ghitgud", 42);
+      expect(issueService.status).toHaveBeenCalledWith(undefined);
     });
   });
 

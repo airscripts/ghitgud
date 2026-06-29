@@ -255,7 +255,18 @@ interface IssueSummary {
   title: string;
   state?: string;
   number?: number;
+  node_id?: string;
+  locked?: boolean;
   html_url?: string;
+  isPinned?: boolean;
+  created_at?: string;
+  updated_at?: string;
+  body?: string | null;
+  user?: { login: string } | null;
+  active_lock_reason?: string | null;
+  assignees?: Array<{ login: string }>;
+  type?: { name?: string } | string | null;
+  labels?: Array<string | { name?: string }>;
 }
 
 type SubIssueSummary = IssueSummary;

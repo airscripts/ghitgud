@@ -148,6 +148,8 @@ Examples:
   ghg review threads 42
   ghg milestone progress v2.10.0
   ghg project board 1
+  ghg issue create --title "Bug report" --label bug
+  ghg issue list --state open
   ghg issue subtasks 42
   ghg tui
   ghg workflow validate

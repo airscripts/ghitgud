@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+
+- Complete issue lifecycle commands for creating, listing, viewing, editing, closing, reopening, commenting, deleting, locking, pinning, transferring, and showing assigned, created, or mentioned issue status
+- Issue type support plus repeatable label and assignee options for issue creation and filtering
+- Full issue lifecycle operations in the TUI and expanded live issue playbook coverage
+
+### Changed
+
+- GitHub REST API version updated to `2026-03-10` for current issue type support
+
 ## [2.15.0] - 2026-06-28
 
 ### Added

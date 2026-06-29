@@ -14,6 +14,20 @@ describe("issue command", () => {
 
     expect(issue).toBeDefined();
     expect(issue!.commands.map((command) => command.name())).toEqual([
+      "create",
+      "list",
+      "view",
+      "edit",
+      "close",
+      "reopen",
+      "lock",
+      "unlock",
+      "pin",
+      "unpin",
+      "comment",
+      "delete",
+      "transfer",
+      "status",
       "subtasks",
       "parent",
     ]);

@@ -13,7 +13,7 @@ export const CREDENTIALS_PATH = path.join(GHITGUD_FOLDER, CREDENTIALS_FILE);
 export const METADATA_FILE_PATH = path.join(GHITGUD_FOLDER, METADATA_FILE);
 export const TEMPLATES_DIR = path.join(__dirname, "templates");
 
-export const GITHUB_API_VERSION = "2022-11-28";
+export const GITHUB_API_VERSION = "2026-03-10";
 export const GITHUB_API_BASE_URL = "https://api.github.com";
 export const GITHUB_API_ACCEPT = "application/vnd.github+json";
 

@@ -8,7 +8,11 @@ vi.mock("@/api/client", () => ({
   default: {
     get: vi.fn(),
     getTokenRequired: vi.fn(),
+    putTokenRequired: vi.fn(),
     postTokenRequired: vi.fn(),
+    patchTokenRequired: vi.fn(),
+    deleteTokenRequired: vi.fn(),
+    graphqlTokenRequired: vi.fn(),
   },
 }));
 
@@ -82,6 +86,62 @@ describe("issues api", () => {
 
     expect(client.get).toHaveBeenCalledWith(
       "/search/issues?q=repo%3Aowner%2Frepo%20type%3Aissue%20state%3Aopen%20updated%3A%3C2026-01-01&per_page=1",
+    );
+  });
+
+  it("searches issues with filters and omits state for all", async () => {
+    vi.mocked(client.getTokenRequired).mockResolvedValue({} as Response);
+
+    await issues.list("owner/repo", {
+      state: "all",
+      labels: ["help wanted"],
+      assignees: ["octocat"],
+      limit: 10,
+    });
+
+    const endpoint = vi.mocked(client.getTokenRequired).mock.calls[0][0];
+    expect(endpoint).toContain("/search/issues?q=");
+    expect(decodeURIComponent(endpoint)).toContain("is:issue repo:owner/repo");
+    expect(decodeURIComponent(endpoint)).not.toContain("state:all");
+    expect(decodeURIComponent(endpoint)).toContain('label:"help wanted"');
+  });
+
+  it("updates, comments, locks, and unlocks issues", async () => {
+    await issues.update(3, { state: "closed" }, "owner/repo");
+    await issues.comment(3, "Done", "owner/repo");
+    await issues.lock(3, "owner/repo");
+    await issues.unlock(3, "owner/repo");
+
+    expect(client.patchTokenRequired).toHaveBeenCalledWith(
+      "/repos/owner/repo/issues/3",
+      { state: "closed" },
+    );
+
+    expect(client.postTokenRequired).toHaveBeenCalledWith(
+      "/repos/owner/repo/issues/3/comments",
+      { body: "Done" },
+    );
+
+    expect(client.putTokenRequired).toHaveBeenCalledWith(
+      "/repos/owner/repo/issues/3/lock",
+      {},
+    );
+
+    expect(client.deleteTokenRequired).toHaveBeenCalledWith(
+      "/repos/owner/repo/issues/3/lock",
+    );
+  });
+
+  it("uses GraphQL for node-based lifecycle operations", async () => {
+    await issues.delete("I_1");
+    await issues.pin("I_1");
+    await issues.unpin("I_1");
+    await issues.transfer("I_1", "R_1");
+
+    expect(client.graphqlTokenRequired).toHaveBeenCalledTimes(4);
+    expect(client.graphqlTokenRequired).toHaveBeenLastCalledWith(
+      expect.stringContaining("transferIssue"),
+      { issueId: "I_1", repositoryId: "R_1" },
     );
   });
 });

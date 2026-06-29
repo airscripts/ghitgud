@@ -5,6 +5,8 @@ import issueCommand from "@/commands/issue";
 
 vi.mock("@/services/issue", () => ({
   default: {
+    list: vi.fn(() => Promise.resolve({ success: true, issues: [] })),
+    create: vi.fn(() => Promise.resolve({ success: true, issue: {} })),
     parent: vi.fn(() => Promise.resolve({ success: true, metadata: {} })),
     subtasks: vi.fn(() => Promise.resolve({ success: true, metadata: [] })),
   },
@@ -45,6 +47,51 @@ describe("integration > issue commands", () => {
       create: true,
       body: "Desc",
       title: "Child",
+    });
+  });
+
+  it("create passes repeatable labels and assignees", async () => {
+    const program = new Command();
+    program.exitOverride();
+    issueCommand.register(program);
+
+    await program.parseAsync([
+      "node",
+      "test",
+      "issue",
+      "create",
+      "--title",
+      "Bug",
+      "--label",
+      "bug",
+      "--label",
+      "urgent",
+      "--assignee",
+      "octocat",
+      "--type",
+      "Bug",
+    ]);
+
+    expect(issueService.create).toHaveBeenCalledWith("owner/repo", {
+      type: "Bug",
+      title: "Bug",
+      body: undefined,
+      assignees: ["octocat"],
+      labels: ["bug", "urgent"],
+    });
+  });
+
+  it("list defaults to ten open issues", async () => {
+    const program = new Command();
+    program.exitOverride();
+    issueCommand.register(program);
+    await program.parseAsync(["node", "test", "issue", "list"]);
+
+    expect(issueService.list).toHaveBeenCalledWith("owner/repo", {
+      limit: 10,
+      labels: [],
+      state: "open",
+      assignees: [],
     });
   });
 

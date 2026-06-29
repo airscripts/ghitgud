@@ -84,7 +84,7 @@ Every command reads from `src/core/config.ts`, which resolves values in this ord
 - **Release Automation** — generate changelogs, auto-detect next semver, verify signatures, render templated notes, and create draft releases
 - **Milestone Management** — track sprint progress with create, list, close, and progress commands
 - **Project Boards** — render an ASCII kanban board for any GitHub Project v2
-- **Issue Subtasks** — create, link, and organize sub-issues with parent support
+- **Issue Management** — create, triage, update, transfer, and organize issues and sub-issues
 - **Security & Compliance** — audit enterprise and organization activity, scan repositories for leaked secrets, triage Dependabot and secret scanning alerts, and run compliance checks across repository hygiene, branch protection, and rulesets
 - **GitHub Discussions** — list, view, create, comment on, close, and manage discussion categories entirely from the terminal
 - **Variables & Environments** — list, set, and delete repository, environment, and organization variables; create environments and manage protection rules
@@ -410,12 +410,28 @@ ghg project board <id> --owner <owner>
 ### Issue Management
 
 ```bash
+ghg issue create --title "Bug report" --label bug --type Bug
+ghg issue list --state open --limit 10
+ghg issue view 42
+ghg issue edit 42 --title "Updated title"
+ghg issue close 42
+ghg issue reopen 42
+ghg issue comment 42 --body "Investigation complete."
+ghg issue lock 42
+ghg issue pin 42
+ghg issue transfer 42 --repo owner/target
+ghg issue status
 ghg issue subtasks <issue>
 ghg issue subtasks <issue> --create --title "Sub-task"
 ghg issue subtasks <issue> --link <sub-issue>
 ghg issue parent <child> --parent <parent>
 ```
 
+- `create`, `list`, `view`, and `edit` cover the basic issue lifecycle.
+- `close`, `reopen`, `comment`, `lock`, `unlock`, `pin`, and `unpin` manage issue state and discussion.
+- `delete` permanently removes an issue after confirmation.
+- `transfer` moves an issue to another repository.
+- `status` summarizes assigned, created, and mentioned open issues.
 - `subtasks` lists sub-issues for a parent issue.
 - `subtasks --create` creates and links a new sub-issue.
 - `subtasks --link` links an existing issue as a sub-issue.
@@ -725,7 +741,7 @@ src/
     dependabot.ts       # ghg dependabot <list|dismiss>.
     discussion.ts       # ghg discussion <list|view|create|comment|close|categories>.
     insights.ts         # ghg insights <traffic|contributors|commits|frequency|popularity|participation>.
-    issue.ts            # ghg issue <subtasks|parent>.
+    issue.ts            # ghg issue lifecycle, status, subtasks, and parent commands.
     labels.ts           # ghg labels <list|pull|push|prune>.
     leaks.ts            # ghg leaks <scan|alerts>.
     org.ts              # ghg org <members|invite|remove>.
@@ -761,7 +777,7 @@ src/
     invites.ts          # Repository invite and team grant business logic.
     review.ts           # Code review business logic.
     cache.ts            # Cache inspection business logic.
-    issue.ts            # Issue subtask and parent business logic.
+    issue.ts            # Issue lifecycle, status, subtask, and parent business logic.
     milestone.ts        # Milestone business logic.
     notifications.ts    # Notifications business logic.
     run.ts              # Workflow run debugging business logic.
@@ -919,7 +935,7 @@ bash playbooks/all.sh
 - `discussion.sh` — `ghg discussion list/view/create/comment/close/categories`
 - `org.sh` — `ghg org members/invite/remove`
 - `team.sh` — `ghg team list/create/add/remove`
-- `issue.sh` — `ghg issue subtasks/parent`
+- `issue.sh` — `ghg issue` lifecycle, status, subtasks, and parent operations
 - `review.sh` — `ghg review comment/threads/resolve/suggest/apply`
 - `repos.sh` — `ghg repos inspect/govern/label/retire/report/clone`
 - `repo.sh` — `ghg repo invite/grant`

@@ -5,7 +5,11 @@ import { describe, expect, it, Mock, vi, beforeEach } from "vitest";
 vi.mock("@/api/issues", () => ({
   default: {
     get: vi.fn(),
+    list: vi.fn(),
     create: vi.fn(),
+    update: vi.fn(),
+    status: vi.fn(),
+    issueTypes: vi.fn(),
     addSubIssue: vi.fn(),
     listSubIssues: vi.fn(),
   },
@@ -20,8 +24,10 @@ vi.mock("@/core/logger", () => ({
 
 vi.mock("@/core/output", () => ({
   default: {
+    log: vi.fn(),
     renderTable: vi.fn(),
     renderSummary: vi.fn(),
+    renderSection: vi.fn(),
   },
 }));
 
@@ -90,5 +96,55 @@ describe("issue service", () => {
     await expect(
       issueService.subtasks("owner/repo", "1", { create: true, link: "2" }),
     ).rejects.toThrow("Use either --create or --link, not both.");
+  });
+
+  it("creates an issue with a case-insensitive resolved type", async () => {
+    (api.issueTypes as Mock).mockResolvedValue({
+      json: () => Promise.resolve([{ name: "Bug" }, { name: "Task" }]),
+    });
+
+    (api.create as Mock).mockResolvedValue({
+      json: () => Promise.resolve({ number: 4, title: "Broken" }),
+    });
+
+    await issueService.create("owner/repo", {
+      title: "Broken",
+      type: "bug",
+      labels: ["urgent"],
+    });
+
+    expect(api.create).toHaveBeenCalledWith(
+      {
+        title: "Broken",
+        type: "Bug",
+        labels: ["urgent"],
+      },
+
+      "owner/repo",
+    );
+  });
+
+  it("lists normalized search results", async () => {
+    const items = [{ number: 1, title: "One", state: "open" }];
+    (api.list as Mock).mockResolvedValue({
+      json: () => Promise.resolve({ items }),
+    });
+
+    await expect(
+      issueService.list("owner/repo", { state: "open", limit: 10 }),
+    ).resolves.toEqual({ success: true, issues: items });
+  });
+
+  it("validates edit options and clears the body explicitly", async () => {
+    await expect(issueService.edit("owner/repo", 1, {})).rejects.toThrow(
+      "Provide --title, --body, or --remove-body.",
+    );
+
+    (api.update as Mock).mockResolvedValue({
+      json: () => Promise.resolve({ number: 1, title: "One", body: "" }),
+    });
+
+    await issueService.edit("owner/repo", 1, { removeBody: true });
+    expect(api.update).toHaveBeenCalledWith(1, { body: "" }, "owner/repo");
   });
 });
