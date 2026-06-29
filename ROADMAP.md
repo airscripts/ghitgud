@@ -2,26 +2,6 @@
 
 ---
 
-## s4t5u6v7 — Workflow Run Management
-
-**Why gh doesn't have it:** `gh run` covers cancel/delete/download/list/rerun/view/watch. ghg has `run debug` — a deep debug bundle — but no basic run management.
-
-**Gap:** No list, view, cancel, rerun, delete, or watch commands. The API layer already has `getRun`, `listRunJobs`, `downloadRunLogs`, `listRunArtifacts`, and `downloadArtifact`.
-
-**Commands:**
-
-- `ghg run list [--workflow <name>] [--branch <name>] [--status <status>] [--limit <n>]`
-- `ghg run view <run-id>`
-- `ghg run cancel <run-id>`
-- `ghg run rerun <run-id> [--failed-jobs]`
-- `ghg run delete <run-id> [--yes]`
-- `ghg run watch <run-id> [--tail] [--filter <pattern>]`
-- `ghg run download <run-id> [--pattern <glob>] [--output-dir <dir>]`
-
-**Value:** Actions runs are a daily workflow for CI-heavy teams. The debug feature is excellent, but basic management is essential.
-
----
-
 ## w8x9y0z1 — Workflow Management
 
 **Why gh doesn't have it:** `gh workflow` covers list/run/view/enable/disable. ghg has validate and preview — unique value — but no basic workflow lifecycle.

@@ -176,6 +176,13 @@ vi.mock("@/services/cache", () => ({
 
 vi.mock("@/services/run", () => ({
   default: {
+    list: vi.fn(),
+    view: vi.fn(),
+    watch: vi.fn(),
+    rerun: vi.fn(),
+    cancel: vi.fn(),
+    remove: vi.fn(),
+    download: vi.fn(),
     debugRun: vi.fn(() => Promise.resolve()),
   },
 }));
@@ -846,10 +853,13 @@ describe("tui operations run functions", () => {
 
   describe("run", () => {
     it("runs run.debug", async () => {
-      await runOp(runOperations[0], {
-        runId: 123,
-        outputDir: "./out",
-      });
+      await runOp(
+        runOperations.find((operation) => operation.id === "run.debug")!,
+        {
+          runId: 123,
+          outputDir: "./out",
+        },
+      );
 
       expect(runService.debugRun).toHaveBeenCalledWith(123, {
         repo: "airscripts/ghitgud",

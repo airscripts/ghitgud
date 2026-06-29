@@ -2,6 +2,9 @@
 set -euo pipefail
 source "$(dirname "$0")/env.sh"
 
+step "Run List"
+expect_exit_0 "run list succeeds" ghg run list --repo "$REPO" --limit 5
+
 setup() { :; }
 teardown() { print_summary; }
 trap teardown EXIT

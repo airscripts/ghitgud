@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Complete release lifecycle management with list, view, create, edit, delete, asset download, upload, and deletion commands in the CLI and TUI
+- Workflow run lifecycle management with filtering, inspection, cancellation, reruns, deletion, watching, and artifact downloads
 - Repository CRUD commands for create, list, view, clone, delete, archive, unarchive, rename, star, unstar, edit, fork, and local branch sync
 - Repository CRUD operations in the TUI workspace and expanded live repository playbook coverage
 - Search command family: `ghg search issues`, `ghg search prs`, `ghg search repos`, `ghg search code`, `ghg search commits` with `--repo`, `--state`, `--sort`, `--order`, `--limit`, `--language`, and `--author` flags

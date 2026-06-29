@@ -32,7 +32,11 @@ vi.mock("@/api/artifacts", () => ({
 
 vi.mock("@/api/workflows", () => ({
   default: {
+    rerun: vi.fn(),
     getRun: vi.fn(),
+    listRuns: vi.fn(),
+    cancelRun: vi.fn(),
+    deleteRun: vi.fn(),
     listRunJobs: vi.fn(),
     downloadRunLogs: vi.fn(),
   },
@@ -53,6 +57,7 @@ vi.mock("@/core/output", () => ({
 
 vi.mock("@/core/logger", () => ({
   default: {
+    info: vi.fn(),
     start: vi.fn(),
     success: vi.fn(),
   },
@@ -139,5 +144,67 @@ describe("run service", () => {
     expect(result.metadata.jobs).toEqual([]);
     expect(result.metadata.artifacts).toEqual([]);
     expect(result.metadata.annotations).toEqual([]);
+  });
+
+  it("manages workflow run lifecycle", async () => {
+    const completed = makeWorkflowRun({
+      status: "completed",
+      conclusion: "success",
+    });
+
+    vi.mocked(workflowsApi.listRuns).mockResolvedValue(
+      jsonResponse({ workflow_runs: [completed] }),
+    );
+
+    vi.mocked(workflowsApi.getRun).mockImplementation(async () =>
+      jsonResponse(completed),
+    );
+
+    expect((await runService.list({ repo: "owner/repo" })).runs).toHaveLength(
+      1,
+    );
+
+    vi.mocked(workflowsApi.listRuns).mockResolvedValueOnce(jsonResponse({}));
+    expect(
+      (
+        await runService.list({
+          limit: 1,
+          branch: "main",
+          status: "success",
+          workflow: "ci.yml",
+          repo: "owner/repo",
+        })
+      ).runs,
+    ).toEqual([]);
+
+    expect((await runService.view(123, "owner/repo")).run.status).toBe(
+      "completed",
+    );
+
+    await runService.cancel(123, "owner/repo");
+    await runService.rerun(123, "owner/repo", true);
+    await runService.remove(123, "owner/repo");
+
+    expect((await runService.watch(123, "owner/repo")).run.conclusion).toBe(
+      "success",
+    );
+  });
+
+  it("downloads matching workflow artifacts", async () => {
+    vi.mocked(artifactsApi.listRunArtifacts).mockResolvedValue(
+      jsonResponse({ artifacts: [makeArtifact({ id: 7, name: "dist" })] }),
+    );
+
+    vi.mocked(artifactsApi.downloadArtifact).mockResolvedValue(
+      binaryResponse("artifact"),
+    );
+
+    const result = await runService.download(123, {
+      pattern: "d*",
+      repo: "owner/repo",
+      outputDir: tempDir,
+    });
+
+    expect(result.files).toHaveLength(1);
   });
 });

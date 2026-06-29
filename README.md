@@ -76,7 +76,7 @@ Every command reads from `src/core/config.ts`, which resolves values in this ord
 - **Code Review** — comment on lines, list threads, resolve threads, suggest changes, and apply suggestions
 - **Workflow Utilities** — validate and preview GitHub Actions workflows before pushing
 - **Cache Inspection** — inspect and download GitHub Actions cache metadata
-- **Run Debugging** — fetch logs, artifacts, and annotations for workflow runs
+- **Workflow Run Management** — list, inspect, cancel, rerun, delete, watch, download, and debug workflow runs
 - **Proxy Passthrough** — pass any unrecognized command directly to the `gh` CLI
 - **Structured JSON Output** — every command supports machine-parseable JSON via `--json`
 - **Terminal Themes** — built-in dark, light, and auto color themes via `--theme`
