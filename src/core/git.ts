@@ -264,6 +264,18 @@ function fetchBranch(remote: string, branch: string): void {
   git(["fetch", remote, branch]);
 }
 
+function isWorkingTreeClean(): boolean {
+  return git(["status", "--porcelain"]).trim().length === 0;
+}
+
+function fetchPullRequest(
+  remote: string,
+  number: number,
+  branch: string,
+): void {
+  git(["fetch", remote, `pull/${number}/head:refs/heads/${branch}`]);
+}
+
 function stageFiles(): void {
   git(["add", "-A"]);
 }
@@ -389,9 +401,11 @@ export default {
   checkoutBranch,
   getRemoteNames,
   fastForwardBase,
+  fetchPullRequest,
   getCurrentBranch,
   getDefaultBranch,
   deleteLocalBranch,
+  isWorkingTreeClean,
   deleteRemoteBranch,
   createAnnotatedTag,
   getCommitsSinceTag,

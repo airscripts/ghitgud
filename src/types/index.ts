@@ -269,6 +269,48 @@ interface IssueSummary {
   labels?: Array<string | { name?: string }>;
 }
 
+interface PullRequestUser {
+  login: string;
+}
+
+interface PullRequest {
+  title: string;
+  state: string;
+  number: number;
+  merged: boolean;
+  draft?: boolean;
+  html_url?: string;
+  created_at?: string;
+  updated_at?: string;
+  body?: string | null;
+  mergeable_state?: string;
+  merged_at?: string | null;
+  mergeable?: boolean | null;
+  user?: PullRequestUser | null;
+  maintainer_can_modify: boolean;
+  merge_commit_sha: string | null;
+  labels?: Array<{ name: string }>;
+  requested_reviewers?: PullRequestUser[];
+
+  head: {
+    ref: string;
+    sha?: string;
+    repo: { full_name: string; html_url: string } | null;
+  };
+
+  base: {
+    ref: string;
+    repo?: { full_name: string } | null;
+  };
+}
+
+interface RepositoryMergeSettings {
+  default_branch: string;
+  allow_rebase_merge: boolean;
+  allow_squash_merge: boolean;
+  allow_merge_commit: boolean;
+}
+
 type SubIssueSummary = IssueSummary;
 
 interface ProjectBoardItem {
@@ -328,6 +370,9 @@ export type { RunDebugArtifact };
 export type { ReviewSuggestion };
 export type { Milestone };
 export type { IssueSummary };
+export type { PullRequest };
+export type { PullRequestUser };
+export type { RepositoryMergeSettings };
 export type { ProjectBoard };
 export type { MilestoneState };
 export type { SubIssueSummary };

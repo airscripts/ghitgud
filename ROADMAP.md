@@ -2,34 +2,6 @@
 
 ---
 
-## e4f5a6b7 — Pull Request CRUD
-
-**Why gh doesn't have it:** `gh pr` covers create/list/view/edit/merge/close. ghg has cleanup, push, next, and stacked PRs — excellent workflow features — but no basic PR lifecycle.
-
-**Gap:** Basic PR creation, listing, merging, viewing, diff, and checks. The API layer already has `pr.createPr` and `pr.updatePr`.
-
-**Commands:**
-
-- `ghg pr create --title <title> --body <text> --base <branch> --head <branch> [--draft]`
-- `ghg pr list [--state open|closed|merged|all] [--base <branch>] [--head <branch>]`
-- `ghg pr view <number>`
-- `ghg pr edit <number> --title <title> --body <text>`
-- `ghg pr close <number>`
-- `ghg pr reopen <number>`
-- `ghg pr merge <number> [--merge|--squash|--rebase] [--delete-branch]`
-- `ghg pr checkout <number>`
-- `ghg pr diff <number>`
-- `ghg pr checks <number>` — show CI status for a PR
-- `ghg pr comment <number> --body <text>`
-- `ghg pr lock <number>`
-- `ghg pr unlock <number>`
-- `ghg pr ready <number>` — mark draft as ready for review
-- `ghg pr status` — show relevant PRs across repos
-
-**Value:** PRs are the core of GitHub collaboration. ghg's stacked PR and cleanup workflows are excellent but need the CRUD foundation.
-
----
-
 ## c8d9e0f1 — Auth
 
 **Why gh doesn't have it:** `gh auth login` is the standard entry point. ghg's profile system (add/list/switch/detect) is more flexible for multi-account workflows but lacks a login/logout flow and token printing.

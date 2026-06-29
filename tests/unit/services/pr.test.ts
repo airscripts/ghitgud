@@ -13,6 +13,18 @@ vi.mock("@/api/pr", () => ({
     listOpen: vi.fn(),
     createPr: vi.fn(),
     updatePr: vi.fn(),
+    repository: vi.fn(),
+    list: vi.fn(),
+    merge: vi.fn(),
+    deleteBranch: vi.fn(),
+    diff: vi.fn(),
+    comment: vi.fn(),
+    lock: vi.fn(),
+    unlock: vi.fn(),
+    ready: vi.fn(),
+    checkRuns: vi.fn(),
+    combinedStatus: vi.fn(),
+    status: vi.fn(),
   },
 }));
 
@@ -32,6 +44,8 @@ vi.mock("@/core/git", () => ({
     branchExistsOnRemote: vi.fn(),
     hasDiverged: vi.fn(),
     getAheadCount: vi.fn(),
+    isWorkingTreeClean: vi.fn(),
+    fetchPullRequest: vi.fn(),
   },
 }));
 
@@ -364,6 +378,136 @@ describe("pr service", () => {
         "feature",
         true,
       );
+    });
+  });
+
+  describe("lifecycle", () => {
+    it("creates with inferred base and head branches", async () => {
+      (api.repository as Mock).mockResolvedValue({
+        json: () => Promise.resolve({ default_branch: "main" }),
+      });
+
+      (git.getCurrentBranch as Mock).mockReturnValue("feature");
+      (api.createPr as Mock).mockResolvedValue(
+        makePr({
+          number: 2,
+          state: "open",
+          html_url: "https://example.test/2",
+        }),
+      );
+
+      await prService.create("owner/repo", { title: "Feature" });
+      expect(api.createPr).toHaveBeenCalledWith("owner/repo", {
+        title: "Feature",
+        body: undefined,
+        base: "main",
+        head: "feature",
+        draft: false,
+      });
+    });
+
+    it("filters merged pull requests", async () => {
+      (api.list as Mock).mockResolvedValue({
+        json: () =>
+          Promise.resolve([
+            makePr({ number: 1, merged_at: "2026-01-01" }),
+            makePr({ number: 2, merged_at: null }),
+          ]),
+      });
+
+      const result = await prService.list("owner/repo", {
+        state: "merged",
+        limit: 10,
+      });
+
+      expect(result.pullRequests).toHaveLength(1);
+    });
+
+    it("validates edits and explicitly removes a body", async () => {
+      await expect(prService.edit("owner/repo", 1, {})).rejects.toThrow(
+        "Provide --title, --body, --base, or --remove-body.",
+      );
+
+      (api.updatePr as Mock).mockResolvedValue(makePr());
+      await prService.edit("owner/repo", 1, { removeBody: true });
+      expect(api.updatePr).toHaveBeenCalledWith("owner/repo", 1, { body: "" });
+    });
+
+    it("selects the first enabled merge strategy and deletes a same-repo head", async () => {
+      (api.fetch as Mock).mockResolvedValue(makePr());
+
+      (api.repository as Mock).mockResolvedValue({
+        json: () =>
+          Promise.resolve({
+            allow_merge_commit: false,
+            allow_squash_merge: true,
+            allow_rebase_merge: true,
+          }),
+      });
+
+      (api.merge as Mock).mockResolvedValue({
+        json: () => Promise.resolve({ merged: true, sha: "abc" }),
+      });
+
+      const result = await prService.merge("owner/repo", 1, {
+        deleteBranch: true,
+      });
+
+      expect(api.merge).toHaveBeenCalledWith("owner/repo", 1, "squash");
+      expect(api.deleteBranch).toHaveBeenCalledWith("owner/repo", "feature");
+      expect(result.metadata.branchDeleted).toBe(true);
+    });
+
+    it("rejects checkout with a dirty worktree", async () => {
+      (git.isWorkingTreeClean as Mock).mockReturnValue(false);
+      await expect(prService.checkout("owner/repo", 1)).rejects.toThrow(
+        "Working tree must be clean",
+      );
+
+      expect(api.fetch).not.toHaveBeenCalled();
+    });
+
+    it("checks out the fetched pull request head branch", async () => {
+      (git.isWorkingTreeClean as Mock).mockReturnValue(true);
+      (api.fetch as Mock).mockResolvedValue(makePr());
+      await prService.checkout("owner/repo", 1);
+      expect(git.fetchPullRequest).toHaveBeenCalledWith("origin", 1, "feature");
+      expect(git.checkoutBranch).toHaveBeenCalledWith("feature");
+    });
+
+    it("combines check runs and commit statuses", async () => {
+      (api.fetch as Mock).mockResolvedValue(
+        makePr({ head: { ...makePr().head, sha: "abc" } }),
+      );
+
+      (api.checkRuns as Mock).mockResolvedValue({
+        json: () =>
+          Promise.resolve({
+            check_runs: [
+              { name: "build", status: "completed", conclusion: "success" },
+            ],
+          }),
+      });
+
+      (api.combinedStatus as Mock).mockResolvedValue({
+        json: () =>
+          Promise.resolve({
+            statuses: [{ context: "lint", state: "failure" }],
+          }),
+      });
+
+      const result = await prService.checks("owner/repo", 1);
+      expect(result.metadata.overall).toBe("fail");
+      expect(result.metadata.checks).toHaveLength(2);
+    });
+
+    it("rejects ready for a non-draft pull request", async () => {
+      (api.fetch as Mock).mockResolvedValue(makePr({ draft: false }));
+      await expect(prService.ready("owner/repo", 1)).rejects.toThrow(
+        "is not a draft",
+      );
+
+      expect(api.ready).not.toHaveBeenCalled();
     });
   });
 });

@@ -1,4 +1,4 @@
-import { Command } from "commander";
+import { Command, Option } from "commander";
 
 import parse from "@/core/parse";
 import command from "@/core/command";
@@ -17,11 +17,152 @@ const register = (program: Command) => {
     "after",
     `
 Examples:
+  ghg pr create --title "Add feature"
+  ghg pr list --state open
+  ghg pr checks 42
+  ghg pr merge 42 --squash --delete-branch
   ghg pr cleanup --dry-run
   ghg pr push 42
   ghg pr stack create --base main
 `,
   );
+
+  pr.command("create")
+    .description("Create a pull request.")
+    .option("--repo <repo>", "Repository (owner/repo)")
+    .requiredOption("--title <title>", "Pull request title")
+    .option("--body <body>", "Pull request body")
+    .option("--base <branch>", "Base branch (default: repository default)")
+    .option("--head <branch>", "Head branch (default: current branch)")
+    .option("--draft", "Create as a draft", false)
+    .action(async (options) => {
+      const repo = await repoResolver.resolveRepo(options.repo);
+      await command.run(() => prService.create(repo, options));
+    });
+
+  pr.command("list")
+    .description("List pull requests.")
+    .option("--repo <repo>", "Repository (owner/repo)")
+    .addOption(
+      new Option("--state <state>", "PR state")
+        .choices(["open", "closed", "merged", "all"])
+        .default("open"),
+    )
+    .option("--base <branch>", "Filter by base branch")
+    .option("--head <branch>", "Filter by head branch")
+    .option("--limit <number>", "Maximum pull requests", "10")
+    .action(async (options) => {
+      const repo = await repoResolver.resolveRepo(options.repo);
+
+      await command.run(() =>
+        prService.list(repo, {
+          state: options.state,
+          base: options.base,
+          head: options.head,
+          limit: parse.parsePositiveInt(options.limit, "limit"),
+        }),
+      );
+    });
+
+  pr.command("view")
+    .description("View a pull request.")
+    .argument("<number>", "Pull request number")
+    .option("--repo <repo>", "Repository (owner/repo)")
+    .action(async (number: string, options) => {
+      const repo = await repoResolver.resolveRepo(options.repo);
+      await command.run(() => prService.view(repo, number));
+    });
+
+  pr.command("edit")
+    .description("Edit a pull request.")
+    .argument("<number>", "Pull request number")
+    .option("--repo <repo>", "Repository (owner/repo)")
+    .option("--title <title>", "Replacement title")
+    .option("--body <body>", "Replacement body")
+    .option("--base <branch>", "Replacement base branch")
+    .option("--remove-body", "Clear the pull request body", false)
+    .action(async (number: string, options) => {
+      const repo = await repoResolver.resolveRepo(options.repo);
+      await command.run(() => prService.edit(repo, number, options));
+    });
+
+  for (const [name, description] of [
+    ["close", "Close a pull request."],
+    ["reopen", "Reopen a pull request."],
+    ["checkout", "Check out a pull request locally."],
+    ["diff", "Show a pull request diff."],
+    ["checks", "Show pull request checks."],
+    ["lock", "Lock a pull request conversation."],
+    ["unlock", "Unlock a pull request conversation."],
+    ["ready", "Mark a draft pull request ready for review."],
+  ] as const) {
+    pr.command(name)
+      .description(description)
+      .argument("<number>", "Pull request number")
+      .option("--repo <repo>", "Repository (owner/repo)")
+      .action(async (number: string, options) => {
+        const repo = await repoResolver.resolveRepo(options.repo);
+
+        await command.run(
+          async (): Promise<unknown> => prService[name](repo, number),
+        );
+      });
+  }
+
+  pr.command("merge")
+    .description("Merge a pull request.")
+    .argument("<number>", "Pull request number")
+    .option("--repo <repo>", "Repository (owner/repo)")
+    .option("--merge", "Use a merge commit", false)
+    .option("--squash", "Squash commits", false)
+    .option("--rebase", "Rebase commits", false)
+    .option(
+      "--delete-branch",
+      "Delete a same-repository remote head branch",
+      false,
+    )
+    .action(async (number: string, options) => {
+      const selected = [
+        options.merge ? "merge" : undefined,
+        options.squash ? "squash" : undefined,
+        options.rebase ? "rebase" : undefined,
+      ].filter(Boolean) as Array<"merge" | "squash" | "rebase">;
+      if (selected.length > 1) {
+        throw new GhitgudError(
+          "Use only one of --merge, --squash, or --rebase.",
+        );
+      }
+
+      const repo = await repoResolver.resolveRepo(options.repo);
+
+      await command.run(() =>
+        prService.merge(repo, number, {
+          method: selected[0],
+          deleteBranch: options.deleteBranch,
+        }),
+      );
+    });
+
+  pr.command("comment")
+    .description("Comment on a pull request.")
+    .argument("<number>", "Pull request number")
+    .option("--repo <repo>", "Repository (owner/repo)")
+    .requiredOption("--body <body>", "Comment body")
+    .action(async (number: string, options) => {
+      const repo = await repoResolver.resolveRepo(options.repo);
+      await command.run(() => prService.comment(repo, number, options.body));
+    });
+
+  pr.command("status")
+    .description("Show created and review-requested open pull requests.")
+    .option("--repo <repo>", "Filter by repository")
+    .action(async (options) => {
+      const repo = options.repo
+        ? await repoResolver.resolveRepo(options.repo)
+        : undefined;
+
+      await command.run(() => prService.status(repo));
+    });
 
   pr.command("cleanup")
     .description(

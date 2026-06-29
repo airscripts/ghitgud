@@ -12,10 +12,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Complete issue lifecycle commands for creating, listing, viewing, editing, closing, reopening, commenting, deleting, locking, pinning, transferring, and showing assigned, created, or mentioned issue status
 - Issue type support plus repeatable label and assignee options for issue creation and filtering
 - Full issue lifecycle operations in the TUI and expanded live issue playbook coverage
+- Complete pull request lifecycle commands for CRUD, merging, checkout, diffs, checks, comments, conversation locks, draft readiness, and cross-repository status
+- Pull request lifecycle operations in the TUI with an isolated live PR playbook covering reversible and disposable-branch workflows
 
 ### Changed
 
 - GitHub REST API version updated to `2026-03-10` for current issue type support
+- Pull request creation now infers the repository default base branch and current local head branch when omitted
 
 ## [2.15.0] - 2026-06-28
 

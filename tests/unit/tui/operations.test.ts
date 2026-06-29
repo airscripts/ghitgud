@@ -32,6 +32,21 @@ vi.mock("@/services/labels", () => ({
 
 vi.mock("@/services/pr", () => ({
   default: {
+    create: vi.fn(() => Promise.resolve()),
+    list: vi.fn(() => Promise.resolve([])),
+    view: vi.fn(() => Promise.resolve()),
+    edit: vi.fn(() => Promise.resolve()),
+    close: vi.fn(() => Promise.resolve()),
+    reopen: vi.fn(() => Promise.resolve()),
+    checkout: vi.fn(() => Promise.resolve()),
+    diff: vi.fn(() => Promise.resolve()),
+    checks: vi.fn(() => Promise.resolve()),
+    lock: vi.fn(() => Promise.resolve()),
+    unlock: vi.fn(() => Promise.resolve()),
+    ready: vi.fn(() => Promise.resolve()),
+    merge: vi.fn(() => Promise.resolve()),
+    comment: vi.fn(() => Promise.resolve()),
+    status: vi.fn(() => Promise.resolve()),
     push: vi.fn(() => Promise.resolve()),
     cleanup: vi.fn(() => Promise.resolve()),
   },
@@ -383,6 +398,31 @@ describe("tui operations run functions", () => {
       expect(stackService.push).toHaveBeenCalledWith("airscripts/ghitgud", {
         draft: true,
         title: "feat: foo",
+      });
+    });
+
+    it("runs pr.create with inferred branch options omitted", async () => {
+      await runOp(prOperations[7], { title: "Feature", draft: true });
+
+      expect(prService.create).toHaveBeenCalledWith("airscripts/ghitgud", {
+        title: "Feature",
+        body: undefined,
+        base: undefined,
+        head: undefined,
+        draft: true,
+      });
+    });
+
+    it("runs pr.merge with selected options", async () => {
+      await runOp(prOperations[19], {
+        pr: 42,
+        method: "squash",
+        deleteBranch: true,
+      });
+
+      expect(prService.merge).toHaveBeenCalledWith("airscripts/ghitgud", 42, {
+        method: "squash",
+        deleteBranch: true,
       });
     });
   });

@@ -5,8 +5,12 @@ const mockRepo = "owner/repo";
 vi.mock("@/api/client", () => ({
   default: {
     get: vi.fn(),
-    post: vi.fn(),
-    patch: vi.fn(),
+    getTokenRequired: vi.fn(),
+    putTokenRequired: vi.fn(),
+    postTokenRequired: vi.fn(),
+    patchTokenRequired: vi.fn(),
+    deleteTokenRequired: vi.fn(),
+    getTokenRequiredWithAccept: vi.fn(),
   },
 }));
 
@@ -71,12 +75,14 @@ describe("pr api", () => {
         },
       };
 
-      vi.mocked(client.get).mockResolvedValue({
+      vi.mocked(client.getTokenRequired).mockResolvedValue({
         json: vi.fn().mockResolvedValue(mockPr),
       } as unknown as Response);
 
       const result = await pr.fetch(123, "owner/repo");
-      expect(client.get).toHaveBeenCalledWith(`/repos/${mockRepo}/pulls/123`);
+      expect(client.getTokenRequired).toHaveBeenCalledWith(
+        `/repos/${mockRepo}/pulls/123`,
+      );
 
       expect(result).toEqual(mockPr);
     });
@@ -148,12 +154,12 @@ describe("pr api", () => {
         body: "PR description",
       };
 
-      vi.mocked(client.post).mockResolvedValue({
+      vi.mocked(client.postTokenRequired).mockResolvedValue({
         json: vi.fn().mockResolvedValue(mockPr),
       } as unknown as Response);
 
       const result = await pr.createPr("owner/repo", body);
-      expect(client.post).toHaveBeenCalledWith(
+      expect(client.postTokenRequired).toHaveBeenCalledWith(
         `/repos/${mockRepo}/pulls`,
         body,
       );
@@ -180,12 +186,12 @@ describe("pr api", () => {
         body: "Updated description",
       };
 
-      vi.mocked(client.patch).mockResolvedValue({
+      vi.mocked(client.patchTokenRequired).mockResolvedValue({
         json: vi.fn().mockResolvedValue(mockPr),
       } as unknown as Response);
 
       const result = await pr.updatePr("owner/repo", 123, body);
-      expect(client.patch).toHaveBeenCalledWith(
+      expect(client.patchTokenRequired).toHaveBeenCalledWith(
         `/repos/${mockRepo}/pulls/123`,
         body,
       );
@@ -195,21 +201,82 @@ describe("pr api", () => {
 
     it("should support updating all fields", async () => {
       const body = {
-        title: "New Title",
-        body: "New Body",
         base: "develop",
-        state: "closed",
+        body: "New Body",
+        title: "New Title",
+        state: "closed" as const,
       };
 
-      vi.mocked(client.patch).mockResolvedValue({
+      vi.mocked(client.patchTokenRequired).mockResolvedValue({
         json: vi.fn().mockResolvedValue({}),
       } as unknown as Response);
 
       await pr.updatePr("owner/repo", 123, body);
-      expect(client.patch).toHaveBeenCalledWith(
+      expect(client.patchTokenRequired).toHaveBeenCalledWith(
         `/repos/${mockRepo}/pulls/123`,
         body,
       );
     });
+  });
+
+  it("lists pull requests with encoded filters", async () => {
+    vi.mocked(client.getTokenRequired).mockResolvedValue({} as Response);
+    await pr.list("owner/repo", {
+      limit: 10,
+      base: "main",
+      state: "merged",
+      head: "feature/x",
+    });
+
+    const endpoint = vi.mocked(client.getTokenRequired).mock.calls[0][0];
+    const url = new URL(endpoint, "https://api.github.com");
+
+    expect(url.pathname).toBe("/repos/owner/repo/pulls");
+    expect(Object.fromEntries(url.searchParams)).toEqual({
+      base: "main",
+      per_page: "10",
+      state: "closed",
+      sort: "updated",
+      direction: "desc",
+      head: "owner:feature/x",
+    });
+  });
+
+  it("calls lifecycle endpoints", async () => {
+    await pr.merge("owner/repo", 1, "squash");
+    await pr.comment("owner/repo", 1, "Done");
+    await pr.lock("owner/repo", 1);
+    await pr.unlock("owner/repo", 1);
+    await pr.ready("owner/repo", 1);
+    await pr.deleteBranch("owner/repo", "feature/x");
+
+    expect(client.putTokenRequired).toHaveBeenCalledWith(
+      "/repos/owner/repo/pulls/1/merge",
+      { merge_method: "squash" },
+    );
+
+    expect(client.postTokenRequired).toHaveBeenCalledWith(
+      "/repos/owner/repo/issues/1/comments",
+      { body: "Done" },
+    );
+
+    expect(client.deleteTokenRequired).toHaveBeenCalledWith(
+      "/repos/owner/repo/git/refs/heads/feature%2Fx",
+    );
+  });
+
+  it("requests raw diffs and both check APIs", async () => {
+    await pr.diff("owner/repo", 2);
+    await pr.checkRuns("owner/repo", "abc");
+    await pr.combinedStatus("owner/repo", "abc");
+
+    expect(client.getTokenRequiredWithAccept).toHaveBeenCalledWith(
+      "/repos/owner/repo/pulls/2",
+      "application/vnd.github.diff",
+    );
+
+    expect(client.getTokenRequired).toHaveBeenCalledWith(
+      "/repos/owner/repo/commits/abc/check-runs?per_page=100",
+    );
   });
 });

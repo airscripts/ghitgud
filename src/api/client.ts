@@ -32,6 +32,7 @@ import {
 
 interface RequestOptions {
   body?: unknown;
+  accept?: string;
   method?: string;
   tokenRequired?: boolean;
 }
@@ -111,9 +112,12 @@ function handleRateLimit(response: Response): never {
   );
 }
 
-function buildHeaders(token?: string): Record<string, string> {
+function buildHeaders(
+  token?: string,
+  accept = GITHUB_API_ACCEPT,
+): Record<string, string> {
   const headers: Record<string, string> = {
-    Accept: GITHUB_API_ACCEPT,
+    Accept: accept,
     "Content-Type": "application/json",
     "X-GitHub-Api-Version": GITHUB_API_VERSION,
   };
@@ -193,7 +197,7 @@ async function requestUrl(
     );
   }
 
-  const headers = buildHeaders(token);
+  const headers = buildHeaders(token, options.accept);
 
   const fetchOptions: RequestInit = {
     method: options.method || "GET",
@@ -275,6 +279,10 @@ async function getPaginated<T>(endpoint: string): Promise<T[]> {
 const client = {
   get: (endpoint: string) => request(endpoint),
   getTokenRequired: (endpoint: string) => requestTokenRequired(endpoint),
+
+  getTokenRequiredWithAccept: (endpoint: string, accept: string) =>
+    requestTokenRequired(endpoint, { accept }),
+
   getPaginated: <T>(endpoint: string) => getPaginated<T>(endpoint),
 
   post: (endpoint: string, body: unknown) =>

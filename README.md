@@ -593,6 +593,28 @@ ghg repo grant --team ops --role admin
 
 ## PR Workflow
 
+### Pull Request Lifecycle
+
+```bash
+ghg pr create --title "Add feature" --draft
+ghg pr list --state open --limit 10
+ghg pr view 42
+ghg pr edit 42 --body "Updated description"
+ghg pr checks 42
+ghg pr diff 42
+ghg pr checkout 42
+ghg pr comment 42 --body "Ready to merge."
+ghg pr ready 42
+ghg pr merge 42 --squash --delete-branch
+ghg pr status
+```
+
+- `create`, `list`, `view`, and `edit` cover pull request CRUD.
+- `close`, `reopen`, `ready`, and `merge` manage lifecycle state.
+- `checkout`, `diff`, and `checks` support local review and CI inspection.
+- `comment`, `lock`, and `unlock` manage the PR conversation.
+- `status` shows authored PRs and review requests across repositories.
+
 ### Clean up merged branches
 
 ```bash
@@ -751,7 +773,7 @@ src/
     milestone.ts        # ghg milestone <create|list|close|progress>.
     notifications.ts    # ghg notifications <list|read|done>.
     ping.ts             # ghg ping.
-    pr.ts               # ghg pr <cleanup|push|next|stack>.
+    pr.ts               # ghg pr lifecycle, checkout, checks, cleanup, and stacks.
     profile.ts          # ghg profile <add|list|switch|detect>.
     project.ts          # ghg project <board>.
     proxy.ts            # ghg proxy <passthrough>.
@@ -940,7 +962,7 @@ bash playbooks/all.sh
 - `repos.sh` — `ghg repos inspect/govern/label/retire/report/clone`
 - `repo.sh` — `ghg repo invite/grant`
 - `release.sh` — `ghg release changelog/bump/verify/notes/draft`
-- `pr.sh` — `ghg pr cleanup/push/next/stack`
+- `pr.sh` — `ghg pr` lifecycle, checkout, checks, cleanup, push, and stack operations
 - `project.sh` — `ghg project board`
 - `run.sh` — `ghg run debug`
 

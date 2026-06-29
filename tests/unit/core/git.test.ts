@@ -52,6 +52,20 @@ describe("git core", () => {
     expectGit(["branch", "--show-current"]);
   });
 
+  it("detects clean and dirty working trees", () => {
+    mockGit("");
+    expect(git.isWorkingTreeClean()).toBe(true);
+    mockGit(" M file.ts\n");
+    expect(git.isWorkingTreeClean()).toBe(false);
+    expectGit(["status", "--porcelain"]);
+  });
+
+  it("fetches a pull request into a local branch without forcing", () => {
+    mockGit("");
+    git.fetchPullRequest("origin", 42, "feature/x");
+    expectGit(["fetch", "origin", "pull/42/head:refs/heads/feature/x"]);
+  });
+
   it("branchExistsLocally returns true when git succeeds", () => {
     mockGit("");
     expect(git.branchExistsLocally("feature")).toBe(true);

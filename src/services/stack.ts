@@ -5,7 +5,7 @@ import io from "@/core/io";
 import git from "@/core/git";
 import output from "@/core/output";
 import logger from "@/core/logger";
-import { PullRequest } from "@/api/pr";
+import type { PullRequest } from "@/types";
 import { GhitgudError } from "@/core/errors";
 
 const STACK_FILE = "stack.json";

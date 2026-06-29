@@ -140,6 +140,8 @@ if (!proxyCommand.runProxyFromArgv()) {
       `
 Examples:
   ghg notifications list
+  ghg pr create --title "Add feature"
+  ghg pr checks 42
   ghg pr cleanup
   ghg repos report --org airscripts
   ghg labels push
