@@ -1,3 +1,7 @@
+import fs from "fs";
+import os from "os";
+import path from "path";
+
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 
 vi.mock("@/core/git", () => ({
@@ -16,6 +20,12 @@ vi.mock("@/core/git", () => ({
 
 vi.mock("@/api/releases", () => ({
   default: {
+    list: vi.fn(),
+    update: vi.fn(),
+    delete: vi.fn(),
+    deleteAsset: vi.fn(),
+    downloadAsset: vi.fn(),
+    uploadAsset: vi.fn(),
     create: vi.fn(),
     fetchByTag: vi.fn(),
   },
@@ -66,6 +76,20 @@ import releaseService from "@/services/release";
 import { ERROR_NO_REPO } from "@/core/constants";
 
 describe("release service", () => {
+  const release = {
+    id: 1,
+    assets: [],
+    body: "notes",
+    draft: false,
+    prerelease: false,
+    name: "Release",
+    tag_name: "v1.0.0",
+    html_url: "https://example.test/release",
+    upload_url: "https://uploads.example.test/{?name}",
+    created_at: "2026-01-01T00:00:00Z",
+    published_at: "2026-01-01T00:00:00Z",
+  };
+
   beforeEach(() => {
     vi.clearAllMocks();
     vi.mocked(git.isInsideRepo).mockReturnValue(true);
@@ -105,6 +129,185 @@ describe("release service", () => {
       expect(vi.mocked(logger.success)).toHaveBeenCalledWith(
         expect.stringContaining("Generated changelog"),
       );
+    });
+
+    it("uses fallbacks outside a git repository", async () => {
+      vi.mocked(git.isInsideRepo).mockReturnValue(false);
+      const result = await releaseService.changelog({});
+      expect(result.body).toBe("");
+    });
+  });
+
+  describe("lifecycle", () => {
+    it("lists and views releases", async () => {
+      vi.mocked(api.list).mockResolvedValue([release]);
+      vi.mocked(api.fetchByTag).mockResolvedValue(release);
+
+      expect(
+        (await releaseService.list({ repo: "owner/repo" })).releases,
+      ).toHaveLength(1);
+      expect(
+        (await releaseService.view("v1.0.0", "owner/repo")).release,
+      ).toEqual(release);
+
+      vi.mocked(api.list).mockResolvedValue([
+        {
+          ...release,
+          name: null,
+          body: null,
+          draft: true,
+          prerelease: true,
+          published_at: null,
+        },
+      ]);
+      vi.mocked(api.fetchByTag).mockResolvedValue({
+        ...release,
+        name: null,
+        body: null,
+      });
+      await releaseService.list({ repo: "owner/repo", limit: 1 });
+      await releaseService.view("v1.0.0", "owner/repo");
+    });
+
+    it("creates, edits, and deletes releases", async () => {
+      vi.mocked(api.create).mockResolvedValue(release);
+      vi.mocked(api.fetchByTag).mockResolvedValue(release);
+      vi.mocked(api.update).mockResolvedValue({ ...release, name: "Updated" });
+
+      await releaseService.create("v1.0.0", {
+        repo: "owner/repo",
+        title: "Release",
+        draft: true,
+        prerelease: true,
+        latest: true,
+      });
+      await releaseService.create("v1.0.0", { repo: "owner/repo" });
+      await releaseService.edit("v1.0.0", {
+        repo: "owner/repo",
+        title: "Updated",
+      });
+      await releaseService.remove("v1.0.0", "owner/repo");
+
+      expect(api.update).toHaveBeenCalledWith("owner/repo", 1, {
+        name: "Updated",
+        body: undefined,
+      });
+      expect(api.delete).toHaveBeenCalledWith("owner/repo", 1);
+    });
+
+    it("rejects empty edits and missing assets", async () => {
+      await expect(
+        releaseService.edit("v1.0.0", { repo: "owner/repo" }),
+      ).rejects.toThrow("Provide --title or --notes");
+
+      vi.mocked(api.fetchByTag).mockResolvedValue(release);
+      await expect(
+        releaseService.deleteAsset("v1.0.0", "missing.zip", "owner/repo"),
+      ).rejects.toThrow("Asset missing.zip not found");
+    });
+
+    it("downloads an empty matching asset set", async () => {
+      vi.mocked(api.fetchByTag).mockResolvedValue(release);
+      const result = await releaseService.download("v1.0.0", {
+        repo: "owner/repo",
+        pattern: "*.zip",
+      });
+      expect(result.files).toEqual([]);
+      const defaultResult = await releaseService.download("v1.0.0", {
+        repo: "owner/repo",
+      });
+      expect(defaultResult.files).toEqual([]);
+    });
+
+    it("downloads, uploads, replaces, and deletes assets", async () => {
+      const dir = fs.mkdtempSync(path.join(os.tmpdir(), "ghg-release-"));
+      const uploadFile = path.join(dir, "upload.zip");
+      fs.writeFileSync(uploadFile, "upload");
+      const assetRelease = {
+        ...release,
+        assets: [
+          {
+            id: 2,
+            size: 4,
+            name: "asset.zip",
+            content_type: "application/zip",
+            browser_download_url: "https://example.test/asset.zip",
+          },
+          {
+            id: 3,
+            size: 6,
+            name: "upload.zip",
+            content_type: "application/zip",
+            browser_download_url: "https://example.test/upload.zip",
+          },
+        ],
+      };
+      vi.mocked(api.fetchByTag).mockResolvedValue(assetRelease);
+      vi.mocked(api.downloadAsset).mockResolvedValue(
+        new Response(new Uint8Array([1, 2, 3, 4])),
+      );
+      vi.mocked(api.uploadAsset).mockResolvedValue({ id: 4 });
+
+      const downloaded = await releaseService.download("v1.0.0", {
+        repo: "owner/repo",
+        pattern: "asset.?ip",
+        outputDir: dir,
+      });
+      expect(downloaded.files).toHaveLength(1);
+      await expect(
+        releaseService.download("v1.0.0", {
+          repo: "owner/repo",
+          pattern: "asset.zip",
+          outputDir: dir,
+        }),
+      ).rejects.toThrow("File already exists");
+
+      await expect(
+        releaseService.upload("v1.0.0", [uploadFile], {
+          repo: "owner/repo",
+        }),
+      ).rejects.toThrow("Use --clobber");
+
+      const uploaded = await releaseService.upload("v1.0.0", [uploadFile], {
+        repo: "owner/repo",
+        clobber: true,
+      });
+      expect(uploaded.assets).toHaveLength(1);
+      expect(api.deleteAsset).toHaveBeenCalledWith("owner/repo", 3);
+
+      await releaseService.deleteAsset("v1.0.0", "asset.zip", "owner/repo");
+      expect(api.deleteAsset).toHaveBeenCalledWith("owner/repo", 2);
+
+      fs.rmSync(dir, { recursive: true, force: true });
+    });
+
+    it("rejects missing upload files and existing downloads", async () => {
+      vi.mocked(api.fetchByTag).mockResolvedValue({
+        ...release,
+        assets: [
+          {
+            id: 2,
+            size: 4,
+            name: "asset.zip",
+            content_type: "application/zip",
+            browser_download_url: "https://example.test/asset.zip",
+          },
+        ],
+      });
+
+      await expect(
+        releaseService.upload("v1.0.0", ["missing.zip"], {
+          repo: "owner/repo",
+        }),
+      ).rejects.toThrow("File not found");
+
+      await expect(
+        releaseService.download("v1.0.0", {
+          repo: "owner/repo",
+          outputDir: process.cwd(),
+          pattern: "package.json",
+        }),
+      ).resolves.toMatchObject({ files: [] });
     });
   });
 
@@ -146,6 +349,12 @@ describe("release service", () => {
 
       expect(result.next).toBe("3.0.0");
       expect(result.level).toBe("major");
+    });
+
+    it("falls back for a non-semver latest tag", async () => {
+      vi.mocked(git.getLatestTag).mockReturnValue("latest");
+      const result = await releaseService.bump({ level: "patch" });
+      expect(result.next).toBe("0.0.1");
     });
 
     it("should return current version when no bump-worthy commits", async () => {
@@ -252,6 +461,19 @@ describe("release service", () => {
       expect(result.body).toContain("### Added");
       expect(result.body).toContain("new feature");
     });
+
+    it("writes notes and falls back when templates are unavailable", async () => {
+      const target = path.join(os.tmpdir(), "ghg-release-notes.md");
+      const io = (await import("@/core/io")).default;
+      vi.mocked(io.fileExists).mockReturnValue(false);
+      const result = await releaseService.notes({
+        repo: "owner/repo",
+        templateFile: "missing.md",
+        out: target,
+      });
+      expect(result.success).toBe(true);
+      fs.rmSync(target, { force: true });
+    });
   });
 
   describe("draft", () => {
@@ -281,6 +503,20 @@ describe("release service", () => {
           draft: true,
           tag_name: "2.9.1",
           generate_release_notes: true,
+        }),
+      );
+
+      await releaseService.draft({
+        repo: "owner/repo",
+        level: "minor",
+        title: "Custom",
+        notes: "Custom notes",
+      });
+      expect(api.create).toHaveBeenLastCalledWith(
+        "owner/repo",
+        expect.objectContaining({
+          body: "Custom notes",
+          generate_release_notes: false,
         }),
       );
     });

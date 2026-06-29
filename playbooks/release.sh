@@ -19,7 +19,13 @@ teardown() {
 trap teardown EXIT
 setup
 
-step "Release changelog"
+step "Release List"
+expect_exit_0 "release list succeeds" ghg release list --repo "$REPO" --limit 5
+
+step "Release View Missing Tag"
+expect_exit_non0 "release view rejects a missing tag" ghg release view ghg-test-missing --repo "$REPO"
+
+step "Release Changelog"
 expect_exit_0 "release changelog succeeds" ghg release changelog
 
 step "Release Changelog With --since"
@@ -34,7 +40,7 @@ fi
 step "Release Bump --level Patch (Dry Run)"
 expect_exit_0 "release bump --level patch succeeds" ghg release bump --level patch
 
-step "Release notes"
+step "Release Notes"
 expect_exit_0 "release notes succeeds" ghg release notes --repo "$REPO"
 
 step "Release Draft --level Patch"

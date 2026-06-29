@@ -202,6 +202,14 @@ vi.mock("@/services/config", () => ({
 
 vi.mock("@/services/release", () => ({
   default: {
+    list: vi.fn(() => Promise.resolve()),
+    view: vi.fn(() => Promise.resolve()),
+    edit: vi.fn(() => Promise.resolve()),
+    create: vi.fn(() => Promise.resolve()),
+    remove: vi.fn(() => Promise.resolve()),
+    upload: vi.fn(() => Promise.resolve()),
+    download: vi.fn(() => Promise.resolve()),
+    deleteAsset: vi.fn(() => Promise.resolve()),
     bump: vi.fn(() => Promise.resolve()),
     draft: vi.fn(() => Promise.resolve()),
     verify: vi.fn(() => Promise.resolve()),
@@ -940,8 +948,11 @@ describe("tui operations run functions", () => {
   });
 
   describe("release", () => {
+    const releaseOp = (id: string) =>
+      releaseOperations.find((operation) => operation.id === id)!;
+
     it("runs release.changelog with defaults", async () => {
-      await runOp(releaseOperations[0]);
+      await runOp(releaseOp("release.changelog"));
       expect(releaseService.changelog).toHaveBeenCalledWith({
         to: undefined,
         since: undefined,
@@ -949,7 +960,10 @@ describe("tui operations run functions", () => {
     });
 
     it("runs release.changelog", async () => {
-      await runOp(releaseOperations[0], { since: "v1.0", to: "HEAD" });
+      await runOp(releaseOp("release.changelog"), {
+        since: "v1.0",
+        to: "HEAD",
+      });
       expect(releaseService.changelog).toHaveBeenCalledWith({
         to: "HEAD",
         since: "v1.0",
@@ -957,7 +971,7 @@ describe("tui operations run functions", () => {
     });
 
     it("runs release.bump", async () => {
-      await runOp(releaseOperations[1], {
+      await runOp(releaseOp("release.bump"), {
         push: false,
         create: true,
         level: "patch",
@@ -971,14 +985,14 @@ describe("tui operations run functions", () => {
     });
 
     it("runs release.verify", async () => {
-      await runOp(releaseOperations[2], { tag: "v1.0" });
+      await runOp(releaseOp("release.verify"), { tag: "v1.0" });
       expect(releaseService.verify).toHaveBeenCalledWith("v1.0", {
         repo: "airscripts/ghitgud",
       });
     });
 
     it("runs release.notes with defaults", async () => {
-      await runOp(releaseOperations[3]);
+      await runOp(releaseOp("release.notes"));
       expect(releaseService.notes).toHaveBeenCalledWith({
         out: undefined,
         since: undefined,
@@ -988,7 +1002,7 @@ describe("tui operations run functions", () => {
     });
 
     it("runs release.notes", async () => {
-      await runOp(releaseOperations[3], {
+      await runOp(releaseOp("release.notes"), {
         out: "o.md",
         since: "v1.0",
         template: "t.md",
@@ -1003,7 +1017,7 @@ describe("tui operations run functions", () => {
     });
 
     it("runs release.draft", async () => {
-      await runOp(releaseOperations[4], {
+      await runOp(releaseOp("release.draft"), {
         title: "v1.1",
         level: "minor",
         notes: "generated",
@@ -1014,6 +1028,70 @@ describe("tui operations run functions", () => {
         level: "minor",
         notes: "generated",
         repo: "airscripts/ghitgud",
+      });
+    });
+
+    it("runs release lifecycle operations", async () => {
+      await runOp(releaseOp("release.list"), { limit: 5 });
+      await runOp(releaseOp("release.view"), { tag: "v1.0" });
+      await runOp(releaseOp("release.create"), {
+        tag: "v1.0",
+        title: "Title",
+        notes: "Notes",
+        draft: true,
+        prerelease: false,
+        latest: true,
+      });
+      await runOp(releaseOp("release.edit"), {
+        tag: "v1.0",
+        title: "Updated",
+        notes: "Updated notes",
+      });
+      await runOp(releaseOp("release.delete"), { tag: "v1.0" });
+      await runOp(releaseOp("release.download"), {
+        tag: "v1.0",
+        pattern: "*.zip",
+        outputDir: "downloads",
+      });
+      await runOp(releaseOp("release.upload"), {
+        tag: "v1.0",
+        files: "one.zip, two.zip",
+        clobber: true,
+      });
+      await runOp(releaseOp("release.deleteAsset"), {
+        tag: "v1.0",
+        asset: "one.zip",
+      });
+
+      expect(releaseService.list).toHaveBeenCalledWith({
+        repo: "airscripts/ghitgud",
+        limit: 5,
+      });
+      expect(releaseService.upload).toHaveBeenCalledWith(
+        "v1.0",
+        ["one.zip", "two.zip"],
+        { repo: "airscripts/ghitgud", clobber: true },
+      );
+      expect(releaseService.deleteAsset).toHaveBeenCalledWith(
+        "v1.0",
+        "one.zip",
+        "airscripts/ghitgud",
+      );
+    });
+
+    it("runs release lifecycle operations with optional defaults", async () => {
+      await runOp(releaseOp("release.list"));
+      await runOp(releaseOp("release.create"), { tag: "v1.0" });
+      await runOp(releaseOp("release.edit"), { tag: "v1.0" });
+      await runOp(releaseOp("release.download"), { tag: "v1.0" });
+      await runOp(releaseOp("release.upload"), {
+        tag: "v1.0",
+        files: "one.zip",
+      });
+
+      expect(releaseService.list).toHaveBeenLastCalledWith({
+        repo: "airscripts/ghitgud",
+        limit: 30,
       });
     });
   });

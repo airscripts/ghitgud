@@ -34,6 +34,8 @@ interface RequestOptions {
   body?: unknown;
   accept?: string;
   method?: string;
+  rawBody?: boolean;
+  contentType?: string;
   tokenRequired?: boolean;
 }
 
@@ -115,10 +117,11 @@ function handleRateLimit(response: Response): never {
 function buildHeaders(
   token?: string,
   accept = GITHUB_API_ACCEPT,
+  contentType = "application/json",
 ): Record<string, string> {
   const headers: Record<string, string> = {
     Accept: accept,
-    "Content-Type": "application/json",
+    "Content-Type": contentType,
     "X-GitHub-Api-Version": GITHUB_API_VERSION,
   };
 
@@ -197,7 +200,7 @@ async function requestUrl(
     );
   }
 
-  const headers = buildHeaders(token, options.accept);
+  const headers = buildHeaders(token, options.accept, options.contentType);
 
   const fetchOptions: RequestInit = {
     method: options.method || "GET",
@@ -205,7 +208,9 @@ async function requestUrl(
   };
 
   if (options.body) {
-    fetchOptions.body = JSON.stringify(options.body);
+    fetchOptions.body = options.rawBody
+      ? (options.body as BodyInit)
+      : JSON.stringify(options.body);
   }
 
   logger.debug(`${fetchOptions.method} ${url}`);
@@ -307,6 +312,9 @@ const client = {
   getTokenRequiredWithAccept: (endpoint: string, accept: string) =>
     requestTokenRequired(endpoint, { accept }),
 
+  getUrlTokenRequiredWithAccept: (url: string, accept: string) =>
+    requestUrl(url, { accept, tokenRequired: true }),
+
   getPaginated: <T>(endpoint: string) => getPaginated<T>(endpoint),
 
   getSearchPaginated: <T>(
@@ -319,6 +327,15 @@ const client = {
 
   postTokenRequired: (endpoint: string, body: unknown) =>
     requestTokenRequired(endpoint, { method: "POST", body }),
+
+  postRawUrlTokenRequired: (url: string, body: BodyInit, contentType: string) =>
+    requestUrl(url, {
+      body,
+      contentType,
+      rawBody: true,
+      method: "POST",
+      tokenRequired: true,
+    }),
 
   patch: (endpoint: string, body: unknown) =>
     request(endpoint, { method: "PATCH", body }),

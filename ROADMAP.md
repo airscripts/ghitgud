@@ -2,27 +2,6 @@
 
 ---
 
-## o0p1q2r3 — Release CRUD
-
-**Why gh doesn't have it:** `gh release` covers create/list/view/edit/delete/download/upload. ghg has changelog/bump/verify/notes/draft — excellent automation — but no basic release management.
-
-**Gap:** No list, view, edit, delete, download, or upload for releases. The API layer already has `releases.fetchByTag` and `releases.create`.
-
-**Commands:**
-
-- `ghg release list [--limit <n>]`
-- `ghg release view <tag>`
-- `ghg release create <tag> [--title <title>] [--notes <text>] [--draft] [--prerelease] [--latest]`
-- `ghg release edit <tag> --title <title> --notes <text>`
-- `ghg release delete <tag> [--yes]`
-- `ghg release download <tag> [--pattern <glob>] [--output-dir <dir>]`
-- `ghg release upload <tag> <files...> [--clobber]`
-- `ghg release delete-asset <tag> <asset-name>`
-
-**Value:** Release automation is a strength, but basic release management is needed for parity.
-
----
-
 ## s4t5u6v7 — Workflow Run Management
 
 **Why gh doesn't have it:** `gh run` covers cancel/delete/download/list/rerun/view/watch. ghg has `run debug` — a deep debug bundle — but no basic run management.

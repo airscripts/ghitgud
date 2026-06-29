@@ -81,7 +81,7 @@ Every command reads from `src/core/config.ts`, which resolves values in this ord
 - **Structured JSON Output** — every command supports machine-parseable JSON via `--json`
 - **Terminal Themes** — built-in dark, light, and auto color themes via `--theme`
 - **Full Terminal UI** — browse and run the full `ghg` workflow surface from `ghg tui`
-- **Release Automation** — generate changelogs, auto-detect next semver, verify signatures, render templated notes, and create draft releases
+- **Release Management** — manage releases and assets alongside changelog, version, signature, notes, and draft automation
 - **Milestone Management** — track sprint progress with create, list, close, and progress commands
 - **Project Boards** — render an ASCII kanban board for any GitHub Project v2
 - **Issue Management** — create, triage, update, transfer, and organize issues and sub-issues

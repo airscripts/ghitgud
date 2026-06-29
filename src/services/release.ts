@@ -53,6 +53,165 @@ interface DraftOptions {
   level?: BumpLevel;
 }
 
+interface ListOptions {
+  repo: string;
+  limit?: number;
+}
+
+interface CreateOptions {
+  repo: string;
+  title?: string;
+  notes?: string;
+  draft?: boolean;
+  prerelease?: boolean;
+  latest?: boolean;
+}
+
+interface EditOptions {
+  repo: string;
+  title?: string;
+  notes?: string;
+}
+
+interface DownloadOptions {
+  repo: string;
+  pattern?: string;
+  outputDir?: string;
+}
+
+interface UploadOptions {
+  repo: string;
+  clobber?: boolean;
+}
+
+const matchesPattern = (name: string, pattern?: string): boolean => {
+  if (!pattern) return true;
+  const escaped = pattern.replace(/[.+^${}()|[\]\\]/g, "\\$&");
+  const expression = escaped.replace(/\*/g, ".*").replace(/\?/g, ".");
+  return new RegExp(`^${expression}$`).test(name);
+};
+
+const list = async (options: ListOptions) => {
+  const releases = await api.list(options.repo, options.limit ?? 30);
+  output.renderTable(
+    releases.map((release) => ({
+      Tag: release.tag_name,
+      Title: release.name ?? "",
+      Draft: release.draft ? "yes" : "no",
+      Prerelease: release.prerelease ? "yes" : "no",
+      Published: release.published_at ?? "",
+    })),
+    { emptyMessage: "No releases found." },
+  );
+  return { success: true, releases };
+};
+
+const view = async (tag: string, repo: string) => {
+  const release = await api.fetchByTag(repo, tag);
+  output.renderSummary("Release", [
+    ["Tag", release.tag_name],
+    ["Title", release.name ?? ""],
+    ["Draft", release.draft ? "yes" : "no"],
+    ["Prerelease", release.prerelease ? "yes" : "no"],
+    ["Assets", release.assets.length],
+    ["URL", release.html_url],
+  ]);
+  if (release.body) output.log(release.body);
+  return { success: true, release };
+};
+
+const create = async (tag: string, options: CreateOptions) => {
+  logger.start(`Creating release ${tag}.`);
+  const release = await api.create(options.repo, {
+    tag_name: tag,
+    name: options.title,
+    body: options.notes,
+    draft: options.draft ?? false,
+    prerelease: options.prerelease ?? false,
+    make_latest: options.latest,
+  });
+  logger.success(`Created release: ${release.html_url}`);
+  return { success: true, release, tag, url: release.html_url };
+};
+
+const edit = async (tag: string, options: EditOptions) => {
+  if (options.title === undefined && options.notes === undefined) {
+    throw new GhitgudError("Provide --title or --notes to edit a release.");
+  }
+  const current = await api.fetchByTag(options.repo, tag);
+  const release = await api.update(options.repo, current.id, {
+    name: options.title,
+    body: options.notes,
+  });
+  logger.success(`Updated release ${tag}.`);
+  return { success: true, release };
+};
+
+const remove = async (tag: string, repo: string) => {
+  const release = await api.fetchByTag(repo, tag);
+  await api.delete(repo, release.id);
+  logger.success(`Deleted release ${tag}.`);
+  return { success: true, tag };
+};
+
+const download = async (tag: string, options: DownloadOptions) => {
+  const release = await api.fetchByTag(options.repo, tag);
+  const assets = release.assets.filter((asset) =>
+    matchesPattern(asset.name, options.pattern),
+  );
+  const outputDir = path.resolve(options.outputDir ?? ".");
+  io.ensureDir(outputDir);
+  const files: string[] = [];
+  for (const asset of assets) {
+    const target = path.join(outputDir, path.basename(asset.name));
+    if (fs.existsSync(target)) {
+      throw new GhitgudError(`File already exists: ${target}`);
+    }
+    const response = await api.downloadAsset(asset.browser_download_url);
+    fs.writeFileSync(target, Buffer.from(await response.arrayBuffer()));
+    files.push(target);
+  }
+  logger.success(`Downloaded ${files.length} release asset(s).`);
+  return { success: true, tag, files };
+};
+
+const upload = async (tag: string, files: string[], options: UploadOptions) => {
+  const release = await api.fetchByTag(options.repo, tag);
+  const uploaded: unknown[] = [];
+  for (const file of files) {
+    if (!fs.existsSync(file) || !fs.statSync(file).isFile()) {
+      throw new GhitgudError(`File not found: ${file}`);
+    }
+    const name = path.basename(file);
+    const existing = release.assets.find((asset) => asset.name === name);
+    if (existing && !options.clobber) {
+      throw new GhitgudError(
+        `Asset already exists: ${name}. Use --clobber to replace it.`,
+      );
+    }
+    if (existing) await api.deleteAsset(options.repo, existing.id);
+    uploaded.push(
+      await api.uploadAsset(
+        release.upload_url,
+        name,
+        "application/octet-stream",
+        new Blob([fs.readFileSync(file)]),
+      ),
+    );
+  }
+  logger.success(`Uploaded ${uploaded.length} release asset(s).`);
+  return { success: true, tag, assets: uploaded };
+};
+
+const deleteAsset = async (tag: string, name: string, repo: string) => {
+  const release = await api.fetchByTag(repo, tag);
+  const asset = release.assets.find((candidate) => candidate.name === name);
+  if (!asset) throw new NotFoundError(`Asset ${name} not found on ${tag}.`);
+  await api.deleteAsset(repo, asset.id);
+  logger.success(`Deleted release asset ${name}.`);
+  return { success: true, tag, asset: name };
+};
+
 function getLatestTag(): string | null {
   if (git.isInsideRepo()) {
     return git.getLatestTag();
@@ -344,6 +503,14 @@ const draft = async (options: DraftOptions) => {
 };
 
 export default {
+  list,
+  view,
+  edit,
+  create,
+  remove,
+  upload,
+  download,
+  deleteAsset,
   bump,
   draft,
   notes,

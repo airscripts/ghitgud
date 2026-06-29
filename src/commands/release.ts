@@ -1,6 +1,8 @@
 import { Command } from "commander";
 
 import command from "@/core/command";
+import parse from "@/core/parse";
+import prompt from "@/core/prompt";
 import repoResolver from "@/core/repo";
 import releaseService from "@/services/release";
 import type { BumpLevel } from "@/core/conventional";
@@ -32,8 +34,113 @@ Examples:
   ghg release verify 2.10.0
   ghg release notes --template templates/custom.md
   ghg release draft --level minor
+  ghg release list --limit 10
+  ghg release view 2.15.0
 `,
   );
+
+  release
+    .command("list")
+    .description("List releases.")
+    .option("--repo <repo>", "Repository (owner/repo)")
+    .option("--limit <n>", "Maximum releases", "30")
+    .action(async (options: { repo?: string; limit: string }) => {
+      const repo = await repoResolver.resolveRepo(options.repo);
+      await command.run(() =>
+        releaseService.list({
+          repo,
+          limit: parse.parsePositiveInt(options.limit, "limit"),
+        }),
+      );
+    });
+
+  release
+    .command("view <tag>")
+    .description("View a release.")
+    .option("--repo <repo>", "Repository (owner/repo)")
+    .action(async (tag: string, options: { repo?: string }) => {
+      const repo = await repoResolver.resolveRepo(options.repo);
+      await command.run(() => releaseService.view(tag, repo));
+    });
+
+  release
+    .command("create <tag>")
+    .description("Create a release.")
+    .option("--repo <repo>", "Repository (owner/repo)")
+    .option("--title <title>", "Release title")
+    .option("--notes <text>", "Release notes")
+    .option("--draft", "Create as a draft")
+    .option("--prerelease", "Mark as a prerelease")
+    .option("--latest", "Mark as the latest release")
+    .action(async (tag: string, options) => {
+      const repo = await repoResolver.resolveRepo(options.repo);
+      await command.run(() => releaseService.create(tag, { ...options, repo }));
+    });
+
+  release
+    .command("edit <tag>")
+    .description("Edit a release.")
+    .option("--repo <repo>", "Repository (owner/repo)")
+    .option("--title <title>", "Release title")
+    .option("--notes <text>", "Release notes")
+    .action(async (tag: string, options) => {
+      const repo = await repoResolver.resolveRepo(options.repo);
+      await command.run(() => releaseService.edit(tag, { ...options, repo }));
+    });
+
+  release
+    .command("delete <tag>")
+    .description("Delete a release.")
+    .option("--repo <repo>", "Repository (owner/repo)")
+    .option("--yes", "Confirm deletion", false)
+    .action(async (tag: string, options: { repo?: string; yes: boolean }) => {
+      const repo = await repoResolver.resolveRepo(options.repo);
+      if (!options.yes) {
+        prompt.guardNonInteractive("Release deletion requires --yes.");
+        if (!(await prompt.confirm(`Delete release ${tag}?`))) return;
+      }
+      await command.run(() => releaseService.remove(tag, repo));
+    });
+
+  release
+    .command("download <tag>")
+    .description("Download release assets.")
+    .option("--repo <repo>", "Repository (owner/repo)")
+    .option("--pattern <glob>", "Asset name pattern")
+    .option("--output-dir <dir>", "Download directory")
+    .action(async (tag: string, options) => {
+      const repo = await repoResolver.resolveRepo(options.repo);
+      await command.run(() =>
+        releaseService.download(tag, { ...options, repo }),
+      );
+    });
+
+  release
+    .command("upload <tag> <files...>")
+    .description("Upload release assets.")
+    .option("--repo <repo>", "Repository (owner/repo)")
+    .option("--clobber", "Replace assets with matching names")
+    .action(async (tag: string, files: string[], options) => {
+      const repo = await repoResolver.resolveRepo(options.repo);
+      await command.run(() =>
+        releaseService.upload(tag, files, { ...options, repo }),
+      );
+    });
+
+  release
+    .command("delete-asset <tag> <asset-name>")
+    .description("Delete a release asset.")
+    .option("--repo <repo>", "Repository (owner/repo)")
+    .option("--yes", "Confirm deletion", false)
+    .action(async (tag: string, assetName: string, options) => {
+      const repo = await repoResolver.resolveRepo(options.repo);
+      if (!options.yes) {
+        prompt.guardNonInteractive("Release asset deletion requires --yes.");
+        if (!(await prompt.confirm(`Delete release asset ${assetName}?`)))
+          return;
+      }
+      await command.run(() => releaseService.deleteAsset(tag, assetName, repo));
+    });
 
   release
     .command("changelog")
