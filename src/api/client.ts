@@ -276,6 +276,30 @@ async function getPaginated<T>(endpoint: string): Promise<T[]> {
   return results;
 }
 
+interface SearchEnvelope<T> {
+  items: T[];
+  total_count: number;
+  incomplete_results: boolean;
+}
+
+async function getSearchPaginated<T>(
+  endpoint: string,
+  normalize: (raw: Record<string, unknown>) => T,
+): Promise<{ totalCount: number; incompleteResults: boolean; items: T[] }> {
+  const url = `${GITHUB_API_BASE_URL}${endpoint}`;
+  const response = await requestUrl(url);
+
+  const data = (await response.json()) as SearchEnvelope<
+    Record<string, unknown>
+  >;
+
+  return {
+    totalCount: data.total_count,
+    items: data.items.map(normalize),
+    incompleteResults: data.incomplete_results,
+  };
+}
+
 const client = {
   get: (endpoint: string) => request(endpoint),
   getTokenRequired: (endpoint: string) => requestTokenRequired(endpoint),
@@ -284,6 +308,11 @@ const client = {
     requestTokenRequired(endpoint, { accept }),
 
   getPaginated: <T>(endpoint: string) => getPaginated<T>(endpoint),
+
+  getSearchPaginated: <T>(
+    endpoint: string,
+    normalize: (raw: Record<string, unknown>) => T,
+  ) => getSearchPaginated<T>(endpoint, normalize),
 
   post: (endpoint: string, body: unknown) =>
     request(endpoint, { method: "POST", body }),

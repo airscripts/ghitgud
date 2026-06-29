@@ -33,7 +33,8 @@ type TuiWorkspace =
   | "Team"
   | "Repository Access"
   | "Pages"
-  | "Wiki";
+  | "Wiki"
+  | "Search";
 
 type TuiInputType = "string" | "number" | "boolean";
 

@@ -145,3 +145,7 @@ export const ERROR_REVIEW_COMMIT_SHA_REQUIRED =
 export const RELEASE_FALLBACK_SINCE = "HEAD~20";
 export const RELEASE_TEMPLATE_FILE = "release.md";
 export const RELEASE_DEFAULT_GENERATED = "generated";
+
+export const SEARCH_DEFAULT_LIMIT = 30;
+export const SEARCH_MAX_PER_PAGE = 100;
+export const ERROR_SEARCH_QUERY_REQUIRED = "Search query is required.";

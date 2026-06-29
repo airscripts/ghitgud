@@ -11,6 +11,7 @@ import leaksOperations from "./leaks";
 import pagesOperations from "./pages";
 import labelOperations from "./labels";
 import issueOperations from "./issues";
+import searchOperations from "./search";
 import reviewOperations from "./review";
 import configOperations from "./config";
 import utilityOperations from "./utility";
@@ -62,6 +63,7 @@ const operations: TuiOperation[] = [
   ...repoOperations,
   ...pagesOperations,
   ...wikiOperations,
+  ...searchOperations,
 ];
 
 const workspaces = Array.from(new Set(operations.map((op) => op.workspace)));

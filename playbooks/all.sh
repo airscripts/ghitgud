@@ -19,6 +19,7 @@ PLAYBOOKS=(
   ping
   config
   auth
+  search
   activity
   mentions
   cache

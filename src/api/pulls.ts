@@ -1,9 +1,5 @@
 import client from "./client";
 
-interface SearchResponse {
-  total_count: number;
-}
-
 interface PullRequestSummary {
   created_at: string;
   merged_at: string | null;
@@ -19,7 +15,7 @@ const pulls = {
       `/search/issues?q=${buildQuery(repo, ["type:pr", "state:open"])}&per_page=1`,
     );
 
-    const data = (await response.json()) as SearchResponse;
+    const data = (await response.json()) as { total_count: number };
     return data.total_count;
   },
 

@@ -1,9 +1,5 @@
 import client from "./client";
 
-interface SearchResponse {
-  total_count: number;
-}
-
 interface IssueCreateOptions {
   title: string;
   body?: string;
@@ -70,7 +66,8 @@ async function getCount(repo: string, qualifiers: string[]): Promise<number> {
   const response = await client.get(
     `/search/issues?q=${buildQuery(repo, qualifiers)}&per_page=1`,
   );
-  const data = (await response.json()) as SearchResponse;
+
+  const data = (await response.json()) as { total_count: number };
   return data.total_count;
 }
 

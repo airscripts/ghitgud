@@ -9,6 +9,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Search command family: `ghg search issues`, `ghg search prs`, `ghg search repos`, `ghg search code`, `ghg search commits` with `--repo`, `--state`, `--sort`, `--order`, `--limit`, `--language`, and `--author` flags
+- Search workspace in the TUI with operations for issues, pull requests, repositories, code, and commits
+- `getSearchPaginated` client method for GitHub Search API pagination with `total_count`, `incomplete_results`, and `items` envelope handling
+- Shared `SearchResult<T>` type and normalizer functions for search item types in `src/types/search.ts`
+- Playbook for search commands (`playbooks/search.sh`)
 - Complete issue lifecycle commands for creating, listing, viewing, editing, closing, reopening, commenting, deleting, locking, pinning, transferring, and showing assigned, created, or mentioned issue status
 - Issue type support plus repeatable label and assignee options for issue creation and filtering
 - Full issue lifecycle operations in the TUI and expanded live issue playbook coverage

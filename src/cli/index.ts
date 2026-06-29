@@ -23,6 +23,7 @@ import auditCommand from "@/commands/audit";
 import leaksCommand from "@/commands/leaks";
 import pagesCommand from "@/commands/pages";
 import labelsCommand from "@/commands/labels";
+import searchCommand from "@/commands/search";
 import outputState from "@/core/output-state";
 import configCommand from "@/commands/config";
 import secretCommand from "@/commands/secret";
@@ -108,6 +109,7 @@ if (!proxyCommand.runProxyFromArgv()) {
     cacheCommand.register(program);
     runCommand.register(program);
     releaseCommand.register(program);
+    searchCommand.register(program);
     auditCommand.register(program);
     leaksCommand.register(program);
     dependabotCommand.register(program);
@@ -175,6 +177,11 @@ Examples:
   ghg team list --org airscripts
   ghg repo invite --user octocat --role push
   ghg repo grant --team ops --role admin
+  ghg search issues "memory leak" --repo owner/repo --state open
+  ghg search prs "fix typo" --repo owner/repo
+  ghg search repos "typescript framework" --language typescript
+  ghg search code "useEffect" --repo owner/repo
+  ghg search commits "feat: add search" --repo owner/repo
 `,
     );
 

@@ -414,4 +414,20 @@ export type { EncryptedSecretInput } from "./secrets";
 
 export type { AuthUser, AuthStatus } from "./auth";
 
+export type {
+  SearchResult,
+  SearchOptions,
+  RepoSearchItem,
+  CodeSearchItem,
+  IssueSearchItem,
+  CommitSearchItem,
+} from "./search";
+
+export {
+  normalizeRepoSearchItem,
+  normalizeCodeSearchItem,
+  normalizeIssueSearchItem,
+  normalizeCommitSearchItem,
+} from "./search";
+
 export { normalizeLabel };
