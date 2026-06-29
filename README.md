@@ -587,6 +587,17 @@ ghg team remove --org airscripts --team ops --user octocat
 ### Repository Access
 
 ```bash
+ghg repo create demo --private
+ghg repo list --owner airscripts --owner-type org
+ghg repo view airscripts/ghitgud
+ghg repo clone airscripts/ghitgud --depth 1
+ghg repo edit airscripts/ghitgud --description "A better GitHub CLI"
+ghg repo archive airscripts/old-project
+ghg repo star airscripts/ghitgud
+ghg repo unstar airscripts/ghitgud
+ghg repo fork airscripts/ghitgud --clone
+ghg repo sync --branch main
+ghg repo delete airscripts/demo --yes
 ghg repo invite --user octocat --role push
 ghg repo grant --team ops --role admin
 ```
@@ -773,7 +784,7 @@ src/
     leaks.ts            # ghg leaks <scan|alerts>.
     org.ts              # ghg org <members|invite|remove>.
     team.ts             # ghg team <list|create|add|remove>.
-    repo.ts             # ghg repo <invite|grant>.
+    repo.ts             # Repository CRUD and access management.
     mentions.ts         # ghg mentions.
     milestone.ts        # ghg milestone <create|list|close|progress>.
     notifications.ts    # ghg notifications <list|read|done>.
@@ -965,7 +976,7 @@ bash playbooks/all.sh
 - `issue.sh` — `ghg issue` lifecycle, status, subtasks, and parent operations
 - `review.sh` — `ghg review comment/threads/resolve/suggest/apply`
 - `repos.sh` — `ghg repos inspect/govern/label/retire/report/clone`
-- `repo.sh` — `ghg repo invite/grant`
+- `repo.sh` — repository CRUD plus collaborator and team access
 - `release.sh` — `ghg release changelog/bump/verify/notes/draft`
 - `pr.sh` — `ghg pr` lifecycle, checkout, checks, cleanup, push, and stack operations
 - `project.sh` — `ghg project board`

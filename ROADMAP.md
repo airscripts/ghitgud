@@ -2,31 +2,6 @@
 
 ---
 
-## k6l7m8n9 — Repository CRUD
-
-**Why gh doesn't have it:** `gh repo` covers create/list/view/clone/delete/archive/fork/rename. ghg has inspect/govern/label/retire/report/clone/invite/grant — powerful governance — but no basic repo operations.
-
-**Gap:** No create, view, delete, archive, rename, edit, fork, or sync commands. The API layer already has `repos.archive`.
-
-**Commands:**
-
-- `ghg repo create <name> [--public|--private|--internal] [--description <text>] [--template <repo>]`
-- `ghg repo list [--owner <user|org>] [--type public|private|all]`
-- `ghg repo view [--owner/repo]`
-- `ghg repo clone <repo> [--depth <n>]` — extends existing `repos clone`
-- `ghg repo delete <repo> [--yes]`
-- `ghg repo archive <repo>` — uses existing `repos.archive` API
-- `ghg repo unarchive <repo>`
-- `ghg repo rename <repo> <new-name>`
-- `ghg repo star <repo>`
-- `ghg repo edit <repo> --description <text> --homepage <url> --visibility public|private`
-- `ghg repo fork <repo> [--clone] [--remote-name <name>]`
-- `ghg repo sync [--branch <name>]`
-
-**Value:** Repo management is table stakes. ghg's governance features are a differentiator, but basic CRUD is required for standalone use.
-
----
-
 ## o0p1q2r3 — Release CRUD
 
 **Why gh doesn't have it:** `gh release` covers create/list/view/edit/delete/download/upload. ghg has changelog/bump/verify/notes/draft — excellent automation — but no basic release management.

@@ -24,6 +24,35 @@ function gitInherit(args: string[]): void {
   execFileSync("git", args, { stdio: "inherit" });
 }
 
+function cloneRepository(
+  url: string,
+  options: { depth?: number; remoteName?: string } = {},
+): void {
+  const args = ["clone"];
+  if (options.depth) args.push("--depth", String(options.depth));
+  if (options.remoteName) args.push("--origin", options.remoteName);
+  args.push(url);
+  gitInherit(args);
+}
+
+function syncBranch(branch?: string): string {
+  const selected = branch || getCurrentBranch() || getDefaultBranch();
+
+  const upstream = git([
+    "rev-parse",
+    "--abbrev-ref",
+    `${selected}@{upstream}`,
+  ]).trim();
+
+  const separator = upstream.indexOf("/");
+  if (separator < 1) throw new ConfigError("Branch has no upstream remote.");
+  const remote = upstream.slice(0, separator);
+
+  gitInherit(["fetch", remote, selected]);
+  gitInherit(["merge", "--ff-only", `${remote}/${selected}`]);
+  return selected;
+}
+
 function getCurrentBranch(): string {
   return git(["branch", "--show-current"]).trim();
 }
@@ -384,6 +413,7 @@ export default {
   verifyTag,
   fetchTags,
   addRemote,
+  syncBranch,
   stageFiles,
   pushBranch,
   getRepoRoot,
@@ -400,6 +430,7 @@ export default {
   commitChanges,
   checkoutBranch,
   getRemoteNames,
+  cloneRepository,
   fastForwardBase,
   fetchPullRequest,
   getCurrentBranch,
