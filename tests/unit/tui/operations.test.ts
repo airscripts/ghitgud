@@ -175,12 +175,15 @@ vi.mock("@/services/run", () => ({
   },
 }));
 
-vi.mock("@/services/profile", () => ({
+vi.mock("@/services/auth", () => ({
   default: {
-    add: vi.fn(() => Promise.resolve()),
-    detect: vi.fn(() => Promise.resolve()),
+    token: vi.fn(),
+    login: vi.fn(() => Promise.resolve()),
+    logout: vi.fn(() => Promise.resolve()),
+    status: vi.fn(() => Promise.resolve()),
     list: vi.fn(() => Promise.resolve([])),
     switch: vi.fn(() => Promise.resolve()),
+    detect: vi.fn(() => Promise.resolve()),
   },
 }));
 
@@ -213,13 +216,13 @@ vi.mock("@/commands/proxy", () => ({
 import proxy from "@/commands/proxy";
 import prService from "@/services/pr";
 import runService from "@/services/run";
+import authService from "@/services/auth";
 import issueService from "@/services/issue";
 import stackService from "@/services/stack";
 import cacheService from "@/services/cache";
 import reviewService from "@/services/review";
 import labelsService from "@/services/labels";
 import configService from "@/services/config";
-import profileService from "@/services/profile";
 import releaseService from "@/services/release";
 import projectService from "@/services/project";
 import insightsService from "@/services/insights";
@@ -235,12 +238,12 @@ import notificationsService from "@/services/notifications";
 
 import prOperations from "@/tui/operations/prs";
 import runOperations from "@/tui/operations/run";
+import authOperations from "@/tui/operations/auth";
 import cacheOperations from "@/tui/operations/cache";
 import labelOperations from "@/tui/operations/labels";
 import issueOperations from "@/tui/operations/issues";
 import reviewOperations from "@/tui/operations/review";
 import configOperations from "@/tui/operations/config";
-import profileOperations from "@/tui/operations/profile";
 import utilityOperations from "@/tui/operations/utility";
 import releaseOperations from "@/tui/operations/release";
 import projectOperations from "@/tui/operations/projects";
@@ -791,48 +794,57 @@ describe("tui operations run functions", () => {
     });
   });
 
-  describe("profile", () => {
-    it("runs profile.add", async () => {
-      await runOp(profileOperations[0], {
-        name: "work",
+  describe("auth", () => {
+    it("runs auth.login", async () => {
+      await runOp(authOperations[0], {
         token: "ghp_xxx",
       });
 
-      expect(profileService.add).toHaveBeenCalledWith("work", {
-        token: "ghp_xxx",
+      expect(authService.login).toHaveBeenCalledWith("ghp_xxx", {
+        profile: undefined,
       });
     });
 
-    it("runs profile.list", async () => {
-      await runOp(profileOperations[1]);
-      expect(profileService.list).toHaveBeenCalled();
+    it("runs auth.status", async () => {
+      await runOp(authOperations[1]);
+      expect(authService.status).toHaveBeenCalled();
     });
 
-    it("runs profile.switch", async () => {
-      await runOp(profileOperations[2], { name: "work" });
-      expect(profileService.switch).toHaveBeenCalledWith("work");
+    it("runs auth.list", async () => {
+      await runOp(authOperations[2]);
+      expect(authService.list).toHaveBeenCalled();
     });
 
-    it("runs profile.detect", async () => {
-      await runOp(profileOperations[3]);
-      expect(profileService.detect).toHaveBeenCalled();
+    it("runs auth.switch", async () => {
+      await runOp(authOperations[3], { name: "work" });
+      expect(authService.switch).toHaveBeenCalledWith("work");
+    });
+
+    it("runs auth.detect", async () => {
+      await runOp(authOperations[4]);
+      expect(authService.detect).toHaveBeenCalled();
+    });
+
+    it("runs auth.token", async () => {
+      await runOp(authOperations[5]);
+      expect(authService.token).toHaveBeenCalledWith(false);
     });
   });
 
   describe("config", () => {
     it("runs config.set", async () => {
-      await runOp(configOperations[0], { key: "token", value: "abc" });
-      expect(configService.set).toHaveBeenCalledWith("token", "abc");
+      await runOp(configOperations[0], { key: "key", value: "val" });
+      expect(configService.set).toHaveBeenCalledWith("key", "val");
     });
 
     it("runs config.get", async () => {
-      await runOp(configOperations[1], { key: "token" });
-      expect(configService.get).toHaveBeenCalledWith("token");
+      await runOp(configOperations[1], { key: "key" });
+      expect(configService.get).toHaveBeenCalledWith("key");
     });
 
     it("runs config.unset", async () => {
-      await runOp(configOperations[2], { key: "token" });
-      expect(configService.unset).toHaveBeenCalledWith("token");
+      await runOp(configOperations[2], { key: "key" });
+      expect(configService.unset).toHaveBeenCalledWith("key");
     });
   });
 

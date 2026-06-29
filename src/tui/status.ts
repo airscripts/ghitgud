@@ -78,7 +78,7 @@ const buildStatusItems = (
     },
 
     {
-      label: "profile",
+      label: "auth",
       value: profile ?? "none",
       tone: profile ? undefined : "warning",
     },

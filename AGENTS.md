@@ -37,7 +37,7 @@ src/
     notifications.ts
     ping.ts
     pr.ts
-    profile.ts
+    auth.ts
     repos.ts
   core/
     command.ts        # shared command runner
@@ -67,7 +67,7 @@ src/
     labels.ts
     notifications.ts
     pr.ts
-    profile.ts
+    auth.ts
     stack.ts
   types/
     index.ts
@@ -92,7 +92,7 @@ src/
       workflow.ts
       cache.ts
       run.ts
-      profile.ts
+      auth.ts
       config.ts
       utility.ts
       release.ts
@@ -171,7 +171,7 @@ Current command families:
 - `ghg repos ...`
 - `ghg insights ...`
 - `ghg pr ...`
-- `ghg profile ...`
+- `ghg auth ...`
 - `ghg config ...`
 - `ghg gh ...`
 - `ghg ping`

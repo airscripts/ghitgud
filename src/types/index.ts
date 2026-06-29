@@ -412,4 +412,6 @@ export type { PublicKeyResponse } from "./secrets";
 export type { SecretListResponse } from "./secrets";
 export type { EncryptedSecretInput } from "./secrets";
 
+export type { AuthUser, AuthStatus } from "./auth";
+
 export { normalizeLabel };

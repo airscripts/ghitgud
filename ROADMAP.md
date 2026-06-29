@@ -2,24 +2,6 @@
 
 ---
 
-## c8d9e0f1 — Auth
-
-**Why gh doesn't have it:** `gh auth login` is the standard entry point. ghg's profile system (add/list/switch/detect) is more flexible for multi-account workflows but lacks a login/logout flow and token printing.
-
-**Gap:** No interactive or token-based login, no logout, no token display, no git credential setup.
-
-**Commands:**
-
-- `ghg auth login [--token <token>] [--web]` — interactive or token-based login
-- `ghg auth logout [--hostname <host>]`
-- `ghg auth status` — show current auth state
-- `ghg auth token` — print current token
-- `ghg auth setup-git` — configure git with ghg credentials
-
-**Value:** Auth is the entry point. Without a proper login flow, new users cannot get started easily.
-
----
-
 ## g2h3i4j5 — Search
 
 **Why gh doesn't have it:** `gh search` covers repos/issues/prs/code/commits. ghg has no search at all.

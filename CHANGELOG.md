@@ -14,11 +14,33 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Full issue lifecycle operations in the TUI and expanded live issue playbook coverage
 - Complete pull request lifecycle commands for CRUD, merging, checkout, diffs, checks, comments, conversation locks, draft readiness, and cross-repository status
 - Pull request lifecycle operations in the TUI with an isolated live PR playbook covering reversible and disposable-branch workflows
+- Authentication command family: `ghg auth login`, `logout`, `status`, `token`, `list`, `switch`, and `detect`
+- Token validation on login with user info and scope display
+- Masked token output by default with `--raw` flag for scripting
+- Auth status showing authenticated user, name, scopes, and active profile
+- Auth workspace in the TUI with login, status, list, switch, detect, and token operations
 
 ### Changed
 
 - GitHub REST API version updated to `2026-03-10` for current issue type support
 - Pull request creation now infers the repository default base branch and current local head branch when omitted
+- Merged `ghg profile add/list/switch/detect` into `ghg auth login/list/switch/detect`
+- Merged `ghg config set/get/unset token` into `ghg auth login/token/logout`
+- Removed `ghg profile` command (replaced by `ghg auth`)
+- `ghg config set/get/unset` no longer manages `token` (use `ghg auth login` instead)
+- Error messages now reference `ghg auth login` instead of `ghg config set token`
+- TUI workspace renamed from "Profile" to "Auth"
+- TUI status bar label renamed from "profile" to "auth"
+
+### Removed
+
+- `ghg profile add` command (replaced by `ghg auth login`)
+- `ghg profile list` command (replaced by `ghg auth list`)
+- `ghg profile switch` command (replaced by `ghg auth switch`)
+- `ghg profile detect` command (replaced by `ghg auth detect`)
+- `ghg config set token` command (replaced by `ghg auth login --token`)
+- `ghg config get token` command (replaced by `ghg auth token`)
+- `ghg config unset token` command (replaced by `ghg auth logout`)
 
 ## [2.15.0] - 2026-06-28
 

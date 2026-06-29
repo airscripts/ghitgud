@@ -1,5 +1,10 @@
+import path from "path";
+import { execFile } from "child_process";
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
-import { run, createTempDir, cleanupTempDir } from "./setup";
+
+import { createTempDir, cleanupTempDir } from "./setup";
+
+const BINARY = path.resolve(__dirname, "../../dist/index.js");
 
 describe("e2e > config", () => {
   let tempHome: string;
@@ -12,40 +17,32 @@ describe("e2e > config", () => {
     cleanupTempDir(tempHome);
   });
 
-  it("sets, gets, and unsets the token key", async () => {
-    const { stdout: setOut } = await run(
-      ["config", "set", "token", "ghp_test123", "--json"],
-      { home: tempHome },
-    );
+  it("rejects unsupported config keys", async () => {
+    const result = await new Promise<{
+      stdout: string;
+      stderr: string;
+      exitCode: number;
+    }>((resolve) => {
+      execFile(
+        "node",
+        [BINARY, "config", "set", "token", "value", "--json"],
 
-    expect(JSON.parse(setOut)).toEqual({ success: true });
+        {
+          env: { ...process.env, HOME: tempHome, USERPROFILE: tempHome },
+          timeout: 20_000,
+        },
 
-    const { stdout: getOut } = await run(["config", "get", "token", "--json"], {
-      home: tempHome,
+        (error, stdout, stderr) => {
+          resolve({
+            stdout: (stdout ?? "").trim(),
+            stderr: (stderr ?? "").trim(),
+            exitCode: error ? (error.code as number) : 0,
+          });
+        },
+      );
     });
 
-    expect(JSON.parse(getOut)).toMatchObject({
-      success: true,
-      key: "token",
-      value: "ghp_test123",
-    });
-
-    const { stdout: unsetOut } = await run(
-      ["config", "unset", "token", "--json"],
-      { home: tempHome },
-    );
-
-    expect(JSON.parse(unsetOut)).toEqual({ success: true });
-
-    const { stdout: getOut2 } = await run(
-      ["config", "get", "token", "--json"],
-      { home: tempHome },
-    );
-
-    expect(JSON.parse(getOut2)).toMatchObject({
-      success: true,
-      key: "token",
-      value: null,
-    });
+    expect(result.exitCode).not.toBe(0);
+    expect(result.stderr).toContain("unsupported key");
   });
 });

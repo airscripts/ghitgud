@@ -458,7 +458,7 @@ const renderDashboard = (
   );
 
   const dataLines = [
-    ["Profile", dashboardData.profile ?? "none"],
+    ["Auth", dashboardData.profile ?? "none"],
     ["Repository", dashboardData.repo ?? "none"],
     ["Token", dashboardData.tokenSet ? "✓ set" : "✗ none"],
     ["Branch", dashboardData.branch ?? "none"],

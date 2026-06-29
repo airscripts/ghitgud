@@ -10,6 +10,7 @@ import prCommand from "@/commands/pr";
 import tuiCommand from "@/commands/tui";
 import runCommand from "@/commands/run";
 import orgCommand from "@/commands/org";
+import authCommand from "@/commands/auth";
 import pingCommand from "@/commands/ping";
 import teamCommand from "@/commands/team";
 import repoCommand from "@/commands/repo";
@@ -27,7 +28,6 @@ import configCommand from "@/commands/config";
 import secretCommand from "@/commands/secret";
 import reviewCommand from "@/commands/review";
 import projectCommand from "@/commands/project";
-import profileCommand from "@/commands/profile";
 import releaseCommand from "@/commands/release";
 import insightsCommand from "@/commands/insights";
 import mentionsCommand from "@/commands/mentions";
@@ -87,6 +87,7 @@ if (!proxyCommand.runProxyFromArgv()) {
       .showSuggestionAfterError();
 
     proxyCommand.register(program);
+    authCommand.register(program);
     notificationsCommand.register(program);
     activityCommand.register(program);
     mentionsCommand.register(program);
@@ -94,7 +95,6 @@ if (!proxyCommand.runProxyFromArgv()) {
     insightsCommand.register(program);
     pingCommand.register(program);
     labelsCommand.register(program);
-    profileCommand.register(program);
     pagesCommand.register(program);
     wikiCommand.register(program);
     configCommand.register(program);
@@ -139,6 +139,8 @@ if (!proxyCommand.runProxyFromArgv()) {
       "after",
       `
 Examples:
+  ghg auth login --token ghp_xxx
+  ghg auth status
   ghg notifications list
   ghg pr create --title "Add feature"
   ghg pr checks 42
@@ -146,7 +148,7 @@ Examples:
   ghg repos report --org airscripts
   ghg labels push
   ghg proxy pr checkout 17
-  ghg profile detect
+  ghg auth login --token ghp_xxx
   ghg review threads 42
   ghg milestone progress v2.10.0
   ghg project board 1

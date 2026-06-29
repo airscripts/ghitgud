@@ -70,7 +70,7 @@ Every command reads from `src/core/config.ts`, which resolves values in this ord
 - **Notifications** — list, read, and dismiss GitHub notifications from the terminal
 - **Activity & Mentions** — composite views of assigned issues, review requests, and @mentions
 - **PR Lifecycle** — cleanup merged branches, push back to forks, manage stacked PR chains
-- **Multi-Account Profiles** — switch between GitHub accounts and tokens per repository
+- **Authentication** — login with token validation, logout, view auth status and scopes, list and switch profiles
 - **Bulk Repository Governance** — inspect, govern, label, retire, and report across repo sets
 - **Repository Insights** — view traffic data, contributors, commit activity, code frequency, referrers, and participation metrics
 - **Code Review** — comment on lines, list threads, resolve threads, suggest changes, and apply suggestions
@@ -117,21 +117,29 @@ pnpm start              # Run the CLI locally.
 
 ---
 
-## Configuration
+## Authentication
 
-Set a GitHub personal access token:
-
-```bash
-ghg config set token <your-token>
-```
-
-Retrieve a configured value:
+Authenticate with a GitHub personal access token:
 
 ```bash
-ghg config get token
+ghg auth login --token <your-token>
 ```
 
-Configuration is stored in `~/.config/ghitgud/credentials.json`.
+Check your authentication status and token scopes:
+
+```bash
+ghg auth status
+ghg auth token
+```
+
+Switch between profiles for multi-account workflows:
+
+```bash
+ghg auth list
+ghg auth switch work
+```
+
+Credentials are stored in `~/.config/ghitgud/credentials.json`.
 
 ### Token Scopes
 
@@ -201,22 +209,22 @@ git push
 
 ---
 
-## Profile Management
+## Multi-Account Profiles
 
-ghg introduces multi-account support through named profiles. Each profile stores its own token.
+ghg supports multi-account workflows through named profiles under `ghg auth`.
 
 ```bash
-# Add or update a profile.
-ghg profile add work --token ghp_xxx
+# Login with a token and profile name.
+ghg auth login --token ghp_xxx --profile work
 
 # List all profiles.
-ghg profile list
+ghg auth list
 
-# Activate a profile for the current session.
-ghg profile switch work
+# Switch the active profile.
+ghg auth switch work
 
 # Auto-detect profile from current repository.
-ghg profile detect
+ghg auth detect
 ```
 
 When a profile is active, all API calls use that profile's token. The `detect` command reads the current repository's remote URL and matches it against profile associations.
@@ -341,29 +349,26 @@ ghg workflow preview [path]
 - `validate` validates GitHub Actions workflow files.
 - `preview` previews workflow structure.
 
-### Configuration
+### Authentication
 
 ```bash
-ghg config set <key> <val>
-ghg config get <key>
+ghg auth login --token <token>
+ghg auth login --token <token> --profile <name>
+ghg auth logout
+ghg auth status
+ghg auth token [--raw]
+ghg auth list
+ghg auth switch <name>
+ghg auth detect
 ```
 
-- `set` sets a config value such as token.
-- `get` reads a configured value.
-
-### Profile
-
-```bash
-ghg profile add <name>
-ghg profile list
-ghg profile switch <name>
-ghg profile detect
-```
-
-- `add` adds or updates a profile.
-- `list` lists all profiles.
-- `switch` activates a profile.
-- `detect` detects the profile for the current repository.
+- `login` authenticates with a GitHub token, validates it, and stores credentials.
+- `logout` removes stored credentials from the active profile.
+- `status` shows the authenticated user, token scopes, and active profile.
+- `token` prints the current token (masked by default, `--raw` for full).
+- `list` lists all configured profiles.
+- `switch` activates a profile after validating its token.
+- `detect` auto-detects the profile for the current repository.
 
 ### Passthrough
 
@@ -774,7 +779,7 @@ src/
     notifications.ts    # ghg notifications <list|read|done>.
     ping.ts             # ghg ping.
     pr.ts               # ghg pr lifecycle, checkout, checks, cleanup, and stacks.
-    profile.ts          # ghg profile <add|list|switch|detect>.
+    auth.ts             # ghg auth <login|logout|status|token|list|switch|detect>.
     project.ts          # ghg project <board>.
     proxy.ts            # ghg proxy <passthrough>.
     repos.ts            # ghg repos <inspect|govern|label|retire|report>.
@@ -789,7 +794,7 @@ src/
   services/
     labels.ts           # Label business logic.
     config.ts           # Config business logic.
-    profile.ts          # Profile business logic.
+    auth.ts             # Auth business logic.
     pr.ts               # PR lifecycle business logic.
     stack.ts            # Stacked PR chain management.
     notifications.ts    # Notifications business logic.
@@ -936,7 +941,7 @@ bash playbooks/all.sh
 
 - `ping.sh` — `ghg ping`
 - `config.sh` — `ghg config set/get/unset`
-- `profile.sh` — `ghg profile detect/list/add/switch`
+- `auth.sh` — `ghg auth login/logout/status/token/list/switch/detect`
 - `activity.sh` — `ghg activity`
 - `mentions.sh` — `ghg mentions`
 - `cache.sh` — `ghg cache inspect/download`

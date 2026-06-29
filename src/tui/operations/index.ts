@@ -4,6 +4,7 @@ import orgOperations from "./org";
 import teamOperations from "./team";
 import repoOperations from "./repo";
 import wikiOperations from "./wiki";
+import authOperations from "./auth";
 import cacheOperations from "./cache";
 import auditOperations from "./audit";
 import leaksOperations from "./leaks";
@@ -12,7 +13,6 @@ import labelOperations from "./labels";
 import issueOperations from "./issues";
 import reviewOperations from "./review";
 import configOperations from "./config";
-import profileOperations from "./profile";
 import utilityOperations from "./utility";
 import releaseOperations from "./release";
 import secretsOperations from "./secrets";
@@ -45,7 +45,7 @@ const operations: TuiOperation[] = [
   ...workflowOperations,
   ...cacheOperations,
   ...runOperations,
-  ...profileOperations,
+  ...authOperations,
   ...configOperations,
   ...utilityOperations,
   ...releaseOperations,

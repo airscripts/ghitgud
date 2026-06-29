@@ -103,7 +103,7 @@ describe("tui status", () => {
     expect(items.find((item) => item.label === "cwd")?.value).toBe("root");
   });
 
-  it("should order items as token, repo, profile, cwd, branch, mode", () => {
+  it("should order items as token, repo, auth, cwd, branch, mode", () => {
     const items = buildStatusItems(
       { mode: "normal" },
 
@@ -117,13 +117,6 @@ describe("tui status", () => {
     );
 
     const labels = items.map((item) => item.label);
-    expect(labels).toEqual([
-      "token",
-      "repo",
-      "profile",
-      "cwd",
-      "branch",
-      "mode",
-    ]);
+    expect(labels).toEqual(["token", "repo", "auth", "cwd", "branch", "mode"]);
   });
 });

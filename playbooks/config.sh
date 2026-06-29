@@ -2,47 +2,16 @@
 set -euo pipefail
 source "$(dirname "$0")/env.sh"
 
-# This playbook saves and restores the token. It sets a temporary value
-# and immediately restores it, so the user's real token is never lost.
-CONFIG_ORIGINAL_TOKEN=""
+# Config no longer manages token (moved to auth).
+# This playbook verifies that config set/get/unset reject unsupported keys.
 
-setup() {
-  # Extract just the token value from the config get output
-  CONFIG_ORIGINAL_TOKEN=$(ghg config get token 2>/dev/null | grep -oP 'token\s+\K\S+' || true)
-}
+step "Config Set Rejects Unsupported Key"
+expect_exit_non0 "config set rejects unsupported key" ghg config set unsupported_key value
 
-teardown() {
-  if [ -n "$CONFIG_ORIGINAL_TOKEN" ]; then
-    step "Restoring Original Token"
-    if ghg config set token "$CONFIG_ORIGINAL_TOKEN" >/dev/null 2>&1; then
-      pass "original token restored"
-    else
-      fail "original token restore failed"
-    fi
-  fi
+step "Config Get Rejects Unsupported Key"
+expect_exit_non0 "config get rejects unsupported key" ghg config get unsupported_key
 
-  print_summary
-}
+step "Config Unset Rejects Unsupported Key"
+expect_exit_non0 "config unset rejects unsupported key" ghg config unset unsupported_key
 
-trap teardown EXIT
-setup
-
-step "Config Get"
-expect_exit_0 "config get succeeds" ghg config get token
-
-step "Config Set"
-TEMP_TOKEN="ghg_playbook_test_token"
-if ghg config set token "$TEMP_TOKEN" >/dev/null 2>&1; then
-  pass "config set succeeded"
-
-  if ghg config set token "$CONFIG_ORIGINAL_TOKEN" >/dev/null 2>&1; then
-    pass "original token restored"
-  else
-    fail "original token restore failed"
-  fi
-else
-  fail "config set failed"
-fi
-
-step "Config Get After Restore"
-expect_output "config get shows restored token" "ghp_" ghg config get token
+print_summary

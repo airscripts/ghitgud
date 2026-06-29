@@ -20,7 +20,7 @@ type TuiWorkspace =
   | "Workflow"
   | "Cache"
   | "Run"
-  | "Profile"
+  | "Auth"
   | "Config"
   | "Utility"
   | "Release"

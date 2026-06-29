@@ -35,18 +35,19 @@ export const ERROR_UNEXPECTED = "Unexpected status code.";
 export const ERROR_INVALID_CREDENTIALS = "Invalid credentials file.";
 export const ERROR_INVALID_PROFILE_RC = "Invalid profile config file.";
 export const ERROR_PROFILE_NOT_FOUND = "Profile not found.";
-export const ERROR_PROFILE_NAME_REQUIRED = "Profile name is required.";
-export const ERROR_PROFILE_TOKEN_REQUIRED = "Token is required.";
+export const ERROR_AUTH_NO_TOKEN = "No token found. Run: ghg auth login";
+export const ERROR_AUTH_FAILED = "Authentication failed. Check your token.";
+export const INFO_AUTH_LOGGED_IN = "Logged in as";
+export const INFO_AUTH_LOGGED_OUT = "Logged out successfully.";
 export const ERROR_NO_GIT_ROOT = "Git repository root not found.";
 export const ERROR_NO_REMOTE_URL = "Unable to detect repository remote.";
 
 export const ERROR_NO_REPO =
   "No repository specified. Use --repo owner/repo or run inside a git repository with a GitHub remote.";
 
-export const ERROR_NO_TOKEN =
-  "Token not configured. Set it with: ghg config set token <your-token>.";
+export const ERROR_NO_TOKEN = "Token not configured. Run: ghg auth login.";
 
-export const ERROR_RATE_LIMIT_UNAUTHENTICATED = `Rate limit reached (60/hour). Set token for 5000/hour: ghg config set token <your-token>.`;
+export const ERROR_RATE_LIMIT_UNAUTHENTICATED = `Rate limit reached (60/hour). Run: ghg auth login for 5000/hour.`;
 export const ERROR_RATE_LIMIT_AUTHENTICATED = "Rate limit reached.";
 export const ERROR_TOKEN_REQUIRED = "This operation requires a token.";
 
@@ -123,7 +124,7 @@ export const DEPENDABOT_DISMISS_REASONS = [
   "tolerable_risk",
 ] as const;
 
-export const SUPPORTED_CONFIG_KEYS = ["token"] as const;
+export const SUPPORTED_CONFIG_KEYS = [] as const;
 export type SupportedKey = (typeof SUPPORTED_CONFIG_KEYS)[number];
 
 export const ERROR_REVIEW_PR_REQUIRED = "PR number is required.";

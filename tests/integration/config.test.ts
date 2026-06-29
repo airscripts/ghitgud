@@ -5,55 +5,44 @@ import configCommand from "@/commands/config";
 
 vi.mock("@/services/config", () => ({
   default: {
-    set: vi.fn(() => Promise.resolve({ success: true })),
+    set: vi.fn(() => {
+      throw new Error("Unsupported key.");
+    }),
 
-    get: vi.fn(() =>
-      Promise.resolve({ success: true, value: "ghp_testtoken" }),
-    ),
+    get: vi.fn(() => {
+      throw new Error("Unsupported key.");
+    }),
 
-    unset: vi.fn(() => Promise.resolve({ success: true })),
+    unset: vi.fn(() => {
+      throw new Error("Unsupported key.");
+    }),
   },
 }));
-
-import configService from "@/services/config";
 
 describe("integration > config commands", () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
-  it("set calls service.set with key and value", async () => {
+  it("should register config command with subcommands", () => {
     const program = new Command();
-    program.exitOverride();
     configCommand.register(program);
+    const config = program.commands.find((c) => c.name() === "config");
 
-    await program.parseAsync([
-      "node",
-      "test",
-      "config",
-      "set",
-      "token",
-      "ghp_testtoken",
-    ]);
-
-    expect(configService.set).toHaveBeenCalledWith("token", "ghp_testtoken");
+    expect(config).toBeDefined();
+    const subcommands = config!.commands.map((c) => c.name());
+    expect(subcommands).toContain("set");
+    expect(subcommands).toContain("get");
+    expect(subcommands).toContain("unset");
   });
 
-  it("get calls service.get with key", async () => {
+  it("should reject unsupported key on set", async () => {
     const program = new Command();
     program.exitOverride();
     configCommand.register(program);
 
-    await program.parseAsync(["node", "test", "config", "get", "token"]);
-    expect(configService.get).toHaveBeenCalledWith("token");
-  });
-
-  it("unset calls service.unset with key", async () => {
-    const program = new Command();
-    program.exitOverride();
-    configCommand.register(program);
-
-    await program.parseAsync(["node", "test", "config", "unset", "token"]);
-    expect(configService.unset).toHaveBeenCalledWith("token");
+    await expect(
+      program.parseAsync(["node", "test", "config", "set", "token", "value"]),
+    ).rejects.toThrow();
   });
 });

@@ -18,7 +18,7 @@ PARALLEL="${PARALLEL:-0}"
 PLAYBOOKS=(
   ping
   config
-  profile
+  auth
   activity
   mentions
   cache

@@ -17,35 +17,23 @@ const register = (program: Command) => {
     .arguments("[key] [value]")
     .action(async (key?: string, value?: string) => {
       let configKey = key;
-      let configValue = value;
 
       if (!configKey) {
         configKey = await prompt.select(
           "Which configuration would you like to set?",
           SUPPORTED_CONFIG_KEYS.map((k) => ({
             value: k,
-            label: k === "token" ? "token (GitHub personal access token)" : k,
+            label: k,
           })),
         );
       }
 
+      let configValue = value;
       if (!configValue) {
-        const currentValue = configService.read(configKey);
-
-        const placeholder = configKey === "token" ? "ghp_xxxxxxxxxxxx" : "";
-
-        const initialValue =
-          currentValue && configKey === "token"
-            ? `${currentValue.substring(0, 4)}...`
-            : undefined;
-
-        configValue = await prompt.text(`Enter value for ${configKey}:`, {
-          placeholder,
-          initialValue,
-        });
+        configValue = await prompt.text(`Enter value for ${configKey}:`);
       }
 
-      await command.run(() => configService.set(configKey, configValue));
+      await command.run(() => configService.set(configKey!, configValue!));
     });
 
   config
@@ -65,7 +53,7 @@ const register = (program: Command) => {
         );
       }
 
-      await command.run(() => configService.get(configKey));
+      await command.run(() => configService.get(configKey!));
     });
 
   config
@@ -85,7 +73,7 @@ const register = (program: Command) => {
         );
       }
 
-      await command.run(() => configService.unset(configKey));
+      await command.run(() => configService.unset(configKey!));
     });
 };
 
