@@ -503,6 +503,78 @@ interface CodeQLAlertSummary {
   createdAt: string;
 }
 
+interface CodeSearchResult {
+  file: string;
+  repo: string;
+  url: string;
+}
+
+interface BlameEntry {
+  sha: string;
+  author: string;
+  date: string;
+  message: string;
+  pr: string;
+}
+
+interface IssueTemplate {
+  name: string;
+  filename: string;
+  path: string;
+  body: string | null;
+  about: string | null;
+  title: string | null;
+  labels: string[];
+  assignees: string[];
+}
+
+interface PackageSummary {
+  id: number;
+  name: string;
+  packageType: string;
+  visibility: string;
+  url: string;
+  htmlUrl: string;
+  createdAt: string;
+  updatedAt: string;
+  owner: string;
+  repository: string;
+}
+
+interface PackageVersion {
+  id: number;
+  name: string;
+  version: string;
+  url: string;
+  htmlUrl: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+interface RunnerSummary {
+  id: number;
+  name: string;
+  os: string;
+  status: string;
+  busy: boolean;
+  labels: string[];
+}
+
+interface RunnerLabel {
+  id: number;
+  name: string;
+  type: string;
+}
+
+interface AdvisoryCreateInput {
+  severity: string;
+  cveId?: string;
+  summary: string;
+  description: string;
+  vulnerableVersionRange?: string;
+  patchedVersionRange?: string;
+}
+
 const normalizeLabel = (label: Label) => ({
   name: label.name,
   color: label.color,
@@ -542,6 +614,14 @@ export type { DependencyEntry };
 export type { DependencyReviewChange };
 export type { AdvisorySummary };
 export type { CodeQLAlertSummary };
+export type { CodeSearchResult };
+export type { BlameEntry };
+export type { IssueTemplate };
+export type { PackageSummary };
+export type { PackageVersion };
+export type { RunnerSummary };
+export type { RunnerLabel };
+export type { AdvisoryCreateInput };
 export type { WebhookSummary };
 export type { WebhookDelivery };
 export type { WorkflowDryRunResult };

@@ -350,6 +350,40 @@ const prune = async (
   return { success: true, metadata: { deleted: labels.length } };
 };
 
+const bulk = async (filePath: string, repo: string) => {
+  logger.start(`Loading labels from ${filePath}.`);
+  const labels = loadLabelsFromPath(filePath);
+  const result = await upsertLabels(labels, repo);
+
+  output.renderSummary("Label Bulk Create", [
+    ["Created", result.created.length],
+    ["Updated", result.updated.length],
+    ["Unchanged", result.unchanged.length],
+  ]);
+
+  logger.success(`Applied ${labels.length} label(s).`);
+  return { success: true, metadata: result };
+};
+
+const sync = async (sourceRepo: string, targetRepo: string) => {
+  logger.start(`Syncing labels from ${sourceRepo} to ${targetRepo}.`);
+  const response = await api.fetch(sourceRepo);
+  const data = await response.json();
+  const labels = data.map((label: Label) => normalizeLabel(label));
+  const result = await upsertLabels(labels, targetRepo);
+
+  output.renderSummary("Label Sync", [
+    ["Source", sourceRepo],
+    ["Target", targetRepo],
+    ["Created", result.created.length],
+    ["Updated", result.updated.length],
+    ["Unchanged", result.unchanged.length],
+  ]);
+
+  logger.success(`Synced ${labels.length} label(s).`);
+  return { success: true, metadata: result };
+};
+
 export default {
   get,
   ping,
@@ -358,6 +392,8 @@ export default {
   push,
   prune,
   clone,
+  bulk,
+  sync,
   create,
   update,
   deleteLabel,

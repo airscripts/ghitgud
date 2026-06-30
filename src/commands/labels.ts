@@ -163,6 +163,26 @@ Examples:
       const repo = await repoResolver.resolveRepo(options.repo);
       await command.run(() => labelsService.prune(repo, options));
     });
+
+  labels
+    .command("bulk")
+    .description("Create labels from a JSON or YAML file.")
+    .requiredOption("--file <path>", "Path to labels file")
+    .option("--repo <repo>", "Repository (owner/repo)")
+    .action(async (options) => {
+      const repo = await repoResolver.resolveRepo(options.repo);
+      await command.run(() => labelsService.bulk(options.file, repo));
+    });
+
+  labels
+    .command("sync")
+    .description("Sync labels from another repository.")
+    .requiredOption("--source <repo>", "Source repository (owner/repo)")
+    .option("--repo <repo>", "Target repository (owner/repo)")
+    .action(async (options) => {
+      const target = await repoResolver.resolveRepo(options.repo);
+      await command.run(() => labelsService.sync(options.source, target));
+    });
 };
 
 export default { register };

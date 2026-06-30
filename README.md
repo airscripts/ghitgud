@@ -109,6 +109,12 @@ Every command reads from `src/core/config.ts`, which resolves values in this ord
 - **Workspaces** — define named workspaces and run commands across multiple repositories
 - **Multi-Repo Operations** — syncall, statusall, branch stale detection, and sweep
 - **Actions Cost Analytics** — usage, cost, top-spenders, and export for billing visibility
+- **Code Search & Navigation** — search code, find definitions and references, view files at refs, and blame with PR context
+- **Template Discovery** — list and preview issue and PR templates
+- **Label Bulk & Sync** — create labels from JSON/YAML files, sync labels between repositories
+- **Package & Container Registry** — list, view, version, delete, and restore GHCR and package versions
+- **Self-Hosted Runners** — list, view, check status, remove, and inspect labels for org and repo runners
+- **Security Advisory Lifecycle** — create, publish, close, and request CVEs for repo-scoped advisories
 
 ---
 
@@ -669,11 +675,21 @@ ghg deps review --base main --head feature --repo owner/repo
 ```bash
 ghg advisory list
 ghg advisory list --ecosystem npm --severity high
+ghg advisory list --repo owner/repo --state published
 ghg advisory view GHSA-xxxx-xxxx-xxxx
+ghg advisory view GHSA-xxxx --repo owner/repo
+ghg advisory create --repo owner/repo --summary "Vulnerability" --description "Details" --severity high
+ghg advisory publish GHSA-xxxx --repo owner/repo
+ghg advisory close GHSA-xxxx --repo owner/repo
+ghg advisory cve-request GHSA-xxxx --repo owner/repo
 ```
 
-- `list` queries the GitHub Advisory Database by ecosystem and severity.
+- `list` queries advisories globally or scoped to a repo, filterable by ecosystem, severity, and state.
 - `view` shows detailed advisory information.
+- `create` creates a draft repository security advisory.
+- `publish` publishes a draft advisory.
+- `close` closes an advisory.
+- `cve-request` requests a CVE for a published advisory.
 
 ### CodeQL
 
@@ -716,6 +732,93 @@ ghg actions export --repo owner/repo --format csv
 - `cost` shows cost summary for a repository or organization.
 - `top-spenders` ranks workflows by billable minutes.
 - `export` outputs usage data as JSON or CSV.
+
+### Code Search & Navigation
+
+```bash
+ghg code search <query> --repo owner/repo --language typescript
+ghg code definitions <symbol> --repo owner/repo
+ghg code references <symbol> --repo owner/repo
+ghg code file <path> --repo owner/repo --ref main
+ghg code blame <path> --repo owner/repo
+```
+
+- `search` searches code across repositories.
+- `definitions` finds symbol definitions.
+- `references` finds symbol references.
+- `file` views a file at a specific ref.
+- `blame` shows commit history with PR context.
+
+### Templates
+
+```bash
+ghg template list --repo owner/repo
+ghg template show bug_report.yml --repo owner/repo
+```
+
+- `list` discovers issue and PR templates in a repository.
+- `show` renders a specific template with frontmatter metadata.
+
+### Label Bulk & Sync
+
+```bash
+ghg labels bulk --file labels.json --repo owner/repo
+ghg labels sync --source owner/source --repo owner/target
+```
+
+- `bulk` creates labels from a JSON or YAML file.
+- `sync` syncs labels from a source repository to a target.
+
+### Packages
+
+```bash
+ghg package list --repo owner/repo --type npm
+ghg package view <name> --repo owner/repo --type npm
+ghg package versions <name> --repo owner/repo --type npm
+ghg package delete <name> --version-id 123 --repo owner/repo --type npm --yes
+ghg package restore <name> --version-id 123 --repo owner/repo --type npm
+```
+
+- `list` lists packages for a repository, organization, or user.
+- `view` shows package details.
+- `versions` lists package versions.
+- `delete` deletes a package version.
+- `restore` restores a deleted package version.
+
+### Self-Hosted Runners
+
+```bash
+ghg runner list --repo owner/repo
+ghg runner list --org myorg --label linux
+ghg runner view 1 --repo owner/repo
+ghg runner status 1 --repo owner/repo
+ghg runner remove 1 --repo owner/repo --yes
+ghg runner labels 1 --repo owner/repo
+```
+
+- `list` lists self-hosted runners for a repo or org.
+- `view` shows runner details.
+- `status` shows health and busy status.
+- `remove` removes a runner after confirmation.
+- `labels` lists labels attached to a runner.
+
+### Advisory Lifecycle
+
+```bash
+ghg advisory list --repo owner/repo --state published
+ghg advisory view GHSA-xxxx --repo owner/repo
+ghg advisory create --repo owner/repo --summary "Vulnerability" --description "Details" --severity high
+ghg advisory publish GHSA-xxxx --repo owner/repo
+ghg advisory close GHSA-xxxx --repo owner/repo
+ghg advisory cve-request GHSA-xxxx --repo owner/repo
+```
+
+- `list` lists security advisories, optionally filtered by state and scoped to a repo.
+- `view` views advisory details.
+- `create` creates a draft repository security advisory.
+- `publish` publishes a draft advisory.
+- `close` closes an advisory.
+- `cve-request` requests a CVE for a published advisory.
 
 ### Webhooks
 
@@ -1023,10 +1126,20 @@ src/
      webhook.ts           # ghg webhook lifecycle and delivery commands.
      workflow.ts         # Workflow lifecycle, validation, and preview commands.
      deps.ts              # ghg deps <list|direct|review>.
-     advisory.ts         # ghg advisory <list|view>.
+     advisory.ts         # ghg advisory <list|view|create|publish|close|cve-request>.
      codeql.ts            # ghg codeql <list|view|dismiss>.
      workspace.ts        # ghg workspace <define|list|run>.
      actions.ts          # ghg actions <usage|cost|top-spenders|export>.
+      react.ts             # ghg react <list|add|remove>.
+      comment.ts           # ghg comment <list|reply|delete>.
+      deployment.ts        # ghg deployment lifecycle commands.
+      branch.ts            # ghg branch <protect|unprotect|protection|tag-protect|tag-unprotect|stale|sweep>.
+      fork.ts              # ghg fork <sync|compare|list|create>.
+      webhook.ts           # ghg webhook lifecycle and delivery commands.
+      code.ts              # ghg code <search|definitions|references|file|blame>.
+      template.ts          # ghg template <list|show>.
+      package.ts           # ghg package <list|view|versions|delete|restore>.
+      runner.ts            # ghg runner <list|view|status|remove|labels>.
    services/
     labels.ts           # Label business logic.
     config.ts           # Config business logic.
@@ -1057,12 +1170,16 @@ src/
      pages.ts            # GitHub Pages configuration and deployment logic.
      wiki.ts             # Wiki clone, read, commit, and publish logic.
      deps.ts              # Dependency graph and review business logic.
-     advisory.ts          # Advisory database business logic.
+     advisory.ts          # Advisory database and lifecycle business logic.
      codeql.ts            # CodeQL alert management business logic.
      workspace.ts         # Workspace definition and multi-repo command execution.
      sync.ts              # Multi-repo sync and status business logic.
      stale.ts             # Stale branch detection and sweep business logic.
-     cost.ts              # Actions cost and usage analytics business logic.
+      cost.ts              # Actions cost and usage analytics business logic.
+      code.ts              # Code search and navigation business logic.
+      template.ts          # Template discovery business logic.
+      package.ts           # Package and container registry business logic.
+      runner.ts            # Self-hosted runner management business logic.
     repos/
       govern.ts         # Repository rulesets.
       index.ts          # Repos services index.
@@ -1101,8 +1218,12 @@ src/
      dependencies.ts     # Dependency graph and SBOM API.
      advisories.ts       # GitHub Advisory Database API.
      codeql.ts           # CodeQL code scanning alerts API.
-     billing.ts          # Actions billing and usage API.
-     actions.ts          # Actions runs API.
+      billing.ts          # Actions billing and usage API.
+      actions.ts          # Actions runs API.
+      code.ts             # Code search and navigation API.
+      templates.ts        # Issue and PR template discovery API.
+      packages.ts         # Package and container registry API.
+      runners.ts          # Self-hosted runner API.
 
   core/
      command.ts          # Shared command runner.
@@ -1218,7 +1339,7 @@ bash playbooks/all.sh
 - `audit.sh` — `ghg audit`
 - `compliance.sh` — `ghg compliance check`
 - `workflow.sh` — workflow lifecycle, validation, and preview
-- `labels.sh` — `ghg labels list/pull/push/prune`
+- `labels.sh` — `ghg labels list/pull/push/prune/bulk/sync`
 - `pages.sh` — `ghg pages status/deploy/unpublish`
 - `wiki.sh` — `ghg wiki list/view/edit/create/delete`
 - `environment.sh` — `ghg environment list/create`
@@ -1245,6 +1366,10 @@ bash playbooks/all.sh
 - `codeql.sh` — `ghg codeql` lifecycle
 - `workspace.sh` — `ghg workspace` lifecycle
 - `actions.sh` — `ghg actions` lifecycle
+- `code.sh` — `ghg code` search and navigation
+- `template.sh` — `ghg template` discovery
+- `package.sh` — `ghg package` lifecycle
+- `runner.sh` — `ghg runner` management
 
 ### Conventions
 

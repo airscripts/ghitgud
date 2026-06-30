@@ -11,5 +11,9 @@ describe("advisory command", () => {
     const names = advisory!.commands.map((cmd) => cmd.name());
     expect(names).toContain("list");
     expect(names).toContain("view");
+    expect(names).toContain("create");
+    expect(names).toContain("publish");
+    expect(names).toContain("close");
+    expect(names).toContain("cve-request");
   });
 });

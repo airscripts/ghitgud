@@ -2,7 +2,15 @@ import { describe, expect, it, vi, beforeEach, Mock } from "vitest";
 import advisoryService from "@/services/advisory";
 
 vi.mock("@/api/advisories", () => ({
-  default: { list: vi.fn(), get: vi.fn() },
+  default: {
+    list: vi.fn(),
+    get: vi.fn(),
+    listRepo: vi.fn(),
+    getRepo: vi.fn(),
+    create: vi.fn(),
+    update: vi.fn(),
+    requestCve: vi.fn(),
+  },
 }));
 
 vi.mock("@/core/logger", () => ({
@@ -13,6 +21,10 @@ vi.mock("@/core/output", () => ({
   default: { renderTable: vi.fn(), renderKeyValues: vi.fn() },
 }));
 
+vi.mock("@/core/repo", () => ({
+  default: { resolveRepo: vi.fn().mockResolvedValue("owner/repo") },
+}));
+
 import api from "@/api/advisories";
 
 describe("advisory service", () => {
@@ -20,12 +32,12 @@ describe("advisory service", () => {
     vi.clearAllMocks();
   });
 
-  it("lists advisories", async () => {
+  it("lists global advisories", async () => {
     (api.list as Mock).mockResolvedValue({
       json: () =>
         Promise.resolve([
           {
-            ghsa_id: "GHSA-xxxx",
+            ghsaId: "GHSA-xxxx",
             severity: "high",
             ecosystem: "npm",
             summary: "Test",
@@ -51,11 +63,34 @@ describe("advisory service", () => {
     expect(result.success).toBe(true);
   });
 
-  it("views an advisory", async () => {
+  it("lists repo-scoped advisories", async () => {
+    (api.listRepo as Mock).mockResolvedValue({
+      json: () => Promise.resolve([]),
+    });
+    const result = await advisoryService.list({
+      repo: "owner/repo",
+      state: "published",
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it("rejects invalid state", async () => {
+    await expect(advisoryService.list({ state: "invalid" })).rejects.toThrow(
+      "Invalid state",
+    );
+  });
+
+  it("rejects invalid severity", async () => {
+    await expect(advisoryService.list({ severity: "invalid" })).rejects.toThrow(
+      "Invalid severity",
+    );
+  });
+
+  it("views a global advisory", async () => {
     (api.get as Mock).mockResolvedValue({
       json: () =>
         Promise.resolve({
-          ghsa_id: "GHSA-xxxx",
+          ghsaId: "GHSA-xxxx",
           summary: "Test advisory",
           severity: "high",
           cve_id: "CVE-2026-0001",
@@ -65,6 +100,80 @@ describe("advisory service", () => {
         }),
     });
     const result = await advisoryService.view("GHSA-xxxx");
+    expect(result.success).toBe(true);
+  });
+
+  it("views a repo-scoped advisory", async () => {
+    (api.getRepo as Mock).mockResolvedValue({
+      json: () =>
+        Promise.resolve({
+          ghsaId: "GHSA-xxxx",
+          summary: "Test",
+          severity: "high",
+          state: "published",
+        }),
+    });
+    const result = await advisoryService.view("GHSA-xxxx", {
+      repo: "owner/repo",
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it("creates a repo advisory", async () => {
+    (api.create as Mock).mockResolvedValue({
+      json: () =>
+        Promise.resolve({
+          ghsaId: "GHSA-new",
+          summary: "Test",
+          severity: "high",
+          state: "draft",
+        }),
+    });
+    const result = await advisoryService.create({
+      repo: "owner/repo",
+      summary: "Test",
+      description: "Description",
+      severity: "high",
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it("rejects invalid severity on create", async () => {
+    await expect(
+      advisoryService.create({
+        repo: "owner/repo",
+        summary: "Test",
+        description: "Desc",
+        severity: "invalid",
+      }),
+    ).rejects.toThrow("Invalid severity");
+  });
+
+  it("publishes an advisory", async () => {
+    (api.update as Mock).mockResolvedValue({
+      json: () => Promise.resolve({ ghsaId: "GHSA-xxxx", state: "published" }),
+    });
+    const result = await advisoryService.publish("GHSA-xxxx", {
+      repo: "owner/repo",
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it("closes an advisory", async () => {
+    (api.update as Mock).mockResolvedValue({
+      json: () => Promise.resolve({ ghsaId: "GHSA-xxxx", state: "closed" }),
+    });
+    const result = await advisoryService.close("GHSA-xxxx", {
+      repo: "owner/repo",
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it("requests a CVE", async () => {
+    (api.requestCve as Mock).mockResolvedValue({ ok: true });
+    const result = await advisoryService.cveRequest("GHSA-xxxx", {
+      repo: "owner/repo",
+    });
     expect(result.success).toBe(true);
   });
 });

@@ -199,6 +199,48 @@ const labelOperations: TuiOperation[] = [
       return labelsService.prune(repo);
     },
   },
+
+  {
+    mutates: true,
+    id: "labels.bulk",
+    workspace: "Labels",
+    title: "Bulk Create Labels",
+    command: "ghg labels bulk --file <path>",
+    description: "Create labels from a JSON file.",
+    inputs: [
+      { key: "file", label: "File path", type: "string", required: true },
+      repoInput,
+    ],
+
+    run: async ({ values }) => {
+      const repo = text(values, "repo") || (await inferRepo());
+      return labelsService.bulk(requiredText(values, "file"), repo);
+    },
+  },
+
+  {
+    mutates: true,
+    id: "labels.sync",
+    workspace: "Labels",
+    title: "Sync Labels from Repo",
+    command: "ghg labels sync --source <repo>",
+    description: "Sync labels from another repository.",
+    inputs: [
+      {
+        key: "source",
+        type: "string",
+        required: true,
+        label: "Source repo",
+        placeholder: "owner/source",
+      },
+      repoInput,
+    ],
+
+    run: async ({ values }) => {
+      const target = text(values, "repo") || (await inferRepo());
+      return labelsService.sync(requiredText(values, "source"), target);
+    },
+  },
 ];
 
 export default labelOperations;

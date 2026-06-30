@@ -50,7 +50,12 @@ type TuiWorkspace =
   | "Advisories"
   | "CodeQL"
   | "Workspaces"
-  | "Actions";
+  | "Actions"
+  | "Code Navigation"
+  | "Templates"
+  | "Labels"
+  | "Packages"
+  | "Runners";
 
 type TuiInputType = "string" | "number" | "boolean";
 

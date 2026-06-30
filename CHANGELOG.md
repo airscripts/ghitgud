@@ -9,6 +9,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Code search and navigation: `ghg code search`, `definitions`, `references`, `file`, `blame` for symbol navigation and enhanced blame with PR context
+- Template discovery: `ghg template list`, `show` for issue and PR template inspection
+- Label bulk and sync: `ghg label bulk --file <path>` for creating labels from JSON/YAML, `ghg label sync --source <repo>` for syncing labels from another repository
+- Package and container registry: `ghg package list`, `view`, `versions`, `delete`, `restore` for managing GHCR and package versions
+- Self-hosted runner management: `ghg runner list`, `view`, `status`, `remove`, `labels` for repo and org runner lifecycle
+- Advisory lifecycle commands: `ghg advisory create`, `publish`, `close`, `cve-request` for repo-scoped security advisory management, plus `--repo` and `--state` filters on `list` and `view`
+- TUI workspace operations for Code Navigation, Templates, Packages, Runners, and extended Advisories
+- Playbook coverage for code, template, package, runner, and advisory commands
 - Gist fork, star, unstar, and comment commands: `ghg gist fork`, `star`, `unstar`, `comment`
 - Reaction commands: `ghg react list`, `add`, `remove` for emoji reactions on issues, comments, and PR review comments
 - Comment thread management: `ghg comment list`, `reply`, `delete` for issue and PR comment threads

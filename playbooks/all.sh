@@ -60,6 +60,10 @@ PLAYBOOKS=(
   codeql
   workspace
   actions
+  code
+  template
+  package
+  runner
   release
   pr
   project

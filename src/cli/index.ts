@@ -57,6 +57,10 @@ import advisoryCommand from "@/commands/advisory";
 import codeqlCommand from "@/commands/codeql";
 import workspaceCommand from "@/commands/workspace";
 import actionsCommand from "@/commands/actions";
+import codeCommand from "@/commands/code";
+import templateCommand from "@/commands/template";
+import packageCommand from "@/commands/package";
+import runnerCommand from "@/commands/runner";
 import { setTheme, initializeTheme } from "@/core/theme";
 import notificationsCommand from "@/commands/notifications";
 
@@ -153,6 +157,10 @@ if (!proxyCommand.runProxyFromArgv()) {
     codeqlCommand.register(program);
     workspaceCommand.register(program);
     actionsCommand.register(program);
+    codeCommand.register(program);
+    templateCommand.register(program);
+    packageCommand.register(program);
+    runnerCommand.register(program);
 
     program
       .command("version")

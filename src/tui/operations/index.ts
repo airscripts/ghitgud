@@ -46,6 +46,10 @@ import codeqlOperations from "./codeql";
 import workspaceOperations from "./workspaces";
 import syncOperations from "./sync";
 import actionsOperations from "./actions";
+import codeOperations from "./code";
+import templateOperations from "./templates";
+import packageOperations from "./packages";
+import runnerOperations from "./runners";
 
 import type { TuiOperation } from "../types";
 
@@ -98,6 +102,10 @@ const operations: TuiOperation[] = [
   ...workspaceOperations,
   ...syncOperations,
   ...actionsOperations,
+  ...codeOperations,
+  ...templateOperations,
+  ...packageOperations,
+  ...runnerOperations,
 ];
 
 const workspaces = Array.from(new Set(operations.map((op) => op.workspace)));
