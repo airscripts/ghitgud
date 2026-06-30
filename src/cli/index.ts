@@ -61,6 +61,12 @@ import codeCommand from "@/commands/code";
 import templateCommand from "@/commands/template";
 import packageCommand from "@/commands/package";
 import runnerCommand from "@/commands/runner";
+import extensionCommand from "@/commands/extension";
+import codespaceCommand from "@/commands/codespace";
+import browseCommand from "@/commands/browse";
+import attestationCommand from "@/commands/attestation";
+import sshKeyCommand from "@/commands/ssh-key";
+import gpgKeyCommand from "@/commands/gpg-key";
 import { setTheme, initializeTheme } from "@/core/theme";
 import notificationsCommand from "@/commands/notifications";
 
@@ -161,6 +167,12 @@ if (!proxyCommand.runProxyFromArgv()) {
     templateCommand.register(program);
     packageCommand.register(program);
     runnerCommand.register(program);
+    extensionCommand.register(program);
+    codespaceCommand.register(program);
+    browseCommand.register(program);
+    attestationCommand.register(program);
+    sshKeyCommand.register(program);
+    gpgKeyCommand.register(program);
 
     program
       .command("version")

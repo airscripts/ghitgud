@@ -115,6 +115,12 @@ Every command reads from `src/core/config.ts`, which resolves values in this ord
 - **Package & Container Registry** — list, view, version, delete, and restore GHCR and package versions
 - **Self-Hosted Runners** — list, view, check status, remove, and inspect labels for org and repo runners
 - **Security Advisory Lifecycle** — create, publish, close, and request CVEs for repo-scoped advisories
+- **Extension Management** — install, upgrade, remove, and scaffold locally installed CLI extensions
+- **Codespace Management** — list, view, create, start, stop, and delete GitHub Codespaces
+- **Browser Integration** — open repos, issues, PRs, actions, and settings in the browser
+- **Artifact Attestations** — list and verify SLSA/Sigstore provenance for artifacts
+- **SSH Key Management** — list, add, and delete user SSH keys
+- **GPG Key Management** — list, add, and delete user GPG keys
 
 ---
 
@@ -820,7 +826,98 @@ ghg advisory cve-request GHSA-xxxx --repo owner/repo
 - `close` closes an advisory.
 - `cve-request` requests a CVE for a published advisory.
 
-### Webhooks
+### Extensions
+
+```bash
+ghg extension list
+ghg extension install owner/ghg-my-extension
+ghg extension remove ghg-my-extension --yes
+ghg extension upgrade ghg-my-extension
+ghg extension create ghg-my-extension
+ghg extension exec ghg-my-extension -- --flag arg1
+```
+
+- `list` lists installed extensions.
+- `install` clones a git repo as an extension.
+- `remove` deletes an installed extension.
+- `upgrade` pulls latest for an installed extension.
+- `create` scaffolds a new extension project.
+- `exec` runs an installed extension, passing arguments through to its entry point.
+
+### Codespaces
+
+```bash
+ghg codespace list
+ghg codespace view <id>
+ghg codespace create --repo owner/repo --ref main
+ghg codespace start <id>
+ghg codespace stop <id>
+ghg codespace delete <id> --yes
+```
+
+- `list` lists your codespaces.
+- `view` shows codespace details.
+- `create` creates a codespace for a repository.
+- `start` starts a stopped codespace.
+- `stop` stops a running codespace.
+- `delete` deletes a codespace after confirmation.
+
+### Browse
+
+```bash
+ghg browse repo --repo owner/repo
+ghg browse repo --repo owner/repo --path src/index.ts --line 42
+ghg browse issues --repo owner/repo
+ghg browse pulls --repo owner/repo
+ghg browse actions --repo owner/repo
+ghg browse settings --repo owner/repo
+ghg browse releases --repo owner/repo
+ghg browse pr 42 --repo owner/repo
+```
+
+- `repo` opens the repository or a specific file/line in the browser.
+- `issues` opens the issues page.
+- `pulls` opens the pull requests page.
+- `actions` opens the actions page.
+- `settings` opens the settings page.
+- `releases` opens the releases page.
+- `pr` opens a pull request or issue by number.
+
+### Attestations
+
+```bash
+ghg attestation list sha256:abc123... --repo owner/repo
+ghg attestation verify sha256:abc123... --repo owner/repo
+```
+
+- `list` lists attestations for an artifact digest.
+- `verify` verifies artifact provenance for a digest.
+
+### SSH Keys
+
+```bash
+ghg ssh-key list
+ghg ssh-key add --title "My Laptop" --key "ssh-rsa AAA..."
+ghg ssh-key add --title "My Laptop" --file ~/.ssh/id_rsa.pub
+ghg ssh-key delete 42 --yes
+```
+
+- `list` lists your SSH keys.
+- `add` adds an SSH key from a string or file.
+- `delete` deletes an SSH key after confirmation.
+
+### GPG Keys
+
+```bash
+ghg gpg-key list
+ghg gpg-key add --key "-----BEGIN PGP PUBLIC KEY BLOCK-----..."
+ghg gpg-key add --file /path/to/public.key
+ghg gpg-key delete 42 --yes
+```
+
+- `list` lists your GPG keys.
+- `add` adds a GPG key from a string or file.
+- `delete` deletes a GPG key after confirmation.
 
 ```bash
 ghg webhook list --repo owner/repo
@@ -1140,6 +1237,12 @@ src/
       template.ts          # ghg template <list|show>.
       package.ts           # ghg package <list|view|versions|delete|restore>.
       runner.ts            # ghg runner <list|view|status|remove|labels>.
+      extension.ts         # ghg extension <list|install|remove|upgrade|create>.
+      codespace.ts         # ghg codespace <list|view|create|start|stop|delete>.
+      browse.ts            # ghg browse <repo|issues|pulls|actions|settings|releases|pr>.
+      attestation.ts       # ghg attestation <list|verify>.
+      ssh-key.ts           # ghg ssh-key <list|add|delete>.
+      gpg-key.ts           # ghg gpg-key <list|add|delete>.
    services/
     labels.ts           # Label business logic.
     config.ts           # Config business logic.
@@ -1180,6 +1283,12 @@ src/
       template.ts          # Template discovery business logic.
       package.ts           # Package and container registry business logic.
       runner.ts            # Self-hosted runner management business logic.
+      extension.ts          # Extension install/remove/upgrade/create business logic.
+      codespace.ts          # Codespace management business logic.
+      browse.ts             # Browser URL construction and open logic.
+      attestation.ts        # Attestation and provenance verification business logic.
+      ssh-key.ts            # SSH key management business logic.
+      gpg-key.ts            # GPG key management business logic.
     repos/
       govern.ts         # Repository rulesets.
       index.ts          # Repos services index.
@@ -1223,7 +1332,11 @@ src/
       code.ts             # Code search and navigation API.
       templates.ts        # Issue and PR template discovery API.
       packages.ts         # Package and container registry API.
-      runners.ts          # Self-hosted runner API.
+       runners.ts          # Self-hosted runner API.
+       codespaces.ts       # Codespaces API.
+       attestations.ts      # Artifact attestation API.
+       ssh-keys.ts          # SSH key management API.
+       gpg-keys.ts          # GPG key management API.
 
   core/
      command.ts          # Shared command runner.
@@ -1370,6 +1483,12 @@ bash playbooks/all.sh
 - `template.sh` — `ghg template` discovery
 - `package.sh` — `ghg package` lifecycle
 - `runner.sh` — `ghg runner` management
+- `extension.sh` — `ghg extension` lifecycle
+- `codespace.sh` — `ghg codespace` management
+- `browse.sh` — `ghg browse` URL generation
+- `attestation.sh` — `ghg attestation` provenance
+- `ssh-key.sh` — `ghg ssh-key` management
+- `gpg-key.sh` — `ghg gpg-key` management
 
 ### Conventions
 

@@ -15,6 +15,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Package and container registry: `ghg package list`, `view`, `versions`, `delete`, `restore` for managing GHCR and package versions
 - Self-hosted runner management: `ghg runner list`, `view`, `status`, `remove`, `labels` for repo and org runner lifecycle
 - Advisory lifecycle commands: `ghg advisory create`, `publish`, `close`, `cve-request` for repo-scoped security advisory management, plus `--repo` and `--state` filters on `list` and `view`
+- Extension management: `ghg extension list`, `install`, `remove`, `upgrade`, `create` for locally installed CLI extensions
+- Codespace management: `ghg codespace list`, `view`, `create`, `start`, `stop`, `delete` for GitHub Codespaces lifecycle
+- Browser integration: `ghg browse repo`, `issues`, `pulls`, `actions`, `settings`, `releases`, `pr` to open pages in the browser
+- Artifact attestation: `ghg attestation list`, `verify` for provenance and SLSA verification
+- SSH key management: `ghg ssh-key list`, `add`, `delete` for user SSH key lifecycle
+- GPG key management: `ghg gpg-key list`, `add`, `delete` for user GPG key lifecycle
+- Self-hosted runner management: `ghg runner list`, `view`, `status`, `remove`, `labels` for repo and org runner lifecycle
+- Advisory lifecycle commands: `ghg advisory create`, `publish`, `close`, `cve-request` for repo-scoped security advisory management, plus `--repo` and `--state` filters on `list` and `view`
 - TUI workspace operations for Code Navigation, Templates, Packages, Runners, and extended Advisories
 - Playbook coverage for code, template, package, runner, and advisory commands
 - Gist fork, star, unstar, and comment commands: `ghg gist fork`, `star`, `unstar`, `comment`

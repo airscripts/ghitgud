@@ -575,6 +575,48 @@ interface AdvisoryCreateInput {
   patchedVersionRange?: string;
 }
 
+interface ExtensionManifest {
+  name: string;
+  description: string;
+  version: string;
+  repo?: string;
+  command: string;
+}
+
+interface CodespaceSummary {
+  id: number;
+  name: string;
+  state: string;
+  owner: string;
+  repo: string;
+  branch: string;
+  createdAt: string;
+  idleTimeoutMinutes: number;
+  machine: string;
+}
+
+interface AttestationSummary {
+  bundleType: string;
+  predicateType: string;
+  digest: string;
+  repositoryId: number;
+  createdAt: string;
+}
+
+interface SshKeySummary {
+  id: number;
+  title: string;
+  key: string;
+  createdAt: string;
+}
+
+interface GpgKeySummary {
+  id: number;
+  name: string;
+  keyId: string;
+  createdAt: string;
+}
+
 const normalizeLabel = (label: Label) => ({
   name: label.name,
   color: label.color,
@@ -622,6 +664,11 @@ export type { PackageVersion };
 export type { RunnerSummary };
 export type { RunnerLabel };
 export type { AdvisoryCreateInput };
+export type { ExtensionManifest };
+export type { CodespaceSummary };
+export type { AttestationSummary };
+export type { SshKeySummary };
+export type { GpgKeySummary };
 export type { WebhookSummary };
 export type { WebhookDelivery };
 export type { WorkflowDryRunResult };

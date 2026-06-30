@@ -149,3 +149,5 @@ export const RELEASE_DEFAULT_GENERATED = "generated";
 export const SEARCH_DEFAULT_LIMIT = 30;
 export const SEARCH_MAX_PER_PAGE = 100;
 export const ERROR_SEARCH_QUERY_REQUIRED = "Search query is required.";
+
+export const EXTENSIONS_DIR = path.join(GHITGUD_FOLDER, "extensions");

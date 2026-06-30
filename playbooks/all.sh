@@ -64,6 +64,12 @@ PLAYBOOKS=(
   template
   package
   runner
+  extension
+  codespace
+  browse
+  attestation
+  ssh-key
+  gpg-key
   release
   pr
   project

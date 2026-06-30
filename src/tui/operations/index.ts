@@ -50,6 +50,12 @@ import codeOperations from "./code";
 import templateOperations from "./templates";
 import packageOperations from "./packages";
 import runnerOperations from "./runners";
+import extensionOperations from "./extensions";
+import codespaceOperations from "./codespaces";
+import browseOperations from "./browse";
+import attestationOperations from "./attestations";
+import sshKeyOperations from "./ssh-keys";
+import gpgKeyOperations from "./gpg-keys";
 
 import type { TuiOperation } from "../types";
 
@@ -106,6 +112,12 @@ const operations: TuiOperation[] = [
   ...templateOperations,
   ...packageOperations,
   ...runnerOperations,
+  ...extensionOperations,
+  ...codespaceOperations,
+  ...browseOperations,
+  ...attestationOperations,
+  ...sshKeyOperations,
+  ...gpgKeyOperations,
 ];
 
 const workspaces = Array.from(new Set(operations.map((op) => op.workspace)));

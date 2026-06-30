@@ -55,7 +55,10 @@ type TuiWorkspace =
   | "Templates"
   | "Labels"
   | "Packages"
-  | "Runners";
+  | "Runners"
+  | "Extensions"
+  | "Codespaces"
+  | "Attestations";
 
 type TuiInputType = "string" | "number" | "boolean";
 

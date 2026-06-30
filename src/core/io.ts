@@ -42,6 +42,22 @@ const safeFilename = (value: string, fallback: string): string => {
   return sanitized || fallback;
 };
 
+const readDir = (dirPath: string): string[] => {
+  return fs.readdirSync(dirPath);
+};
+
+const isDirectory = (dirPath: string): boolean => {
+  return fs.existsSync(dirPath) && fs.statSync(dirPath).isDirectory();
+};
+
+const removeDir = (dirPath: string): void => {
+  fs.rmSync(dirPath, { recursive: true, force: true });
+};
+
+const writeFile = (filePath: string, content: string): void => {
+  fs.writeFileSync(filePath, content, ENCODING);
+};
+
 export default {
   ensureDir,
   fileExists,
@@ -49,4 +65,8 @@ export default {
   readJsonFile,
   writeJsonFile,
   resolveInsideRoot,
+  readDir,
+  isDirectory,
+  removeDir,
+  writeFile,
 };
