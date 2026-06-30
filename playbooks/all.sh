@@ -24,6 +24,10 @@ PLAYBOOKS=(
   mentions
   cache
   gist
+  api
+  status
+  ruleset
+  queue
   insights
   notifications
   dependabot

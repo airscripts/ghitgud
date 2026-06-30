@@ -365,6 +365,34 @@ interface ProjectBoard {
   columns: ProjectBoardColumn[];
 }
 
+interface ProjectSummary {
+  id: string;
+  number: number;
+  title: string;
+  description: string;
+  closed: boolean;
+  url: string;
+  updatedAt?: string;
+}
+
+interface ProjectItem {
+  id: string;
+  type: string;
+  title: string;
+  status: string;
+  state?: string;
+  number?: number;
+  url?: string;
+  repository?: string;
+}
+
+interface ProjectField {
+  id: string;
+  name: string;
+  dataType: string;
+  options?: Array<{ id: string; name: string }>;
+}
+
 const normalizeLabel = (label: Label) => ({
   name: label.name,
   color: label.color,
@@ -409,6 +437,9 @@ export type { PullRequest };
 export type { PullRequestUser };
 export type { RepositoryMergeSettings };
 export type { ProjectBoard };
+export type { ProjectSummary };
+export type { ProjectItem };
+export type { ProjectField };
 export type { MilestoneState };
 export type { SubIssueSummary };
 export type { ProjectBoardItem };

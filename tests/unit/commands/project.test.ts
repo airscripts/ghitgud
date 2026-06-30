@@ -16,5 +16,21 @@ describe("project command", () => {
     expect(project!.commands.map((command) => command.name())).toContain(
       "board",
     );
+    expect(project!.commands.map((command) => command.name())).toEqual(
+      expect.arrayContaining([
+        "list",
+        "view",
+        "create",
+        "edit",
+        "close",
+        "delete",
+        "item-list",
+        "item-add",
+        "item-create",
+        "field-list",
+        "link",
+        "unlink",
+      ]),
+    );
   });
 });

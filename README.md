@@ -85,6 +85,11 @@ Every command reads from `src/core/config.ts`, which resolves values in this ord
 - **Release Management** — manage releases and assets alongside changelog, version, signature, notes, and draft automation
 - **Milestone Management** — track sprint progress with create, list, close, and progress commands
 - **Project Boards** — render an ASCII kanban board for any GitHub Project v2
+- **Project Management** — create, edit, close, delete, link, and populate Projects v2
+- **Ruleset Management** — validate and manage repository or organization rulesets
+- **Cross-Repository Status** — aggregate assigned/authored work, reviews, and mentions
+- **API Passthrough** — authenticated REST requests with pagination and jq filtering
+- **Merge Queues** — inspect queue health and history, then enqueue or dequeue pull requests
 - **Issue Management** — create, triage, update, transfer, and organize issues and sub-issues
 - **Security & Compliance** — audit enterprise and organization activity, scan repositories for leaked secrets, triage Dependabot and secret scanning alerts, and run compliance checks across repository hygiene, branch protection, and rulesets
 - **GitHub Discussions** — list, view, create, comment on, close, and manage discussion categories entirely from the terminal
@@ -430,9 +435,33 @@ ghg milestone progress "v2.10.0"
 
 ```bash
 ghg project board <id> --owner <owner>
+ghg project list --owner <owner>
+ghg project create --title "Roadmap" --owner <owner>
+ghg project item-add <id> --issue 42 --repo owner/repo
+ghg project field-list <id> --owner <owner>
+ghg project link <id> --repo owner/repo
 ```
 
 - `board` renders an ASCII kanban board for a GitHub Project v2.
+- Lifecycle commands manage project metadata, items, fields, and repository links.
+
+### Rulesets, Status, API, and Merge Queues
+
+```bash
+ghg ruleset list --repo owner/repo
+ghg ruleset create --file ruleset.yml --org my-org
+ghg ruleset check main --repo owner/repo
+ghg status --org my-org --exclude owner/archive
+ghg api /user/repos --paginate --jq 'map(.full_name)'
+ghg queue status --repo owner/repo --branch main
+ghg queue add 42 --repo owner/repo
+ghg queue history --repo owner/repo --limit 20
+```
+
+- Ruleset commands support repository and organization targets; branch checks are repository-specific.
+- Status aggregates assigned issues, authored issues/PRs, review requests, and mentions.
+- API passthrough supports standard REST methods, string fields, array pagination, jq, and silent mode.
+- Queue commands use the repository default branch unless `--branch` is supplied.
 
 ### Issue Management
 
@@ -793,6 +822,7 @@ src/
     index.ts            # Entry point — Commander program setup.
     ascii.ts            # Figlet banner for help output.
   commands/
+    api.ts              # Authenticated REST API passthrough.
     activity.ts         # ghg activity.
     audit.ts            # ghg audit.
     cache.ts            # ghg cache <list|delete|inspect|download>.
@@ -815,6 +845,9 @@ src/
     pr.ts               # ghg pr lifecycle, checkout, checks, cleanup, and stacks.
     auth.ts             # ghg auth <login|logout|status|token|list|switch|detect>.
     project.ts          # ghg project <board>.
+    queue.ts            # Merge queue inspection and mutations.
+    ruleset.ts          # Repository and organization ruleset CRUD.
+    status.ts           # Cross-repository work status.
     proxy.ts            # ghg proxy <passthrough>.
     repos.ts            # ghg repos <inspect|govern|label|retire|report>.
     review.ts           # ghg review <comment|threads|resolve|suggest|apply>.
@@ -843,7 +876,10 @@ src/
     milestone.ts        # Milestone business logic.
     notifications.ts    # Notifications business logic.
     run.ts              # Workflow run debugging business logic.
-    project.ts          # Project board business logic.
+    project.ts          # Project lifecycle and board business logic.
+    queue.ts            # Merge queue orchestration.
+    ruleset.ts          # Ruleset validation and CRUD.
+    status.ts           # Cross-repository status aggregation.
     workflow.ts         # Workflow validation and preview business logic.
     secrets.ts          # Repository, environment, and organization secrets business logic.
     variables.ts        # Repository, environment, and organization variables business logic.
@@ -866,6 +902,7 @@ src/
     issues.ts           # Issues API.
     milestones.ts       # Milestones API.
     projects.ts         # Projects API.
+    queue.ts            # Merge queue GraphQL API.
     labels.ts           # GitHub Labels API methods.
     notifications.ts    # GitHub Notifications API methods.
     pr.ts               # GitHub PR API methods.
@@ -982,6 +1019,10 @@ bash playbooks/all.sh
 - `mentions.sh` — `ghg mentions`
 - `cache.sh` — `ghg cache list/delete/inspect/download`
 - `gist.sh` — `ghg gist list/view/create/edit/delete/clone`
+- `api.sh` — authenticated REST requests, jq, and pagination
+- `status.sh` — cross-repository and organization status
+- `ruleset.sh` — ruleset validation, reads, and guarded mutations
+- `queue.sh` — merge queue status, history, and guarded mutations
 - `insights.sh` — `ghg insights traffic/contributors/commits/frequency/popularity/participation`
 - `notifications.sh` — `ghg notifications list/read/done`
 - `dependabot.sh` — `ghg dependabot list/dismiss`
@@ -1005,7 +1046,7 @@ bash playbooks/all.sh
 - `repo.sh` — repository CRUD plus collaborator and team access
 - `release.sh` — `ghg release changelog/bump/verify/notes/draft`
 - `pr.sh` — `ghg pr` lifecycle, checkout, checks, cleanup, push, and stack operations
-- `project.sh` — `ghg project board`
+- `project.sh` — Project v2 list and board
 - `run.sh` — `ghg run debug`
 
 ### Conventions

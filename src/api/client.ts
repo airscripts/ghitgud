@@ -39,6 +39,11 @@ interface RequestOptions {
   tokenRequired?: boolean;
 }
 
+interface GenericRequestOptions {
+  body?: unknown;
+  method: "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
+}
+
 const ERROR_MAP: Record<number, typeof GhitgudError> = {
   [STATUS_UNAUTHORIZED]: AuthError,
   [STATUS_NOT_FOUND]: NotFoundError,
@@ -361,6 +366,19 @@ const client = {
     requestTokenRequired("/graphql", {
       method: "POST",
       body: { query, variables },
+    }),
+
+  requestTokenRequired: (endpoint: string, options: GenericRequestOptions) =>
+    requestTokenRequired(endpoint, {
+      method: options.method,
+      ...(options.body !== undefined ? { body: options.body } : {}),
+    }),
+
+  requestUrlTokenRequired: (url: string, options: GenericRequestOptions) =>
+    requestUrl(url, {
+      method: options.method,
+      tokenRequired: true,
+      ...(options.body !== undefined ? { body: options.body } : {}),
     }),
 
   validateToken: (token: string) => request("/user", {}, token),

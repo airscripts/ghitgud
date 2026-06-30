@@ -14,10 +14,11 @@ describe("projects api", () => {
     await projects.board("airscripts", 1);
 
     expect(client.graphqlTokenRequired).toHaveBeenCalledWith(
-      expect.stringContaining("ProjectBoard"),
+      expect.stringContaining("query Project"),
       {
         owner: "airscripts",
         number: 1,
+        limit: 100,
       },
     );
   });

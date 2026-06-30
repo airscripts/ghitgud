@@ -59,6 +59,15 @@ const writeResult = (result: unknown) => {
   writeJson(result as CommandResult);
 };
 
+const writeValue = (value: unknown) => {
+  if (outputState.isSilentOutput()) return;
+  if (typeof value === "string") {
+    process.stdout.write(value.endsWith("\n") ? value : `${value}\n`);
+    return;
+  }
+  writeJson(value as Record<string, unknown>);
+};
+
 const writeError = (message: string, hint?: string) => {
   if (outputState.isSilentOutput()) return;
 
@@ -243,6 +252,7 @@ export default {
   writeError,
   renderTable,
   writeResult,
+  writeValue,
   renderSection,
   renderInfoBox,
   renderSummary,

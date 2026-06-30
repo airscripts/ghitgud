@@ -7,6 +7,10 @@ import wikiOperations from "./wiki";
 import authOperations from "./auth";
 import cacheOperations from "./cache";
 import gistOperations from "./gists";
+import apiOperations from "./api";
+import queueOperations from "./queue";
+import statusOperations from "./status";
+import rulesetOperations from "./rulesets";
 import auditOperations from "./audit";
 import leaksOperations from "./leaks";
 import pagesOperations from "./pages";
@@ -47,6 +51,10 @@ const operations: TuiOperation[] = [
   ...workflowOperations,
   ...cacheOperations,
   ...gistOperations,
+  ...statusOperations,
+  ...rulesetOperations,
+  ...apiOperations,
+  ...queueOperations,
   ...runOperations,
   ...authOperations,
   ...configOperations,

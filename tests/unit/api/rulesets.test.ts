@@ -7,8 +7,10 @@ import { jsonResponse } from "../helpers/response";
 vi.mock("@/api/client", () => ({
   default: {
     get: vi.fn(),
-    put: vi.fn(),
-    post: vi.fn(),
+    getTokenRequired: vi.fn(),
+    putTokenRequired: vi.fn(),
+    postTokenRequired: vi.fn(),
+    deleteTokenRequired: vi.fn(),
   },
 }));
 
@@ -34,20 +36,39 @@ describe("rulesets api", () => {
   });
 
   it("creates and updates rulesets", async () => {
-    vi.mocked(client.post).mockResolvedValue({ status: 201 } as Response);
-    vi.mocked(client.put).mockResolvedValue({ status: 200 } as Response);
+    vi.mocked(client.postTokenRequired).mockResolvedValue({
+      status: 201,
+    } as Response);
+    vi.mocked(client.putTokenRequired).mockResolvedValue({
+      status: 200,
+    } as Response);
 
     await rulesets.create("owner/repo", ruleset);
     await rulesets.update("owner/repo", 10, ruleset);
 
-    expect(client.post).toHaveBeenCalledWith(
+    expect(client.postTokenRequired).toHaveBeenCalledWith(
       "/repos/owner/repo/rulesets",
       ruleset,
     );
 
-    expect(client.put).toHaveBeenCalledWith(
+    expect(client.putTokenRequired).toHaveBeenCalledWith(
       "/repos/owner/repo/rulesets/10",
       ruleset,
+    );
+  });
+
+  it("supports organization targets and branch checks", async () => {
+    vi.mocked(client.getTokenRequired).mockResolvedValue(
+      jsonResponse([{ id: 1, name: "Org" }]),
+    );
+    await rulesets.listTarget({ org: "acme" });
+    await rulesets.getTarget({ org: "acme" }, 1);
+    await rulesets.createTarget({ org: "acme" }, ruleset);
+    await rulesets.updateTarget({ org: "acme" }, 1, ruleset);
+    await rulesets.deleteTarget({ org: "acme" }, 1);
+    await rulesets.checkBranch("owner/repo", "release/v1");
+    expect(client.getTokenRequired).toHaveBeenCalledWith(
+      "/repos/owner/repo/rules/branches/release%2Fv1",
     );
   });
 });

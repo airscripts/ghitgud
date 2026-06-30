@@ -1,13 +1,11 @@
-import io from "@/core/io";
 import rulesets from "@/api/rulesets";
 import service from "@/services/repos";
 import governService from "@/services/repos/govern";
 import { describe, it, expect, vi, Mock, beforeEach, afterEach } from "vitest";
 
-vi.mock("@/core/io", () => ({
-  default: {
-    readJsonFile: vi.fn(),
-  },
+const { readDefinition } = vi.hoisted(() => ({ readDefinition: vi.fn() }));
+vi.mock("@/services/ruleset", () => ({
+  readDefinition,
 }));
 
 vi.mock("@/api/rulesets", () => ({
@@ -29,7 +27,7 @@ vi.mock("@/services/repos", () => ({
 
 describe("repo govern service", () => {
   beforeEach(() => {
-    (io.readJsonFile as Mock).mockReturnValue({ name: "main-protection" });
+    readDefinition.mockReturnValue({ name: "main-protection", rules: [] });
 
     (service.resolveTargets as Mock).mockResolvedValue([
       {

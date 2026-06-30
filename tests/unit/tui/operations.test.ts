@@ -89,6 +89,17 @@ vi.mock("@/services/milestone", () => ({
 vi.mock("@/services/project", () => ({
   default: {
     board: vi.fn(() => Promise.resolve([])),
+    list: vi.fn(),
+    view: vi.fn(),
+    create: vi.fn(),
+    edit: vi.fn(),
+    close: vi.fn(),
+    remove: vi.fn(),
+    itemList: vi.fn(),
+    itemAdd: vi.fn(),
+    itemCreate: vi.fn(),
+    fieldList: vi.fn(),
+    setLinked: vi.fn(),
   },
 }));
 

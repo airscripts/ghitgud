@@ -20,6 +20,10 @@ import proxyCommand from "@/commands/proxy";
 import reposCommand from "@/commands/repos";
 import cacheCommand from "@/commands/cache";
 import gistCommand from "@/commands/gist";
+import apiCommand from "@/commands/api";
+import queueCommand from "@/commands/queue";
+import statusCommand from "@/commands/status";
+import rulesetCommand from "@/commands/ruleset";
 import auditCommand from "@/commands/audit";
 import leaksCommand from "@/commands/leaks";
 import pagesCommand from "@/commands/pages";
@@ -109,6 +113,10 @@ if (!proxyCommand.runProxyFromArgv()) {
     workflowCommand.register(program);
     cacheCommand.register(program);
     gistCommand.register(program);
+    apiCommand.register(program);
+    statusCommand.register(program);
+    rulesetCommand.register(program);
+    queueCommand.register(program);
     runCommand.register(program);
     releaseCommand.register(program);
     searchCommand.register(program);
@@ -165,6 +173,11 @@ Examples:
   ghg workflow list
   ghg cache list
   ghg gist create notes.txt
+  ghg project list --owner airscripts
+  ghg ruleset validate --file ruleset.yml
+  ghg status --org airscripts
+  ghg api /user --jq .login
+  ghg queue status --repo airscripts/ghitgud
   ghg run debug 123456
   ghg release changelog
   ghg release bump --create --push

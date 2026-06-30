@@ -1,9 +1,9 @@
-import io from "@/core/io";
 import logger from "@/core/logger";
 import rulesets from "@/api/rulesets";
+import { readDefinition } from "@/services/ruleset";
 import { GhitgudError } from "@/core/errors";
 import { ERROR_RULESET_REQUIRED } from "@/core/constants";
-import { RepoTargetOptions, RulesetInput } from "@/types";
+import { RepoTargetOptions } from "@/types";
 
 import service from "./index";
 
@@ -32,10 +32,7 @@ const govern = async (options: GovernOptions) => {
 
   service.requireMutationConfirmation(options.dryRun, options.yes);
 
-  const ruleset = io.readJsonFile<RulesetInput>(options.ruleset);
-  if (!ruleset.name) {
-    throw new GhitgudError("Ruleset name is required.");
-  }
+  const ruleset = readDefinition(options.ruleset);
 
   const repos = await service.resolveTargets(options);
 
