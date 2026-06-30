@@ -15,6 +15,10 @@ vi.mock("@/api/issues", () => ({
   },
 }));
 
+vi.mock("@/core/repo", () => ({
+  default: { resolveRepo: vi.fn() },
+}));
+
 vi.mock("@/core/logger", () => ({
   default: {
     start: vi.fn(),
@@ -146,5 +150,28 @@ describe("issue service", () => {
 
     await issueService.edit("owner/repo", 1, { removeBody: true });
     expect(api.update).toHaveBeenCalledWith(1, { body: "" }, "owner/repo");
+  });
+
+  it("lists issue types", async () => {
+    (api.issueTypes as Mock).mockResolvedValue({
+      json: () =>
+        Promise.resolve([
+          {
+            name: "Bug",
+            color: "ff0000",
+            description: "Something isn't working",
+          },
+          {
+            name: "Feature",
+            color: "00ff00",
+            description: "New feature request",
+          },
+        ]),
+    });
+
+    const result = await issueService.typeList({ repo: "owner/repo" });
+    expect(api.issueTypes).toHaveBeenCalledWith("owner/repo");
+    expect(result.types).toHaveLength(2);
+    expect(result.success).toBe(true);
   });
 });

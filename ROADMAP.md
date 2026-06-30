@@ -69,55 +69,6 @@
 
 ---
 
-## w0x1y2z3 — Issue Types
-
-**Why gh doesn't have it:** GitHub introduced issue types (Bug, Feature, Task) in 2024. The CLI still has no support. Users must use direct API calls.
-
-**Commands:**
-
-- `ghg issue create --title <title> --type Bug|Feature|Task`
-- `ghg issue list --type Bug`
-- `ghg issue edit <num> --type Task`
-- `ghg issue type list` — list available issue types for repo
-
-**Value:** Issue types are becoming a core GitHub feature. CLI parity removes the need for API workarounds.
-
----
-
-## a4b5c6d7 — Webhook Management
-
-**Why gh doesn't have it:** No webhook CLI commands exist. Every integration touches webhooks and configuration currently requires the browser.
-
-**Commands:**
-
-- `ghg webhook list [--repo <repo>] [--org <org>]`
-- `ghg webhook create --url <url> --events <events> [--secret <secret>] [--content-type json|form]`
-- `ghg webhook edit <id> --url <url> --events <events>`
-- `ghg webhook delete <id> [--yes]`
-- `ghg webhook test <id>` — trigger a test delivery
-- `ghg webhook delivery list <id>` — recent delivery attempts
-- `ghg webhook delivery view <delivery-id>` — request/response details
-- `ghg webhook delivery redeliver <delivery-id>`
-
-**Value:** Every integration touches webhooks. End-to-end lifecycle from the terminal.
-
----
-
-## e8f9g0h1 — Fork Management
-
-**Why gh doesn't have it:** `gh repo fork` creates forks but doesn't manage them. There's no sync, compare, or bulk fork management.
-
-**Commands:**
-
-- `ghg fork sync [--repo <fork>] [--upstream <upstream>]` — fast-forward a fork from upstream
-- `ghg fork compare [--repo <fork>] [--upstream <upstream>]` — show ahead/behind status
-- `ghg fork list [--owner <user>]` — list all forks with sync status
-- `ghg fork create <repo> [--clone] [--remote]` — create fork with remote setup
-
-**Value:** Every open source contributor deals with fork sync daily. This is a clear gh gap.
-
----
-
 ## i2j3k4l5 — Actions Cost & Usage Analytics
 
 **Why gh doesn't have it:** No CLI tooling exists for Actions billing data. Teams managing CI budgets have zero terminal visibility.
@@ -130,35 +81,6 @@
 - `ghg actions usage export --format csv|json` — export for billing
 
 **Value:** For orgs managing CI budgets, this is a real pain point with zero CLI tooling.
-
----
-
-## m6n7o8p9 — Branch & Tag Protection
-
-**Why gh doesn't have it:** No branch/tag protection CLI commands exist. Rulesets are the modern system, but classic protection is still widely used and has no CLI.
-
-**Commands:**
-
-- `ghg branch protect <pattern> [--required-checks <checks>] [--required-reviews <n>] [--dismiss-stale]`
-- `ghg branch unprotect <pattern>`
-- `ghg branch protection list [--repo <repo>]`
-- `ghg tag protect <pattern>`
-- `ghg tag unprotect <pattern>`
-
-**Value:** Complements the ruleset commands. Classic protection is still the default for most repos.
-
----
-
-## q0r1s2t3 — Actions Live Log Streaming
-
-**Why gh doesn't have it:** `gh run watch` exists but is basic. No filtering, tail mode, or JSON output. No cancel during watch.
-
-**Commands:**
-
-- `ghg run watch <run-id> [--tail] [--filter <pattern>] [--json]` — live log streaming
-- `ghg run watch --follow` — follow a running workflow
-
-**Value:** Live streaming is a different workflow from post-hoc log fetching. Invaluable during CI debugging.
 
 ---
 
@@ -175,22 +97,6 @@
 - `ghg advisory view <GHSA-id>`
 
 **Value:** Growing concern with zero CLI tooling. Natural extension of the existing security surface.
-
----
-
-## y8z9a0b1 — Deployment Tracking
-
-**Why gh doesn't have it:** No deployment CLI commands exist. ghg already has environment and protection commands.
-
-**Commands:**
-
-- `ghg deployment list [--repo <repo>] [--environment <name>] [--limit <n>]`
-- `ghg deployment view <id>`
-- `ghg deployment create --ref <branch|sha> --environment <name> [--description <text>] [--auto-merge]`
-- `ghg deployment status <id>`
-- `ghg deployment status create <id> --state success|failure|in_progress --description <text>`
-
-**Value:** Complements the existing environments/variables/secrets surface. Track deployments without leaving the terminal.
 
 ---
 

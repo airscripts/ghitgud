@@ -97,6 +97,12 @@ Every command reads from `src/core/config.ts`, which resolves values in this ord
 - **Secrets** — list, set, and delete encrypted repository, environment, and organization secrets with libsodium public-key encryption
 - **Organization & Team Management** — list organization members, invite and remove users, manage teams and team membership, invite collaborators and grant team access to repositories
 - **GitHub Pages & Wiki** — configure and deploy branch-based Pages sites, inspect build status, and manage wiki pages from the terminal
+- **Branch & Tag Protection** — protect and unprotect branches, manage tag protection rules
+- **Webhook Management** — list, create, edit, delete, test webhooks and inspect deliveries
+- **Fork Management** — sync, compare, list, and create repository forks
+- **Deployment Tracking** — list, view, create deployments and manage deployment statuses
+- **Actions Log Streaming** — live stream workflow run logs with filtering and tail support
+- **Issue Types** — list available issue types per repository
 
 ---
 
@@ -345,9 +351,12 @@ ghg cache delete <key> --all --yes --repo owner/repo
 
 ```bash
 ghg run debug <run-id> --repo owner/repo --output-dir ./run-debug
+ghg run watch 12345678 --repo owner/repo
+ghg run watch --follow --tail --filter "test"
 ```
 
 - `debug` fetches logs, artifacts, and annotations for a workflow run.
+- `watch` streams logs for a workflow run with optional tail, filter, and follow modes.
 
 ### Workflow
 
@@ -493,6 +502,14 @@ ghg issue parent <child> --parent <parent>
 - `subtasks --link` links an existing issue as a sub-issue.
 - `parent` links an existing issue to a parent issue.
 
+### Issue Types
+
+```bash
+ghg issue type list --repo owner/repo
+```
+
+- `type list` lists available issue types for the repository.
+
 ### Security & Compliance
 
 ```bash
@@ -608,6 +625,75 @@ ghg wiki delete OldPage
 - `edit` replaces, commits, and publishes an existing page.
 - `create` commits and publishes a new page.
 - `delete` removes a wiki page permanently.
+
+### Branch & Tag Protection
+
+```bash
+ghg branch protect main --required-reviews 2 --dismiss-stale --repo owner/repo
+ghg branch unprotect main --repo owner/repo
+ghg branch protection --repo owner/repo
+ghg branch tag-protect "v*"
+ghg branch tag-unprotect "v*"
+```
+
+- `protect` sets branch protection with optional required checks, reviews, and stale review dismissal.
+- `unprotect` removes branch protection.
+- `protection` lists all branch and tag protection rules.
+- `tag-protect` creates a tag protection rule.
+- `tag-unprotect` removes a tag protection rule.
+
+### Webhooks
+
+```bash
+ghg webhook list --repo owner/repo
+ghg webhook list --org myorg
+ghg webhook create --url https://example.com --events push --repo owner/repo
+ghg webhook edit 1 --events push,pull_request --repo owner/repo
+ghg webhook delete 1 --yes --repo owner/repo
+ghg webhook test 1 --repo owner/repo
+ghg webhook delivery list 1 --repo owner/repo
+ghg webhook delivery view 1 --webhook 1 --repo owner/repo
+ghg webhook delivery redeliver 1 --webhook 1 --repo owner/repo
+```
+
+- `list` lists repository or organization webhooks.
+- `create` creates a webhook with URL, events, optional secret and content type.
+- `edit` updates a webhook URL or events.
+- `delete` removes a webhook after confirmation.
+- `test` triggers a test ping delivery.
+- `delivery list` lists recent deliveries for a webhook.
+- `delivery view` shows request and response details for a delivery.
+- `delivery redeliver` redelivers a webhook delivery.
+
+### Forks
+
+```bash
+ghg fork sync --repo owner/repo
+ghg fork compare --repo owner/repo
+ghg fork list --repo owner/repo
+ghg fork create owner/repo
+```
+
+- `sync` fast-forwards a fork from its upstream.
+- `compare` shows ahead/behind status against upstream.
+- `list` lists forks of a repository.
+- `create` creates a fork of a repository.
+
+### Deployments
+
+```bash
+ghg deployment list --repo owner/repo --environment production
+ghg deployment view 1 --repo owner/repo
+ghg deployment create --ref main --environment production --repo owner/repo
+ghg deployment status 1 --repo owner/repo
+ghg deployment status-create 1 --state success --repo owner/repo
+```
+
+- `list` lists deployments with optional environment filter.
+- `view` shows deployment details.
+- `create` creates a deployment for a ref and environment.
+- `status` lists statuses for a deployment.
+- `status-create` creates a deployment status with state, description, and target URL.
 
 ### Organization
 
@@ -851,12 +937,15 @@ src/
     proxy.ts            # ghg proxy <passthrough>.
     repos.ts            # ghg repos <inspect|govern|label|retire|report>.
     review.ts           # ghg review <comment|threads|resolve|suggest|apply>.
-    run.ts              # ghg run <debug>.
-    secrets.ts          # ghg secret <list|set|delete>.
+     run.ts              # ghg run <debug|watch>.
+     secrets.ts          # ghg secret <list|set|delete>.
     variable.ts         # ghg variable <list|set|delete>.
     environment.ts      # ghg environment <list|create|protection>.
     pages.ts            # ghg pages <status|deploy|unpublish>.
-    wiki.ts             # ghg wiki <list|view|edit|create|delete>.
+    branch.ts            # ghg branch <protect|unprotect|protection|tag-protect|tag-unprotect>.
+    deployment.ts        # ghg deployment lifecycle commands.
+    fork.ts              # ghg fork <sync|compare|list|create>.
+    webhook.ts           # ghg webhook lifecycle and delivery commands.
     workflow.ts         # Workflow lifecycle, validation, and preview commands.
   services/
     labels.ts           # Label business logic.
@@ -875,7 +964,8 @@ src/
     issue.ts            # Issue lifecycle, status, subtask, and parent business logic.
     milestone.ts        # Milestone business logic.
     notifications.ts    # Notifications business logic.
-    run.ts              # Workflow run debugging business logic.
+     run.ts              # Workflow run debugging and log streaming business logic.
+     branch.ts           # Branch and tag protection business logic.
     project.ts          # Project lifecycle and board business logic.
     queue.ts            # Merge queue orchestration.
     ruleset.ts          # Ruleset validation and CRUD.
@@ -915,7 +1005,11 @@ src/
     leaks.ts            # Secret scanning alerts API.
     secrets.ts          # Repository, environment, and organization secrets API.
     variables.ts        # Repository, environment, and organization variables API.
-    environments.ts     # Environment and protection rules API.
+     environments.ts     # Environment and protection rules API.
+     protection.ts       # Branch and tag protection API.
+     deployments.ts      # Deployments API.
+     forks.ts            # Forks API.
+     webhooks.ts         # Webhooks API.
         pages.ts            # GitHub Pages API.
 
   core/
@@ -1040,14 +1134,18 @@ bash playbooks/all.sh
 - `discussion.sh` — `ghg discussion list/view/create/comment/close/categories`
 - `org.sh` — `ghg org members/invite/remove`
 - `team.sh` — `ghg team list/create/add/remove`
-- `issue.sh` — `ghg issue` lifecycle, status, subtasks, and parent operations
+- `issue.sh` — `ghg issue` lifecycle, status, subtasks, parent, and type operations
 - `review.sh` — `ghg review comment/threads/resolve/suggest/apply`
 - `repos.sh` — `ghg repos inspect/govern/label/retire/report/clone`
 - `repo.sh` — repository CRUD plus collaborator and team access
 - `release.sh` — `ghg release changelog/bump/verify/notes/draft`
 - `pr.sh` — `ghg pr` lifecycle, checkout, checks, cleanup, push, and stack operations
 - `project.sh` — Project v2 list and board
-- `run.sh` — `ghg run debug`
+- `run.sh` — `ghg run debug/watch`
+- `branch.sh` — `ghg branch` protection lifecycle
+- `webhook.sh` — `ghg webhook` lifecycle
+- `fork.sh` — `ghg fork` lifecycle
+- `deployment.sh` — `ghg deployment` lifecycle
 
 ### Conventions
 

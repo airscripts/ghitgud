@@ -102,6 +102,31 @@ const runOperations: TuiOperation[] = [
   },
 
   {
+    workspace: "Run",
+    id: "run.watch",
+    title: "Watch Run",
+    command: "ghg run watch <run-id>",
+    description: "Watch a workflow run and stream its logs.",
+    inputs: [
+      repoInput,
+      { key: "runId", label: "Run ID", type: "number" },
+      { key: "filter", label: "Filter pattern", type: "string" },
+      { key: "tail", label: "Tail output", type: "boolean" },
+      { key: "follow", label: "Follow latest", type: "boolean" },
+    ],
+    run: async ({ values }) =>
+      runService.watch(
+        numberValue(values, "runId") || 0,
+        text(values, "repo") || (await inferRepo()),
+        {
+          tail: values.tail === true,
+          filter: text(values, "filter"),
+          follow: values.follow === true,
+        },
+      ),
+  },
+
+  {
     mutates: true,
     id: "run.debug",
     workspace: "Run",

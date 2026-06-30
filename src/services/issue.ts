@@ -1,6 +1,7 @@
 import api from "@/api/issues";
 import output from "@/core/output";
 import logger from "@/core/logger";
+import repoResolver from "@/core/repo";
 import { GhitgudError } from "@/core/errors";
 import { IssueSummary, SubIssueSummary } from "@/types";
 
@@ -26,6 +27,8 @@ interface GraphQlPayload {
 
 interface IssueType {
   name: string;
+  color?: string;
+  description?: string;
 }
 
 function parseIssueNumber(value: string | number): number {
@@ -417,6 +420,23 @@ const parent = async (
   return linkSubIssue(repo, parentIssue, child);
 };
 
+const typeList = async (options: { repo?: string } = {}) => {
+  const repo = options.repo ?? (await repoResolver.resolveRepo());
+  logger.start(`Loading issue types for ${repo}.`);
+  const response = await api.issueTypes(repo);
+  const types = (await response.json()) as IssueType[];
+  output.renderTable(
+    types.map((t) => ({
+      name: t.name,
+      color: t.color ?? "-",
+      description: t.description ?? "-",
+    })),
+    { emptyMessage: "No issue types configured." },
+  );
+  logger.success(`Loaded ${types.length} issue type(s).`);
+  return { success: true, types };
+};
+
 export default {
   edit,
   list,
@@ -427,6 +447,7 @@ export default {
   comment,
   transfer,
   subtasks,
+  typeList,
   lock: (repo: string, issue: string | number) => lock(repo, issue, true),
   unlock: (repo: string, issue: string | number) => lock(repo, issue, false),
 

@@ -20,3 +20,10 @@ fi
 
 step "Run Debug Without Run ID"
 expect_exit_non0 "run debug without ID fails" ghg run debug --repo "$REPO"
+
+step "Watch Run (skipped without RUN_ID)"
+if [ -n "${RUN_ID:-}" ]; then
+  expect_exit_0 "run watch succeeds" ghg run watch "$RUN_ID" --repo "$REPO"
+else
+  skip "run watch requires RUN_ID"
+fi

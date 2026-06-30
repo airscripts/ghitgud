@@ -195,6 +195,26 @@ interface GistSummary {
   files: GistFile[];
 }
 
+interface WebhookSummary {
+  id: number;
+  name: string;
+  url: string;
+  events: string[];
+  active: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+interface WebhookDelivery {
+  id: number;
+  guid: string;
+  deliveredAt: string;
+  statusCode: number;
+  duration: number;
+  event: string;
+  action: string | null;
+}
+
 interface RunDebugJob {
   id: number;
   name: string;
@@ -393,6 +413,40 @@ interface ProjectField {
   options?: Array<{ id: string; name: string }>;
 }
 
+interface DeploymentSummary {
+  id: number;
+  ref: string;
+  environment: string;
+  task: string;
+  description: string | null;
+  creator: string | null;
+  createdAt: string;
+  production: boolean;
+}
+
+interface DeploymentStatusSummary {
+  id: number;
+  state: string;
+  description: string | null;
+  creator: string | null;
+  createdAt: string;
+}
+
+interface BranchProtection {
+  pattern: string;
+  requiredChecks: string[];
+  requiredReviews: number;
+  dismissStale: boolean;
+  enforceAdmins: boolean;
+  allowForcePushes: boolean;
+}
+
+interface TagProtection {
+  id: number;
+  pattern: string;
+  createdAt: string;
+}
+
 const normalizeLabel = (label: Label) => ({
   name: label.name,
   color: label.color,
@@ -425,6 +479,8 @@ export type { ActionsCacheEntry };
 export type { WorkflowSummary };
 export type { GistFile };
 export type { GistSummary };
+export type { WebhookSummary };
+export type { WebhookDelivery };
 export type { WorkflowDryRunResult };
 export type { ReviewThread };
 export type { ReviewComment };
@@ -445,6 +501,10 @@ export type { SubIssueSummary };
 export type { ProjectBoardItem };
 export type { ReviewApplyResult };
 export type { MilestoneProgress };
+export type { DeploymentSummary };
+export type { DeploymentStatusSummary };
+export type { BranchProtection };
+export type { TagProtection };
 export type { ProjectBoardColumn };
 export type { Discussion } from "./discussions";
 export type { DiscussionComment } from "./discussions";

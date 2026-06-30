@@ -39,7 +39,11 @@ type TuiWorkspace =
   | "Repository Access"
   | "Pages"
   | "Wiki"
-  | "Search";
+  | "Webhooks"
+  | "Search"
+  | "Forks"
+  | "Deployments"
+  | "Branches";
 
 type TuiInputType = "string" | "number" | "boolean";
 

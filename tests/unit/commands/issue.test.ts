@@ -30,6 +30,7 @@ describe("issue command", () => {
       "status",
       "subtasks",
       "parent",
+      "type",
     ]);
   });
 });

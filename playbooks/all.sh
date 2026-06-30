@@ -34,15 +34,19 @@ PLAYBOOKS=(
   leaks
   audit
   compliance
+  branch
   workflow
   labels
   pages
   wiki
+  webhook
   environment
   variable
   secret
   milestone
   discussion
+  deployment
+  fork
   org
   team
   issue

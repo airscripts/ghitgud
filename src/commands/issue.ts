@@ -217,6 +217,14 @@ const register = (program: Command) => {
       const repo = await resolve(options.repo);
       await command.run(() => issueService.parent(repo, child, options));
     });
+
+  issue
+    .command("type")
+    .description("List available issue types for the repository.")
+    .option("--repo <repo>", "Repository (owner/repo)")
+    .action(async (options: { repo?: string }) => {
+      await command.run(() => issueService.typeList({ repo: options.repo }));
+    });
 };
 
 export default { register };

@@ -14,7 +14,9 @@ import authCommand from "@/commands/auth";
 import pingCommand from "@/commands/ping";
 import teamCommand from "@/commands/team";
 import repoCommand from "@/commands/repo";
+import forkCommand from "@/commands/fork";
 import wikiCommand from "@/commands/wiki";
+import webhookCommand from "@/commands/webhook";
 import issueCommand from "@/commands/issue";
 import proxyCommand from "@/commands/proxy";
 import reposCommand from "@/commands/repos";
@@ -46,6 +48,8 @@ import dependabotCommand from "@/commands/dependabot";
 import complianceCommand from "@/commands/compliance";
 import discussionCommand from "@/commands/discussion";
 import environmentCommand from "@/commands/environment";
+import deploymentCommand from "@/commands/deployment";
+import branchCommand from "@/commands/branch";
 import { setTheme, initializeTheme } from "@/core/theme";
 import notificationsCommand from "@/commands/notifications";
 
@@ -103,6 +107,7 @@ if (!proxyCommand.runProxyFromArgv()) {
     labelsCommand.register(program);
     pagesCommand.register(program);
     wikiCommand.register(program);
+    webhookCommand.register(program);
     configCommand.register(program);
     prCommand.register(program);
     issueCommand.register(program);
@@ -131,6 +136,9 @@ if (!proxyCommand.runProxyFromArgv()) {
     orgCommand.register(program);
     teamCommand.register(program);
     repoCommand.register(program);
+    deploymentCommand.register(program);
+    forkCommand.register(program);
+    branchCommand.register(program);
 
     program
       .command("version")

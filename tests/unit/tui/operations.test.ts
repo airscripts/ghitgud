@@ -121,6 +121,7 @@ vi.mock("@/services/issue", () => ({
     comment: vi.fn(() => Promise.resolve()),
     transfer: vi.fn(() => Promise.resolve()),
     subtasks: vi.fn(() => Promise.resolve([])),
+    typeList: vi.fn(() => Promise.resolve()),
   },
 }));
 
@@ -713,9 +714,16 @@ describe("tui operations run functions", () => {
 
     it("runs issue lifecycle and status operations", async () => {
       await runOp(issueOperations[8], { issue: 42 });
-      await runOp(issueOperations.at(-1)!, {});
+      await runOp(issueOperations.at(-2)!, {});
       expect(issueService.close).toHaveBeenCalledWith("airscripts/ghitgud", 42);
       expect(issueService.status).toHaveBeenCalledWith(undefined);
+    });
+
+    it("runs issue.typeList", async () => {
+      await runOp(issueOperations.at(-1)!, { repo: "owner/repo" });
+      expect(issueService.typeList).toHaveBeenCalledWith({
+        repo: "owner/repo",
+      });
     });
   });
 

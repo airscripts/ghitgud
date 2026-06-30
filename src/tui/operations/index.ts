@@ -4,6 +4,7 @@ import orgOperations from "./org";
 import teamOperations from "./team";
 import repoOperations from "./repo";
 import wikiOperations from "./wiki";
+import webhookOperations from "./webhook";
 import authOperations from "./auth";
 import cacheOperations from "./cache";
 import gistOperations from "./gists";
@@ -31,9 +32,12 @@ import milestoneOperations from "./milestones";
 import dependabotOperations from "./dependabot";
 import complianceOperations from "./compliance";
 import discussionOperations from "./discussions";
+import deploymentOperations from "./deployments";
 import repositoryOperations from "./repositories";
 import environmentOperations from "./environments";
 import notificationOperations from "./notifications";
+import forkOperations from "./forks";
+import branchOperations from "./branches";
 
 import type { TuiOperation } from "../types";
 
@@ -61,6 +65,7 @@ const operations: TuiOperation[] = [
   ...utilityOperations,
   ...releaseOperations,
   ...discussionOperations,
+  ...deploymentOperations,
   ...dependabotOperations,
   ...complianceOperations,
   ...auditOperations,
@@ -73,7 +78,10 @@ const operations: TuiOperation[] = [
   ...repoOperations,
   ...pagesOperations,
   ...wikiOperations,
+  ...webhookOperations,
   ...searchOperations,
+  ...forkOperations,
+  ...branchOperations,
 ];
 
 const workspaces = Array.from(new Set(operations.map((op) => op.workspace)));

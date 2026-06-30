@@ -88,14 +88,22 @@ const register = (program: Command) => {
     });
 
   run
-    .command("watch <run-id>")
-    .description("Watch a workflow run until completion.")
+    .command("watch [run-id]")
+    .description("Watch a workflow run and stream its logs.")
     .option("--repo <repo>", "Repository (owner/repo)")
-    .option("--tail", "Reserved for live log output")
-    .option("--filter <pattern>", "Reserved log filter")
-    .action(async (value: string, options) => {
-      const target = await resolve(value, options.repo);
-      await command.run(() => runService.watch(target.runId, target.repo));
+    .option("--tail", "Follow log output", false)
+    .option("--filter <pattern>", "Filter log lines by pattern")
+    .option("--follow", "Follow the latest in-progress run", false)
+    .action(async (value: string | undefined, options) => {
+      const repo = await repoResolver.resolveRepo(options.repo);
+      const runId = value ? parse.parsePositiveInt(value, "run id") : undefined;
+      await command.run(() =>
+        runService.watch(runId ?? 0, repo, {
+          tail: options.tail,
+          filter: options.filter,
+          follow: options.follow,
+        }),
+      );
     });
 
   run

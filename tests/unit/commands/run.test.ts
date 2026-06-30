@@ -7,6 +7,7 @@ import runCommand from "@/commands/run";
 vi.mock("@/services/run", () => ({
   default: {
     debugRun: vi.fn(),
+    watch: vi.fn(),
   },
 }));
 
@@ -30,6 +31,7 @@ describe("run command", () => {
 
     const subcommands = run!.commands.map((command) => command.name());
     expect(subcommands).toContain("debug");
+    expect(subcommands).toContain("watch");
   });
 
   it("should reject invalid run ids before calling service", async () => {

@@ -9,7 +9,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- Complete release lifecycle management with list, view, create, edit, delete, asset download, upload, and deletion commands in the CLI and TUI
+- Workflow lifecycle commands: `ghg workflow list`, `view`, `run`, `enable`, `disable` with TUI operations and playbook coverage
+- Cache list and delete commands: `ghg cache list`, `ghg cache delete` with TUI operations and playbook coverage
+- Gist CRUD commands: `ghg gist list`, `view`, `create`, `edit`, `delete`, `clone` with TUI operations and playbook coverage
+- Project CRUD commands: `ghg project list`, `view`, `create`, `edit`, `close`, `delete`, `item-list`, `item-add`, `item-create`, `field-list`, `link`, `unlink` with TUI operations and playbook coverage
+- Ruleset CRUD commands: `ghg ruleset list`, `view`, `check`, `create`, `edit`, `delete`, `validate` with TUI operations and playbook coverage
+- Cross-repository status command: `ghg status` with TUI operations and playbook coverage
+- API passthrough command: `ghg api` with pagination, jq filtering, and method support
+- Merge queue management: `ghg queue list`, `status`, `add`, `remove`, `history` with TUI operations and playbook coverage
+- Issue type listing: `ghg issue type list` to enumerate available issue types per repository
+- Webhook management: `ghg webhook list`, `create`, `edit`, `delete`, `test`, `delivery list`, `delivery view`, `delivery redeliver` for repository and organization webhooks
+- Fork management: `ghg fork sync`, `compare`, `list`, `create` for repository fork operations
+- Deployment tracking: `ghg deployment list`, `view`, `create`, `status`, `status-create` for deployment lifecycle management
+- Actions live log streaming: `ghg run watch` with `--tail`, `--filter`, and `--follow` flags for workflow run log streaming
+- Branch and tag protection: `ghg branch protect`, `unprotect`, `protection`, `tag-protect`, `tag-unprotect` for branch and tag protection management
+- TUI workspace operations for Webhooks, Forks, Deployments, and Branches
+- Playbook coverage for issue types, webhook, fork, deployment, and branch protection commands
 - Workflow run lifecycle management with filtering, inspection, cancellation, reruns, deletion, watching, and artifact downloads
 - Repository CRUD commands for create, list, view, clone, delete, archive, unarchive, rename, star, unstar, edit, fork, and local branch sync
 - Repository CRUD operations in the TUI workspace and expanded live repository playbook coverage

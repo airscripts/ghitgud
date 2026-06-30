@@ -311,6 +311,17 @@ const issueOperations: TuiOperation[] = [
     inputs: [repoInput],
     run: async ({ values }) => issueService.status(text(values, "repo")),
   },
+
+  {
+    id: "issue.type.list",
+    workspace: "Issues",
+    title: "List Issue Types",
+    command: "ghg issue type list",
+    description: "List available issue types for the repository.",
+    inputs: [repoInput],
+    run: async ({ values }) =>
+      issueService.typeList({ repo: text(values, "repo") }),
+  },
 ];
 
 export default issueOperations;

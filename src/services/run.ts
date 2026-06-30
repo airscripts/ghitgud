@@ -4,10 +4,12 @@ import path from "path";
 import io from "@/core/io";
 import output from "@/core/output";
 import logger from "@/core/logger";
+import client from "@/api/client";
 import checksApi from "@/api/checks";
 import repoResolver from "@/core/repo";
 import artifactsApi from "@/api/artifacts";
 import workflowsApi from "@/api/workflows";
+import { GhitgudError } from "@/core/errors";
 
 import { RunDebugResult } from "@/types";
 
@@ -102,22 +104,91 @@ const remove = async (runId: number, repo: string) => {
   return { success: true, runId };
 };
 
-const watch = async (runId: number, repo: string) => {
+const watch = async (
+  runId: number,
+  repo: string,
+  options: { tail?: boolean; filter?: string; follow?: boolean } = {},
+) => {
+  let currentRunId = runId;
+
+  if (!currentRunId && options.follow) {
+    logger.start("Finding the latest in-progress run.");
+    const response = await client.getTokenRequired(
+      `/repos/${repo}/actions/runs?status=in_progress&per_page=1`,
+    );
+    const data = (await response.json()) as {
+      workflow_runs: Array<{ id: number }>;
+    };
+    if (!data.workflow_runs?.length) {
+      throw new GhitgudError("No in-progress workflow runs found.");
+    }
+    currentRunId = data.workflow_runs[0].id;
+  }
+
+  if (!currentRunId) {
+    throw new GhitgudError("Run ID is required without --follow.");
+  }
+
+  const filterRegex = options.filter ? new RegExp(options.filter, "i") : null;
+
+  logger.start(`Watching run ${currentRunId}.`);
+
+  const jobsResponse = await workflowsApi.listRunJobs(repo, currentRunId);
+  const jobsData = (await jobsResponse.json()) as {
+    jobs: Array<{
+      id: number;
+      name: string;
+      status: string;
+      conclusion: string | null;
+    }>;
+  };
+  const jobs = jobsData.jobs ?? [];
+
+  for (const job of jobs) {
+    if (filterRegex && !filterRegex.test(job.name)) continue;
+    try {
+      const logResponse = await client.getTokenRequired(
+        `/repos/${repo}/actions/jobs/${job.id}/logs`,
+      );
+      if (logResponse.ok) {
+        const log = await logResponse.text();
+        output.renderSection(`Job: ${job.name}`);
+        output.log(log);
+      }
+    } catch {
+      // Skip jobs with no logs.
+    }
+  }
+
   let run: ReturnType<typeof normalizeRun>;
   do {
-    const response = await workflowsApi.getRun(repo, runId);
+    const response = await workflowsApi.getRun(repo, currentRunId);
     run = normalizeRun((await response.json()) as WorkflowRunResponse);
 
     logger.info(
-      `Run ${runId}: ${run.status}${run.conclusion ? ` (${run.conclusion})` : ""}`,
+      `Run ${currentRunId}: ${run.status}${run.conclusion ? ` (${run.conclusion})` : ""}`,
     );
 
-    if (run.status !== "completed") {
-      await new Promise((resolve) => setTimeout(resolve, 5_000));
+    if (
+      run.status !== "completed" &&
+      run.status !== "failure" &&
+      run.status !== "cancelled"
+    ) {
+      await new Promise((resolve) => setTimeout(resolve, 3_000));
     }
-  } while (run.status !== "completed");
+  } while (
+    run.status !== "completed" &&
+    run.status !== "failure" &&
+    run.status !== "cancelled"
+  );
 
-  return { success: true, run };
+  logger.success(`Run ${currentRunId} ${run.status}.`);
+  return {
+    success: true,
+    runId: currentRunId,
+    status: run.status,
+    conclusion: run.conclusion,
+  };
 };
 
 const download = async (runId: number, options: DownloadRunOptions) => {

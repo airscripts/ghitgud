@@ -42,6 +42,12 @@ vi.mock("@/api/workflows", () => ({
   },
 }));
 
+vi.mock("@/api/client", () => ({
+  default: {
+    getTokenRequired: vi.fn(),
+  },
+}));
+
 vi.mock("@/core/repo", () => ({
   default: {
     resolveRepo: vi.fn(() => Promise.resolve("owner/repo")),
@@ -52,6 +58,8 @@ vi.mock("@/core/output", () => ({
   default: {
     renderTable: vi.fn(),
     renderSummary: vi.fn(),
+    renderSection: vi.fn(),
+    log: vi.fn(),
   },
 }));
 
@@ -160,6 +168,10 @@ describe("run service", () => {
       jsonResponse(completed),
     );
 
+    vi.mocked(workflowsApi.listRunJobs).mockResolvedValue(
+      jsonResponse({ jobs: [] }),
+    );
+
     expect((await runService.list({ repo: "owner/repo" })).runs).toHaveLength(
       1,
     );
@@ -185,7 +197,7 @@ describe("run service", () => {
     await runService.rerun(123, "owner/repo", true);
     await runService.remove(123, "owner/repo");
 
-    expect((await runService.watch(123, "owner/repo")).run.conclusion).toBe(
+    expect((await runService.watch(123, "owner/repo")).conclusion).toBe(
       "success",
     );
   });
