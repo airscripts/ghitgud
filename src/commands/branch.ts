@@ -75,6 +75,47 @@ const register = (program: Command) => {
         branchService.tagUnprotect({ repo: options.repo, pattern }),
       );
     });
+
+  branch
+    .command("stale")
+    .description("List stale local branches older than N days.")
+    .option("--days <n>", "Days threshold", "30")
+    .option("--merged", "Only show merged branches", false)
+    .action(async (options: { days: string; merged?: boolean }) => {
+      const { default: staleService } = await import("@/services/stale");
+      await command.run(() =>
+        staleService.stale({
+          days: parseInt(options.days, 10),
+          merged: options.merged,
+        }),
+      );
+    });
+
+  branch
+    .command("sweep")
+    .description("Delete local branches matching a pattern.")
+    .requiredOption("--pattern <pattern>", "Branch name pattern (glob)")
+    .option("--days <n>", "Only sweep branches older than N days", "30")
+    .option("--merged", "Only sweep merged branches", false)
+    .option("--dry", "Dry run (show what would be deleted)", false)
+    .action(
+      async (options: {
+        pattern: string;
+        days: string;
+        merged?: boolean;
+        dry?: boolean;
+      }) => {
+        const { default: staleService } = await import("@/services/stale");
+        await command.run(() =>
+          staleService.sweep({
+            pattern: options.pattern,
+            days: parseInt(options.days, 10),
+            merged: options.merged,
+            dry: options.dry,
+          }),
+        );
+      },
+    );
 };
 
 export default { register };

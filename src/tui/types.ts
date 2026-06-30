@@ -43,7 +43,14 @@ type TuiWorkspace =
   | "Search"
   | "Forks"
   | "Deployments"
-  | "Branches";
+  | "Reactions"
+  | "Comments"
+  | "Branches"
+  | "Dependencies"
+  | "Advisories"
+  | "CodeQL"
+  | "Workspaces"
+  | "Actions";
 
 type TuiInputType = "string" | "number" | "boolean";
 

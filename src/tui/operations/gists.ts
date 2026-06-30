@@ -99,6 +99,53 @@ const gistOperations: TuiOperation[] = [
     run: ({ values }) =>
       gistService.clone(requiredText(values, "id"), text(values, "directory")),
   },
+  {
+    workspace: "Gists",
+    id: "gist.fork",
+    title: "Fork Gist",
+    command: "ghg gist fork <id>",
+    description: "Fork a gist.",
+    mutates: true,
+    inputs: [{ key: "id", label: "Gist ID", type: "string", required: true }],
+    run: async ({ values }) => gistService.fork(requiredText(values, "id")),
+  },
+  {
+    workspace: "Gists",
+    id: "gist.star",
+    title: "Star Gist",
+    command: "ghg gist star <id>",
+    description: "Star a gist.",
+    mutates: true,
+    inputs: [{ key: "id", label: "Gist ID", type: "string", required: true }],
+    run: async ({ values }) => gistService.star(requiredText(values, "id")),
+  },
+  {
+    workspace: "Gists",
+    id: "gist.unstar",
+    title: "Unstar Gist",
+    command: "ghg gist unstar <id>",
+    description: "Unstar a gist.",
+    mutates: true,
+    inputs: [{ key: "id", label: "Gist ID", type: "string", required: true }],
+    run: async ({ values }) => gistService.unstar(requiredText(values, "id")),
+  },
+  {
+    mutates: true,
+    workspace: "Gists",
+    id: "gist.comment",
+    title: "Comment on Gist",
+    command: "ghg gist comment <id> --body <text>",
+    description: "Add a comment to a gist.",
+    inputs: [
+      { key: "id", label: "Gist ID", type: "string", required: true },
+      { key: "body", label: "Comment body", type: "string", required: true },
+    ],
+    run: async ({ values }) =>
+      gistService.comment(
+        requiredText(values, "id"),
+        requiredText(values, "body"),
+      ),
+  },
 ];
 
 export default gistOperations;

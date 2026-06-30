@@ -9,6 +9,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Gist fork, star, unstar, and comment commands: `ghg gist fork`, `star`, `unstar`, `comment`
+- Reaction commands: `ghg react list`, `add`, `remove` for emoji reactions on issues, comments, and PR review comments
+- Comment thread management: `ghg comment list`, `reply`, `delete` for issue and PR comment threads
+- Dependency graph commands: `ghg deps list`, `direct`, `review` for repository dependency inspection and comparison
+- Advisory database commands: `ghg advisory list`, `view` for querying the GitHub Advisory Database
+- CodeQL alert management: `ghg codeql list`, `view`, `dismiss` for code scanning alert lifecycle
+- Workspace and multi-repo operations: `ghg workspace define`, `list`, `run`, `ghg repo syncall`, `ghg repo statusall`, `ghg branch stale`, `ghg branch sweep`
+- Actions cost and usage analytics: `ghg actions usage`, `cost`, `top-spenders`, `export` for billing and usage visibility
+- TUI workspace operations for Reactions, Comments, Dependencies, Advisories, CodeQL, Workspaces, and Actions
+- Playbook coverage for gist extensions, reactions, comments, dependencies, advisories, CodeQL, workspace, and actions commands
 - Workflow lifecycle commands: `ghg workflow list`, `view`, `run`, `enable`, `disable` with TUI operations and playbook coverage
 - Cache list and delete commands: `ghg cache list`, `ghg cache delete` with TUI operations and playbook coverage
 - Gist CRUD commands: `ghg gist list`, `view`, `create`, `edit`, `delete`, `clone` with TUI operations and playbook coverage

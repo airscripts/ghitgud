@@ -290,6 +290,24 @@ Examples:
         inviteService.grant(owner, repoName, teamSlug, options.role),
       );
     });
+
+  repo
+    .command("syncall")
+    .description("Pull latest changes for all local repositories.")
+    .option("--root <dir>", "Root directory to scan", process.cwd())
+    .action(async (options: { root?: string }) => {
+      const { default: syncService } = await import("@/services/sync");
+      await command.run(() => syncService.syncall({ root: options.root }));
+    });
+
+  repo
+    .command("statusall")
+    .description("Check status across multiple local repositories.")
+    .option("--root <dir>", "Root directory to scan", process.cwd())
+    .action(async (options: { root?: string }) => {
+      const { default: syncService } = await import("@/services/sync");
+      await command.run(() => syncService.statusall({ root: options.root }));
+    });
 };
 
 export default { register };

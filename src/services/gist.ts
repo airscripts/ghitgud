@@ -213,4 +213,58 @@ const clone = async (id: string, directory?: string) => {
   return { success: true, gist: id, directory: destination };
 };
 
-export default { list, view, create, edit, remove, clone };
+const fork = async (id: string) => {
+  logger.start(`Forking gist ${id}.`);
+  const response = await api.fork(id);
+  const gist = normalize((await response.json()) as GistApiEntry);
+  logger.success(`Forked gist ${id} to ${gist.id}.`);
+  return { success: true, gist };
+};
+
+const star = async (id: string) => {
+  logger.start(`Starring gist ${id}.`);
+  await api.star(id);
+  logger.success(`Starred gist ${id}.`);
+  return { success: true, gist: id };
+};
+
+const unstar = async (id: string) => {
+  logger.start(`Unstarring gist ${id}.`);
+  await api.unstar(id);
+  logger.success(`Unstarred gist ${id}.`);
+  return { success: true, gist: id };
+};
+
+const comment = async (id: string, body: string) => {
+  if (!body) throw new GhitgudError("Comment body is required.");
+  logger.start(`Commenting on gist ${id}.`);
+  const response = await api.createComment(id, body);
+  const result = (await response.json()) as {
+    id: number;
+    body: string;
+    created_at: string;
+  };
+  logger.success(`Commented on gist ${id}.`);
+  return { success: true, comment: result };
+};
+
+const deleteComment = async (gistId: string, commentId: number) => {
+  logger.start(`Deleting comment ${commentId} on gist ${gistId}.`);
+  await api.deleteComment(gistId, commentId);
+  logger.success(`Deleted comment ${commentId}.`);
+  return { success: true, comment: commentId };
+};
+
+export default {
+  list,
+  view,
+  create,
+  edit,
+  remove,
+  clone,
+  fork,
+  star,
+  unstar,
+  comment,
+  deleteComment,
+};

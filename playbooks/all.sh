@@ -53,6 +53,13 @@ PLAYBOOKS=(
   review
   repos
   repo
+  react
+  comment
+  deps
+  advisory
+  codeql
+  workspace
+  actions
   release
   pr
   project

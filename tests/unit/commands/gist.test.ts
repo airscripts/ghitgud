@@ -11,6 +11,10 @@ vi.mock("@/services/gist", () => ({
     clone: vi.fn(),
     create: vi.fn(),
     remove: vi.fn(),
+    fork: vi.fn(),
+    star: vi.fn(),
+    unstar: vi.fn(),
+    comment: vi.fn(),
   },
 }));
 
@@ -26,6 +30,10 @@ describe("gist command", () => {
       "edit",
       "delete",
       "clone",
+      "fork",
+      "star",
+      "unstar",
+      "comment",
     ]);
   });
 });

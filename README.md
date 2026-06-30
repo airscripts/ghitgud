@@ -103,6 +103,12 @@ Every command reads from `src/core/config.ts`, which resolves values in this ord
 - **Deployment Tracking** — list, view, create deployments and manage deployment statuses
 - **Actions Log Streaming** — live stream workflow run logs with filtering and tail support
 - **Issue Types** — list available issue types per repository
+- **Dependency Graph** — list, inspect, and review repository dependencies via SBOM
+- **Advisory Database** — query GitHub Advisory Database by ecosystem and severity
+- **CodeQL Alerts** — list, view, and dismiss code scanning alerts
+- **Workspaces** — define named workspaces and run commands across multiple repositories
+- **Multi-Repo Operations** — syncall, statusall, branch stale detection, and sweep
+- **Actions Cost Analytics** — usage, cost, top-spenders, and export for billing visibility
 
 ---
 
@@ -634,6 +640,8 @@ ghg branch unprotect main --repo owner/repo
 ghg branch protection --repo owner/repo
 ghg branch tag-protect "v*"
 ghg branch tag-unprotect "v*"
+ghg branch stale --days 30 --merged
+ghg branch sweep --pattern "feature/*" --dry
 ```
 
 - `protect` sets branch protection with optional required checks, reviews, and stale review dismissal.
@@ -641,6 +649,73 @@ ghg branch tag-unprotect "v*"
 - `protection` lists all branch and tag protection rules.
 - `tag-protect` creates a tag protection rule.
 - `tag-unprotect` removes a tag protection rule.
+- `stale` lists local branches older than N days, optionally filtered to merged branches.
+- `sweep` bulk deletes local branches matching a pattern, with dry-run support.
+
+### Dependencies
+
+```bash
+ghg deps list --repo owner/repo
+ghg deps direct --repo owner/repo
+ghg deps review --base main --head feature --repo owner/repo
+```
+
+- `list` shows the dependency graph (SBOM) for a repository.
+- `direct` shows direct dependencies only.
+- `review` compares dependencies between two refs.
+
+### Advisories
+
+```bash
+ghg advisory list
+ghg advisory list --ecosystem npm --severity high
+ghg advisory view GHSA-xxxx-xxxx-xxxx
+```
+
+- `list` queries the GitHub Advisory Database by ecosystem and severity.
+- `view` shows detailed advisory information.
+
+### CodeQL
+
+```bash
+ghg codeql list --repo owner/repo --state open --severity high
+ghg codeql view 1 --repo owner/repo
+ghg codeql dismiss 1 --reason "false positive" --repo owner/repo
+```
+
+- `list` lists CodeQL code scanning alerts with state and severity filters.
+- `view` shows detailed alert information.
+- `dismiss` dismisses an alert with a reason (false positive, won't fix, used in tests).
+
+### Workspaces
+
+```bash
+ghg workspace define --name my-team --repos owner/repo1 owner/repo2
+ghg workspace list
+ghg workspace run --name my-team --command "issue list"
+ghg repo syncall
+ghg repo statusall
+```
+
+- `define` creates or updates a named workspace with a list of repositories.
+- `list` shows all defined workspaces.
+- `run` executes a command across all repositories in a workspace.
+- `syncall` pulls latest changes for all local git repositories.
+- `statusall` shows dirty/clean/ahead/behind status for all local repositories.
+
+### Actions Cost & Usage
+
+```bash
+ghg actions usage --repo owner/repo
+ghg actions cost --org myorg
+ghg actions top-spenders --repo owner/repo --limit 5
+ghg actions export --repo owner/repo --format csv
+```
+
+- `usage` shows Actions minutes and estimated cost per workflow.
+- `cost` shows cost summary for a repository or organization.
+- `top-spenders` ranks workflows by billable minutes.
+- `export` outputs usage data as JSON or CSV.
 
 ### Webhooks
 
@@ -942,12 +1017,17 @@ src/
     variable.ts         # ghg variable <list|set|delete>.
     environment.ts      # ghg environment <list|create|protection>.
     pages.ts            # ghg pages <status|deploy|unpublish>.
-    branch.ts            # ghg branch <protect|unprotect|protection|tag-protect|tag-unprotect>.
-    deployment.ts        # ghg deployment lifecycle commands.
-    fork.ts              # ghg fork <sync|compare|list|create>.
-    webhook.ts           # ghg webhook lifecycle and delivery commands.
-    workflow.ts         # Workflow lifecycle, validation, and preview commands.
-  services/
+     branch.ts            # ghg branch <protect|unprotect|protection|tag-protect|tag-unprotect|stale|sweep>.
+     deployment.ts        # ghg deployment lifecycle commands.
+     fork.ts              # ghg fork <sync|compare|list|create>.
+     webhook.ts           # ghg webhook lifecycle and delivery commands.
+     workflow.ts         # Workflow lifecycle, validation, and preview commands.
+     deps.ts              # ghg deps <list|direct|review>.
+     advisory.ts         # ghg advisory <list|view>.
+     codeql.ts            # ghg codeql <list|view|dismiss>.
+     workspace.ts        # ghg workspace <define|list|run>.
+     actions.ts          # ghg actions <usage|cost|top-spenders|export>.
+   services/
     labels.ts           # Label business logic.
     config.ts           # Config business logic.
     auth.ts             # Auth business logic.
@@ -966,16 +1046,23 @@ src/
     notifications.ts    # Notifications business logic.
      run.ts              # Workflow run debugging and log streaming business logic.
      branch.ts           # Branch and tag protection business logic.
-    project.ts          # Project lifecycle and board business logic.
-    queue.ts            # Merge queue orchestration.
-    ruleset.ts          # Ruleset validation and CRUD.
-    status.ts           # Cross-repository status aggregation.
-    workflow.ts         # Workflow validation and preview business logic.
-    secrets.ts          # Repository, environment, and organization secrets business logic.
-    variables.ts        # Repository, environment, and organization variables business logic.
-    environments.ts     # Environment and protection rules business logic.
-    pages.ts            # GitHub Pages configuration and deployment logic.
-    wiki.ts             # Wiki clone, read, commit, and publish logic.
+     project.ts          # Project lifecycle and board business logic.
+     queue.ts            # Merge queue orchestration.
+     ruleset.ts          # Ruleset validation and CRUD.
+     status.ts           # Cross-repository status aggregation.
+     workflow.ts         # Workflow validation and preview business logic.
+     secrets.ts          # Repository, environment, and organization secrets business logic.
+     variables.ts        # Repository, environment, and organization variables business logic.
+     environments.ts     # Environment and protection rules business logic.
+     pages.ts            # GitHub Pages configuration and deployment logic.
+     wiki.ts             # Wiki clone, read, commit, and publish logic.
+     deps.ts              # Dependency graph and review business logic.
+     advisory.ts          # Advisory database business logic.
+     codeql.ts            # CodeQL alert management business logic.
+     workspace.ts         # Workspace definition and multi-repo command execution.
+     sync.ts              # Multi-repo sync and status business logic.
+     stale.ts             # Stale branch detection and sweep business logic.
+     cost.ts              # Actions cost and usage analytics business logic.
     repos/
       govern.ts         # Repository rulesets.
       index.ts          # Repos services index.
@@ -1011,24 +1098,31 @@ src/
      forks.ts            # Forks API.
      webhooks.ts         # Webhooks API.
         pages.ts            # GitHub Pages API.
+     dependencies.ts     # Dependency graph and SBOM API.
+     advisories.ts       # GitHub Advisory Database API.
+     codeql.ts           # CodeQL code scanning alerts API.
+     billing.ts          # Actions billing and usage API.
+     actions.ts          # Actions runs API.
 
   core/
-    command.ts          # Shared command runner.
-    repo.ts             # Repository target resolution from git remotes.
-    config.ts           # Config resolver — env vars, profiles, credentials file.
-    constants.ts        # Shared constants, error messages, config keys.
-    dates.ts            # Date formatting helpers.
-    errors.ts           # Custom error class hierarchy.
-    git.ts              # Git operations (branch detection, remote tracking).
-    wiki-git.ts         # Authenticated temporary wiki Git operations.
-    io.ts               # Generic file helpers.
-    logger.ts           # Consola instance with debug logging support.
-    output.ts           # Terminal rendering (tables, sections, lists, key-values).
-    output-state.ts     # Global output state (JSON and debug mode tracking).
-    progress.ts         # Bulk progress bars.
-    prompt.ts           # Interactive prompts.
-    spinner.ts          # Async loading spinners.
-    theme.ts            # Color theme management.
+     command.ts          # Shared command runner.
+     repo.ts             # Repository target resolution from git remotes.
+     config.ts           # Config resolver — env vars, profiles, credentials file.
+     constants.ts        # Shared constants, error messages, config keys.
+     dates.ts            # Date formatting helpers.
+     errors.ts           # Custom error class hierarchy.
+     git.ts              # Git operations (branch detection, remote tracking).
+     wiki-git.ts         # Authenticated temporary wiki Git operations.
+     io.ts               # Generic file helpers.
+     logger.ts           # Consola instance with debug logging support.
+     output.ts           # Terminal rendering (tables, sections, lists, key-values).
+     output-state.ts     # Global output state (JSON and debug mode tracking).
+     progress.ts         # Bulk progress bars.
+     prompt.ts           # Interactive prompts.
+     spinner.ts          # Async loading spinners.
+     theme.ts            # Color theme management.
+     parse.ts            # Input parsing helpers.
+     workspace.ts        # Workspace config file management.
   types/
     index.ts            # Shared type definitions.
     notifications.ts    # Notification-specific types.
@@ -1146,6 +1240,11 @@ bash playbooks/all.sh
 - `webhook.sh` — `ghg webhook` lifecycle
 - `fork.sh` — `ghg fork` lifecycle
 - `deployment.sh` — `ghg deployment` lifecycle
+- `deps.sh` — `ghg deps` lifecycle
+- `advisory.sh` — `ghg advisory` lifecycle
+- `codeql.sh` — `ghg codeql` lifecycle
+- `workspace.sh` — `ghg workspace` lifecycle
+- `actions.sh` — `ghg actions` lifecycle
 
 ### Conventions
 

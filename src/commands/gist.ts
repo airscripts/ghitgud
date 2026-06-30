@@ -73,6 +73,35 @@ const register = (program: Command) => {
     .action(async (id: string, options: { dir?: string }) => {
       await command.run(() => gistService.clone(id, options.dir));
     });
+
+  gist
+    .command("fork <id>")
+    .description("Fork a gist.")
+    .action(async (id: string) => {
+      await command.run(() => gistService.fork(id));
+    });
+
+  gist
+    .command("star <id>")
+    .description("Star a gist.")
+    .action(async (id: string) => {
+      await command.run(() => gistService.star(id));
+    });
+
+  gist
+    .command("unstar <id>")
+    .description("Unstar a gist.")
+    .action(async (id: string) => {
+      await command.run(() => gistService.unstar(id));
+    });
+
+  gist
+    .command("comment <id>")
+    .description("Comment on a gist.")
+    .requiredOption("--body <text>", "Comment body")
+    .action(async (id: string, options: { body: string }) => {
+      await command.run(() => gistService.comment(id, options.body));
+    });
 };
 
 export default { register };

@@ -7,6 +7,7 @@ vi.mock("@/api/client", () => ({
   default: {
     getTokenRequired: vi.fn(),
     postTokenRequired: vi.fn(),
+    putTokenRequired: vi.fn(),
     patchTokenRequired: vi.fn(),
     deleteTokenRequired: vi.fn(),
   },
@@ -33,5 +34,29 @@ describe("gists api", () => {
       expect.any(Object),
     );
     expect(client.deleteTokenRequired).toHaveBeenCalledWith("/gists/abc");
+  });
+
+  it("builds fork, star, unstar, and comment endpoints", async () => {
+    await api.fork("xyz");
+    await api.star("xyz");
+    await api.unstar("xyz");
+    await api.listComments("xyz");
+    await api.createComment("xyz", "hello");
+    await api.deleteComment("xyz", 42);
+
+    expect(client.postTokenRequired).toHaveBeenCalledWith(
+      "/gists/xyz/forks",
+      {},
+    );
+    expect(client.putTokenRequired).toHaveBeenCalledWith("/gists/xyz/star", {});
+    expect(client.deleteTokenRequired).toHaveBeenCalledWith("/gists/xyz/star");
+    expect(client.getTokenRequired).toHaveBeenCalledWith("/gists/xyz/comments");
+    expect(client.postTokenRequired).toHaveBeenCalledWith(
+      "/gists/xyz/comments",
+      { body: "hello" },
+    );
+    expect(client.deleteTokenRequired).toHaveBeenCalledWith(
+      "/gists/xyz/comments/42",
+    );
   });
 });

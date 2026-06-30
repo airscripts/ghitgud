@@ -16,6 +16,11 @@ vi.mock("@/api/gists", () => ({
     create: vi.fn(),
     update: vi.fn(),
     remove: vi.fn(),
+    fork: vi.fn(),
+    star: vi.fn(),
+    unstar: vi.fn(),
+    createComment: vi.fn(),
+    deleteComment: vi.fn(),
   },
 }));
 
@@ -28,7 +33,7 @@ vi.mock("@/core/output", () => ({
 }));
 
 vi.mock("@/core/logger", () => ({
-  default: { success: vi.fn() },
+  default: { start: vi.fn(), success: vi.fn() },
 }));
 
 const gist = (overrides: Record<string, unknown> = {}) => ({
@@ -177,5 +182,35 @@ describe("gist service", () => {
     await expect(service.clone("abc", tempDir)).rejects.toThrow(
       "already exists",
     );
+  });
+
+  it("forks a gist", async () => {
+    vi.mocked(api.fork).mockResolvedValue(jsonResponse(gist()));
+    const result = await service.fork("abc");
+    expect(api.fork).toHaveBeenCalledWith("abc");
+    expect(result.success).toBe(true);
+  });
+
+  it("stars a gist", async () => {
+    vi.mocked(api.star).mockResolvedValue(emptyResponse(204));
+    const result = await service.star("abc");
+    expect(result.success).toBe(true);
+    expect(api.star).toHaveBeenCalledWith("abc");
+  });
+
+  it("unstars a gist", async () => {
+    vi.mocked(api.unstar).mockResolvedValue(emptyResponse(204));
+    const result = await service.unstar("abc");
+    expect(result.success).toBe(true);
+    expect(api.unstar).toHaveBeenCalledWith("abc");
+  });
+
+  it("comments on a gist", async () => {
+    vi.mocked(api.createComment).mockResolvedValue(
+      jsonResponse({ id: 1, body: "Nice!", created_at: "2026-01-01" }),
+    );
+    const result = await service.comment("abc", "Nice!");
+    expect(result.success).toBe(true);
+    expect(api.createComment).toHaveBeenCalledWith("abc", "Nice!");
   });
 });

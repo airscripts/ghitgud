@@ -46,6 +46,15 @@ rm -rf "$CLONE_DIR"
 expect_exit_0 "gist clone succeeds" ghg gist clone "$GIST_ID" --dir "$CLONE_DIR"
 rm -rf "$CLONE_DIR"
 
+step "Star Gist"
+expect_exit_0 "gist star succeeds" ghg gist star "$GIST_ID"
+
+step "Unstar Gist"
+expect_exit_0 "gist unstar succeeds" ghg gist unstar "$GIST_ID"
+
+step "Comment on Gist"
+expect_exit_0 "gist comment succeeds" ghg gist comment "$GIST_ID" --body "Test comment"
+
 step "Delete Gist"
 expect_exit_0 "gist delete succeeds" ghg gist delete "$GIST_ID" --yes
 GIST_ID=""

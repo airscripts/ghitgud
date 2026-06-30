@@ -38,6 +38,14 @@ import environmentOperations from "./environments";
 import notificationOperations from "./notifications";
 import forkOperations from "./forks";
 import branchOperations from "./branches";
+import reactionOperations from "./reactions";
+import commentOperations from "./comments";
+import depsOperations from "./dependencies";
+import advisoryOperations from "./advisories";
+import codeqlOperations from "./codeql";
+import workspaceOperations from "./workspaces";
+import syncOperations from "./sync";
+import actionsOperations from "./actions";
 
 import type { TuiOperation } from "../types";
 
@@ -82,6 +90,14 @@ const operations: TuiOperation[] = [
   ...searchOperations,
   ...forkOperations,
   ...branchOperations,
+  ...reactionOperations,
+  ...commentOperations,
+  ...depsOperations,
+  ...advisoryOperations,
+  ...codeqlOperations,
+  ...workspaceOperations,
+  ...syncOperations,
+  ...actionsOperations,
 ];
 
 const workspaces = Array.from(new Set(operations.map((op) => op.workspace)));

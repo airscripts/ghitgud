@@ -50,6 +50,13 @@ import discussionCommand from "@/commands/discussion";
 import environmentCommand from "@/commands/environment";
 import deploymentCommand from "@/commands/deployment";
 import branchCommand from "@/commands/branch";
+import reactCommand from "@/commands/react";
+import commentCommand from "@/commands/comment";
+import depsCommand from "@/commands/deps";
+import advisoryCommand from "@/commands/advisory";
+import codeqlCommand from "@/commands/codeql";
+import workspaceCommand from "@/commands/workspace";
+import actionsCommand from "@/commands/actions";
 import { setTheme, initializeTheme } from "@/core/theme";
 import notificationsCommand from "@/commands/notifications";
 
@@ -139,6 +146,13 @@ if (!proxyCommand.runProxyFromArgv()) {
     deploymentCommand.register(program);
     forkCommand.register(program);
     branchCommand.register(program);
+    reactCommand.register(program);
+    commentCommand.register(program);
+    depsCommand.register(program);
+    advisoryCommand.register(program);
+    codeqlCommand.register(program);
+    workspaceCommand.register(program);
+    actionsCommand.register(program);
 
     program
       .command("version")

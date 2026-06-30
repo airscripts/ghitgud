@@ -447,6 +447,62 @@ interface TagProtection {
   createdAt: string;
 }
 
+interface GistComment {
+  id: number;
+  body: string;
+  user: string | null;
+  createdAt: string;
+}
+
+interface ReactionSummary {
+  id: number;
+  content: string;
+  user: string | null;
+  createdAt: string;
+}
+
+interface CommentSummary {
+  id: number;
+  body: string;
+  author: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+interface DependencyEntry {
+  name: string;
+  version: string;
+  ecosystem: string;
+}
+
+interface DependencyReviewChange {
+  changeType: string;
+  package: string;
+  ecosystem: string;
+  version: string;
+  severity: string;
+  vulnerabilities: number;
+}
+
+interface AdvisorySummary {
+  ghsaId: string;
+  summary: string;
+  severity: string;
+  ecosystem: string;
+  cveId: string | null;
+  publishedAt: string;
+  htmlUrl: string;
+}
+
+interface CodeQLAlertSummary {
+  number: number;
+  rule: string;
+  severity: string;
+  state: string;
+  tool: string;
+  createdAt: string;
+}
+
 const normalizeLabel = (label: Label) => ({
   name: label.name,
   color: label.color,
@@ -479,6 +535,13 @@ export type { ActionsCacheEntry };
 export type { WorkflowSummary };
 export type { GistFile };
 export type { GistSummary };
+export type { GistComment };
+export type { ReactionSummary };
+export type { CommentSummary };
+export type { DependencyEntry };
+export type { DependencyReviewChange };
+export type { AdvisorySummary };
+export type { CodeQLAlertSummary };
 export type { WebhookSummary };
 export type { WebhookDelivery };
 export type { WorkflowDryRunResult };
