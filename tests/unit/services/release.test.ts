@@ -420,6 +420,10 @@ describe("release service", () => {
         draft: false,
         html_url: "",
         tag_name: "2.10.0",
+        prerelease: false,
+        created_at: "2026-06-30T00:00:00Z",
+        published_at: "2026-06-30T00:00:00Z",
+        upload_url: "https://uploads.github.com/releases/1/assets{?name,label}",
 
         assets: [
           {
@@ -427,6 +431,7 @@ describe("release service", () => {
             size: 100,
             name: "asset.zip",
             content_type: "application/zip",
+            browser_download_url: "https://example.test/asset.zip",
           },
         ],
       });
@@ -485,6 +490,10 @@ describe("release service", () => {
         draft: true,
         name: "2.9.1",
         tag_name: "2.9.1",
+        prerelease: false,
+        created_at: "2026-06-30T00:00:00Z",
+        published_at: null,
+        upload_url: "https://uploads.github.com/releases/1/assets{?name,label}",
         html_url: "https://github.com/owner/repo/releases/tag/2.9.1",
       });
 

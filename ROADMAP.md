@@ -2,58 +2,6 @@
 
 ---
 
-## w8x9y0z1 — Workflow Management
-
-**Why gh doesn't have it:** `gh workflow` covers list/run/view/enable/disable. ghg has validate and preview — unique value — but no basic workflow lifecycle.
-
-**Gap:** No list, run, view, enable, or disable commands.
-
-**Commands:**
-
-- `ghg workflow list [--all]`
-- `ghg workflow view <name|id>`
-- `ghg workflow run <name|id> [--ref <branch>] [--field key=value]`
-- `ghg workflow enable <name|id>`
-- `ghg workflow disable <name|id>`
-
-**Value:** Complements the existing validate/preview commands. Basic workflow lifecycle management.
-
----
-
-## a2b3c4d5 — Cache Management
-
-**Why gh doesn't have it:** `gh cache` covers list/delete. ghg has inspect and download — deeper than gh — but no list or delete.
-
-**Gap:** No listing or deletion of caches. The API layer already has `listCaches`.
-
-**Commands:**
-
-- `ghg cache list [--key <pattern>] [--limit <n>]` — uses existing `listCaches` API
-- `ghg cache delete <key> [--all] [--yes]`
-
-**Value:** Small gap. ghg's inspect/download are deeper than gh. List and delete complete the picture.
-
----
-
-## e6f7g8h9 — Gist CRUD
-
-**Why gh doesn't have it:** `gh gist` covers clone/create/delete/edit/list/view. ghg has nothing for gists.
-
-**Gap:** No gist support at all.
-
-**Commands:**
-
-- `ghg gist list [--public] [--limit <n>]`
-- `ghg gist view <id> [--raw]`
-- `ghg gist create <files...> [--description <text>] [--public]`
-- `ghg gist edit <id> [--add <file>] [--remove <file>]`
-- `ghg gist delete <id> [--yes]`
-- `ghg gist clone <id> [--dir <dir>]`
-
-**Value:** Gists are a lightweight sharing mechanism. Basic CRUD is needed for parity.
-
----
-
 ## m4n5o6p7 — Project CRUD
 
 **Why gh doesn't have it:** `gh project` covers close/copy/create/delete/edit/field-create/field-delete/field-list/item-add/item-archive/item-create/item-edit/item-list/link/list/mark-template/unlink/view. ghg has `project board` — a beautiful ASCII kanban — but no project management commands.

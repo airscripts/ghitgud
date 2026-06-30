@@ -6,6 +6,7 @@ import repoOperations from "./repo";
 import wikiOperations from "./wiki";
 import authOperations from "./auth";
 import cacheOperations from "./cache";
+import gistOperations from "./gists";
 import auditOperations from "./audit";
 import leaksOperations from "./leaks";
 import pagesOperations from "./pages";
@@ -45,6 +46,7 @@ const operations: TuiOperation[] = [
   ...insightsOperations,
   ...workflowOperations,
   ...cacheOperations,
+  ...gistOperations,
   ...runOperations,
   ...authOperations,
   ...configOperations,

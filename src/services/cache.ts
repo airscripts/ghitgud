@@ -65,6 +65,77 @@ const inspect = async (key: string, repo?: string) => {
   return { success: true, repo: targetRepo, metadata: entries };
 };
 
+const list = async (options: {
+  repo?: string;
+  key?: string;
+  limit?: number;
+}) => {
+  const limit = options.limit ?? 30;
+  if (!Number.isInteger(limit) || limit < 1 || limit > 100) {
+    throw new GhitgudError("Cache limit must be between 1 and 100.");
+  }
+
+  const targetRepo = await repoResolver.resolveRepo(options.repo);
+  const response = await api.listCaches(targetRepo, options.key, limit);
+  const data = (await response.json()) as CacheListResponse;
+  const entries = (data.actions_caches ?? []).map(normalize);
+
+  output.renderTable(
+    entries.map((entry) => ({
+      id: entry.id,
+      key: entry.key,
+      ref: entry.ref,
+      size: entry.sizeInBytes,
+      lastAccessedAt: entry.lastAccessedAt,
+    })),
+    { emptyMessage: "No caches found." },
+  );
+
+  logger.success(`Loaded ${entries.length} caches.`);
+  return { success: true, repo: targetRepo, caches: entries };
+};
+
+const remove = async (
+  key: string,
+  options: { repo?: string; all?: boolean },
+) => {
+  const targetRepo = await repoResolver.resolveRepo(options.repo);
+  const matches: ActionsCacheEntry[] = [];
+  let page = 1;
+
+  while (true) {
+    const response = await api.listCaches(targetRepo, key, 100, page);
+    const data = (await response.json()) as CacheListResponse;
+    const entries = data.actions_caches ?? [];
+    matches.push(...entries.map(normalize));
+    if (entries.length < 100) break;
+    page += 1;
+  }
+  const selected = options.all
+    ? matches
+    : matches.filter((entry) => entry.key === key);
+
+  if (!selected.length) {
+    throw new GhitgudError(`No cache found for key "${key}".`);
+  }
+
+  if (!options.all && selected.length > 1) {
+    throw new GhitgudError(
+      `Multiple caches use key "${key}". Re-run with --all to delete every match.`,
+    );
+  }
+
+  await Promise.all(
+    selected.map((entry) => api.deleteCache(targetRepo, entry.id)),
+  );
+  logger.success(`Deleted ${selected.length} cache entries.`);
+  return {
+    success: true,
+    repo: targetRepo,
+    deleted: selected.map((entry) => ({ id: entry.id, key: entry.key })),
+  };
+};
+
 const download = async (
   key: string,
   options: { repo?: string; outputDir?: string },
@@ -140,6 +211,8 @@ const download = async (
 };
 
 export default {
+  list,
+  remove,
   inspect,
   download,
 };

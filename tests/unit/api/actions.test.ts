@@ -11,6 +11,8 @@ vi.mock("@/api/client", () => ({
   default: {
     getPaginated: vi.fn(),
     getTokenRequired: vi.fn(),
+    postTokenRequired: vi.fn(),
+    putTokenRequired: vi.fn(),
     getDefaultPerPage: vi.fn(() => 100),
   },
 }));
@@ -55,6 +57,27 @@ describe("actions-related api wrappers", () => {
 
     expect(client.getTokenRequired).toHaveBeenCalledWith(
       "/repos/owner/repo/actions/runs/123/logs",
+    );
+  });
+
+  it("builds workflow lifecycle endpoints", async () => {
+    await workflows.listWorkflows("owner/repo", 50);
+    await workflows.getWorkflow("owner/repo", "ci.yml");
+    await workflows.dispatchWorkflow("owner/repo", "ci.yml", "main", {
+      env: "test",
+    });
+    await workflows.setWorkflowEnabled("owner/repo", "ci.yml", false);
+
+    expect(client.getTokenRequired).toHaveBeenCalledWith(
+      "/repos/owner/repo/actions/workflows?per_page=50",
+    );
+    expect(client.postTokenRequired).toHaveBeenCalledWith(
+      "/repos/owner/repo/actions/workflows/ci.yml/dispatches",
+      { ref: "main", inputs: { env: "test" } },
+    );
+    expect(client.putTokenRequired).toHaveBeenCalledWith(
+      "/repos/owner/repo/actions/workflows/ci.yml/disable",
+      {},
     );
   });
 

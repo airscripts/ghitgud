@@ -16,5 +16,8 @@ describe("workflow command", () => {
     const subcommands = workflow!.commands.map((command) => command.name());
     expect(subcommands).toContain("validate");
     expect(subcommands).toContain("preview");
+    expect(subcommands).toEqual(
+      expect.arrayContaining(["list", "view", "run", "enable", "disable"]),
+    );
   });
 });

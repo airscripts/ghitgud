@@ -15,6 +15,7 @@ import { binaryResponse, jsonResponse } from "../helpers/response";
 vi.mock("@/api/cache", () => ({
   default: {
     listCaches: vi.fn(),
+    deleteCache: vi.fn(),
   },
 }));
 
@@ -85,6 +86,63 @@ describe("cache service", () => {
         lastAccessedAt: "2026-05-31T00:00:00Z",
       },
     ]);
+  });
+
+  it("lists and deletes all prefix matches", async () => {
+    const payload = {
+      actions_caches: [
+        makeCacheEntry({ id: 1, key: "node-a" }),
+        makeCacheEntry({ id: 2, key: "node-b" }),
+      ],
+    };
+    vi.mocked(api.listCaches)
+      .mockResolvedValueOnce(jsonResponse(payload))
+      .mockResolvedValueOnce(jsonResponse(payload));
+
+    const listed = await cacheService.list({ key: "node", limit: 10 });
+    expect(listed.caches).toHaveLength(2);
+    const removed = await cacheService.remove("node", { all: true });
+    expect(removed.deleted).toHaveLength(2);
+    expect(api.deleteCache).toHaveBeenCalledTimes(2);
+  });
+
+  it("rejects ambiguous exact-key deletion", async () => {
+    vi.mocked(api.listCaches).mockResolvedValue(
+      jsonResponse({
+        actions_caches: [
+          makeCacheEntry({ id: 1, key: "node" }),
+          makeCacheEntry({ id: 2, key: "node" }),
+        ],
+      }),
+    );
+    await expect(cacheService.remove("node", {})).rejects.toThrow(
+      "Multiple caches",
+    );
+  });
+
+  it("validates list limits and missing deletion matches", async () => {
+    await expect(cacheService.list({ limit: 101 })).rejects.toThrow(
+      "between 1 and 100",
+    );
+    vi.mocked(api.listCaches).mockResolvedValue(
+      jsonResponse({ actions_caches: [] }),
+    );
+    await expect(cacheService.remove("missing", {})).rejects.toThrow(
+      "No cache found",
+    );
+  });
+
+  it("deletes one exact cache without --all", async () => {
+    vi.mocked(api.listCaches).mockResolvedValue(
+      jsonResponse({
+        actions_caches: [
+          makeCacheEntry({ id: 1, key: "node" }),
+          makeCacheEntry({ id: 2, key: "node-prefix" }),
+        ],
+      }),
+    );
+    const result = await cacheService.remove("node", {});
+    expect(result.deleted).toEqual([{ id: 1, key: "node" }]);
   });
 
   it("throws when download finds no cache entries", async () => {

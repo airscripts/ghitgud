@@ -19,6 +19,7 @@ import issueCommand from "@/commands/issue";
 import proxyCommand from "@/commands/proxy";
 import reposCommand from "@/commands/repos";
 import cacheCommand from "@/commands/cache";
+import gistCommand from "@/commands/gist";
 import auditCommand from "@/commands/audit";
 import leaksCommand from "@/commands/leaks";
 import pagesCommand from "@/commands/pages";
@@ -107,6 +108,7 @@ if (!proxyCommand.runProxyFromArgv()) {
     reviewCommand.register(program);
     workflowCommand.register(program);
     cacheCommand.register(program);
+    gistCommand.register(program);
     runCommand.register(program);
     releaseCommand.register(program);
     searchCommand.register(program);
@@ -160,6 +162,9 @@ Examples:
   ghg tui
   ghg workflow validate
   ghg workflow preview
+  ghg workflow list
+  ghg cache list
+  ghg gist create notes.txt
   ghg run debug 123456
   ghg release changelog
   ghg release bump --create --push

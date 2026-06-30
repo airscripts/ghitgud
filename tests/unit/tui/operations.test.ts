@@ -162,6 +162,10 @@ vi.mock("@/services/insights", () => ({
 
 vi.mock("@/services/workflow", () => ({
   default: {
+    list: vi.fn(),
+    view: vi.fn(),
+    run: vi.fn(),
+    setEnabled: vi.fn(),
     preview: vi.fn(() => Promise.resolve({ success: true, metadata: [] })),
     validate: vi.fn(() => Promise.resolve({ success: true, metadata: [] })),
   },
@@ -169,8 +173,21 @@ vi.mock("@/services/workflow", () => ({
 
 vi.mock("@/services/cache", () => ({
   default: {
+    list: vi.fn(),
+    remove: vi.fn(),
     download: vi.fn(() => Promise.resolve()),
     inspect: vi.fn(() => Promise.resolve({})),
+  },
+}));
+
+vi.mock("@/services/gist", () => ({
+  default: {
+    list: vi.fn(),
+    view: vi.fn(),
+    edit: vi.fn(),
+    clone: vi.fn(),
+    create: vi.fn(),
+    remove: vi.fn(),
   },
 }));
 
@@ -240,6 +257,7 @@ import authService from "@/services/auth";
 import issueService from "@/services/issue";
 import stackService from "@/services/stack";
 import cacheService from "@/services/cache";
+import gistService from "@/services/gist";
 import reviewService from "@/services/review";
 import labelsService from "@/services/labels";
 import configService from "@/services/config";
@@ -260,6 +278,7 @@ import prOperations from "@/tui/operations/prs";
 import runOperations from "@/tui/operations/run";
 import authOperations from "@/tui/operations/auth";
 import cacheOperations from "@/tui/operations/cache";
+import gistOperations from "@/tui/operations/gists";
 import labelOperations from "@/tui/operations/labels";
 import issueOperations from "@/tui/operations/issues";
 import reviewOperations from "@/tui/operations/review";
@@ -827,6 +846,21 @@ describe("tui operations run functions", () => {
         ".github/workflows/ci.yml",
       );
     });
+
+    it("runs workflow lifecycle operations", async () => {
+      await runOp(workflowOperations[2], { all: true });
+      await runOp(workflowOperations[3], { workflow: "CI" });
+      await runOp(workflowOperations[4], {
+        workflow: "CI",
+        fields: "env=test",
+      });
+      await runOp(workflowOperations[5], { workflow: "CI" });
+      await runOp(workflowOperations[6], { workflow: "CI" });
+      expect(workflowService.list).toHaveBeenCalled();
+      expect(workflowService.view).toHaveBeenCalled();
+      expect(workflowService.run).toHaveBeenCalled();
+      expect(workflowService.setEnabled).toHaveBeenCalledTimes(2);
+    });
   });
 
   describe("cache", () => {
@@ -848,6 +882,30 @@ describe("tui operations run functions", () => {
         repo: "airscripts/ghitgud",
         outputDir: "./out",
       });
+    });
+
+    it("runs cache list and delete", async () => {
+      await runOp(cacheOperations[2], { limit: 10 });
+      await runOp(cacheOperations[3], { key: "abc", all: true });
+      expect(cacheService.list).toHaveBeenCalled();
+      expect(cacheService.remove).toHaveBeenCalled();
+    });
+  });
+
+  describe("gists", () => {
+    it("runs gist lifecycle operations", async () => {
+      await runOp(gistOperations[0], { limit: 5 });
+      await runOp(gistOperations[1], { id: "abc" });
+      await runOp(gistOperations[2], { files: "a.txt" });
+      await runOp(gistOperations[3], { id: "abc", remove: "old.txt" });
+      await runOp(gistOperations[4], { id: "abc" });
+      await runOp(gistOperations[5], { id: "abc" });
+      expect(gistService.list).toHaveBeenCalled();
+      expect(gistService.view).toHaveBeenCalled();
+      expect(gistService.create).toHaveBeenCalled();
+      expect(gistService.edit).toHaveBeenCalled();
+      expect(gistService.remove).toHaveBeenCalled();
+      expect(gistService.clone).toHaveBeenCalled();
     });
   });
 

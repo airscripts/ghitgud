@@ -19,6 +19,7 @@ type TuiWorkspace =
   | "Insights"
   | "Workflow"
   | "Cache"
+  | "Gists"
   | "Run"
   | "Auth"
   | "Config"

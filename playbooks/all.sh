@@ -23,6 +23,7 @@ PLAYBOOKS=(
   activity
   mentions
   cache
+  gist
   insights
   notifications
   dependabot

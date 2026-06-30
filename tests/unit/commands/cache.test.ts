@@ -7,6 +7,8 @@ vi.mock("@/services/cache", () => ({
   default: {
     inspect: vi.fn(),
     download: vi.fn(),
+    list: vi.fn(),
+    remove: vi.fn(),
   },
 }));
 
@@ -50,6 +52,8 @@ describe("cache command", () => {
     const subcommands = cache!.commands.map((command) => command.name());
     expect(subcommands).toContain("inspect");
     expect(subcommands).toContain("download");
+    expect(subcommands).toContain("list");
+    expect(subcommands).toContain("delete");
   });
 
   it("should reject missing cache key on inspect", async () => {

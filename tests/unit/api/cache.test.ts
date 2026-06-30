@@ -6,6 +6,7 @@ import client from "@/api/client";
 vi.mock("@/api/client", () => ({
   default: {
     getTokenRequired: vi.fn(),
+    deleteTokenRequired: vi.fn(),
     getDefaultPerPage: vi.fn(() => 100),
   },
 }));
@@ -13,6 +14,18 @@ vi.mock("@/api/client", () => ({
 describe("cache api", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+  });
+
+  it("lists without a key and deletes by id", async () => {
+    await cache.listCaches("owner/repo", undefined, 30);
+    expect(client.getTokenRequired).toHaveBeenCalledWith(
+      "/repos/owner/repo/actions/caches?per_page=30",
+    );
+
+    await cache.deleteCache("owner/repo", 123);
+    expect(client.deleteTokenRequired).toHaveBeenCalledWith(
+      "/repos/owner/repo/actions/caches/123",
+    );
   });
 
   it("lists caches with encoded key query", async () => {

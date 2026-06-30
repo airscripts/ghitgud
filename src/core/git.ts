@@ -26,12 +26,13 @@ function gitInherit(args: string[]): void {
 
 function cloneRepository(
   url: string,
-  options: { depth?: number; remoteName?: string } = {},
+  options: { depth?: number; directory?: string; remoteName?: string } = {},
 ): void {
   const args = ["clone"];
   if (options.depth) args.push("--depth", String(options.depth));
   if (options.remoteName) args.push("--origin", options.remoteName);
   args.push(url);
+  if (options.directory) args.push(options.directory);
   gitInherit(args);
 }
 

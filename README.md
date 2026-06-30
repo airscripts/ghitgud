@@ -74,8 +74,9 @@ Every command reads from `src/core/config.ts`, which resolves values in this ord
 - **Bulk Repository Governance** — inspect, govern, label, retire, and report across repo sets
 - **Repository Insights** — view traffic data, contributors, commit activity, code frequency, referrers, and participation metrics
 - **Code Review** — comment on lines, list threads, resolve threads, suggest changes, and apply suggestions
-- **Workflow Utilities** — validate and preview GitHub Actions workflows before pushing
-- **Cache Inspection** — inspect and download GitHub Actions cache metadata
+- **Workflow Management** — list, inspect, dispatch, enable, disable, validate, and preview GitHub Actions workflows
+- **Cache Management** — list, delete, inspect, and download GitHub Actions cache metadata
+- **Gist Management** — list, view, create, edit, delete, and clone gists
 - **Workflow Run Management** — list, inspect, cancel, rerun, delete, watch, download, and debug workflow runs
 - **Proxy Passthrough** — pass any unrecognized command directly to the `gh` CLI
 - **Structured JSON Output** — every command supports machine-parseable JSON via `--json`
@@ -326,10 +327,14 @@ ghg review apply <pr> --push
 ```bash
 ghg cache inspect <key> --repo owner/repo
 ghg cache download <key> --repo owner/repo --output-dir ./cache-debug
+ghg cache list --key node --limit 20 --repo owner/repo
+ghg cache delete <key> --all --yes --repo owner/repo
 ```
 
 - `inspect` inspects GitHub Actions cache metadata.
 - `download` downloads cache-related debug artifacts.
+- `list` lists cache metadata with optional key filtering.
+- `delete` removes one exact cache or all prefix matches.
 
 ### Run
 
@@ -344,10 +349,27 @@ ghg run debug <run-id> --repo owner/repo --output-dir ./run-debug
 ```bash
 ghg workflow validate [path]
 ghg workflow preview [path]
+ghg workflow list [--all] --repo owner/repo
+ghg workflow view <name|id> --repo owner/repo
+ghg workflow run <name|id> --ref main --field env=test --repo owner/repo
+ghg workflow enable <name|id> --repo owner/repo
+ghg workflow disable <name|id> --repo owner/repo
 ```
 
 - `validate` validates GitHub Actions workflow files.
 - `preview` previews workflow structure.
+- `list`, `view`, `run`, `enable`, and `disable` manage repository workflows.
+
+### Gist
+
+```bash
+ghg gist list [--public] [--limit 30]
+ghg gist view <id> [--raw] [--file <name>]
+ghg gist create <files...> [--description <text>] [--public]
+ghg gist edit <id> [--add <file>] [--remove <name>]
+ghg gist delete <id> --yes
+ghg gist clone <id> [--dir <dir>]
+```
 
 ### Authentication
 
@@ -773,7 +795,8 @@ src/
   commands/
     activity.ts         # ghg activity.
     audit.ts            # ghg audit.
-    cache.ts            # ghg cache <inspect|download>.
+    cache.ts            # ghg cache <list|delete|inspect|download>.
+    gist.ts             # ghg gist lifecycle and clone commands.
     compliance.ts       # ghg compliance <check>.
     config.ts           # ghg config <get|set>.
     dependabot.ts       # ghg dependabot <list|dismiss>.
@@ -801,7 +824,7 @@ src/
     environment.ts      # ghg environment <list|create|protection>.
     pages.ts            # ghg pages <status|deploy|unpublish>.
     wiki.ts             # ghg wiki <list|view|edit|create|delete>.
-    workflow.ts         # ghg workflow <validate|preview>.
+    workflow.ts         # Workflow lifecycle, validation, and preview commands.
   services/
     labels.ts           # Label business logic.
     config.ts           # Config business logic.
@@ -814,7 +837,8 @@ src/
     team.ts             # Team management business logic.
     invites.ts          # Repository invite and team grant business logic.
     review.ts           # Code review business logic.
-    cache.ts            # Cache inspection business logic.
+    cache.ts            # Cache management and inspection business logic.
+    gist.ts             # Gist lifecycle and clone business logic.
     issue.ts            # Issue lifecycle, status, subtask, and parent business logic.
     milestone.ts        # Milestone business logic.
     notifications.ts    # Notifications business logic.
@@ -835,6 +859,7 @@ src/
       retire.ts         # Inactive repository archival.
   api/
     client.ts           # Base HTTP client.
+    gists.ts            # GitHub Gists API methods.
     commits.ts          # Commits API.
     contents.ts         # Contents API.
     insights.ts         # Insights API.
@@ -955,14 +980,15 @@ bash playbooks/all.sh
 - `auth.sh` — `ghg auth login/logout/status/token/list/switch/detect`
 - `activity.sh` — `ghg activity`
 - `mentions.sh` — `ghg mentions`
-- `cache.sh` — `ghg cache inspect/download`
+- `cache.sh` — `ghg cache list/delete/inspect/download`
+- `gist.sh` — `ghg gist list/view/create/edit/delete/clone`
 - `insights.sh` — `ghg insights traffic/contributors/commits/frequency/popularity/participation`
 - `notifications.sh` — `ghg notifications list/read/done`
 - `dependabot.sh` — `ghg dependabot list/dismiss`
 - `leaks.sh` — `ghg leaks alerts`
 - `audit.sh` — `ghg audit`
 - `compliance.sh` — `ghg compliance check`
-- `workflow.sh` — `ghg workflow validate/preview`
+- `workflow.sh` — workflow lifecycle, validation, and preview
 - `labels.sh` — `ghg labels list/pull/push/prune`
 - `pages.sh` — `ghg pages status/deploy/unpublish`
 - `wiki.sh` — `ghg wiki list/view/edit/create/delete`

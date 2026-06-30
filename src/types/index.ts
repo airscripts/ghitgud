@@ -163,6 +163,38 @@ interface ActionsCacheEntry {
   lastAccessedAt: string;
 }
 
+interface WorkflowSummary {
+  id: number;
+  name: string;
+  path: string;
+  state: string;
+  createdAt: string;
+  updatedAt: string;
+  htmlUrl: string;
+}
+
+interface GistFile {
+  filename: string;
+  type: string | null;
+  language: string | null;
+  rawUrl: string;
+  size: number;
+  content?: string;
+  truncated?: boolean;
+}
+
+interface GistSummary {
+  id: string;
+  description: string | null;
+  public: boolean;
+  htmlUrl: string;
+  gitPullUrl: string;
+  createdAt: string;
+  updatedAt: string;
+  owner: string | null;
+  files: GistFile[];
+}
+
 interface RunDebugJob {
   id: number;
   name: string;
@@ -362,6 +394,9 @@ export type { WorkflowValidationIssue };
 export type { RunDebugJob };
 export type { WorkflowDryRunJob };
 export type { ActionsCacheEntry };
+export type { WorkflowSummary };
+export type { GistFile };
+export type { GistSummary };
 export type { WorkflowDryRunResult };
 export type { ReviewThread };
 export type { ReviewComment };
