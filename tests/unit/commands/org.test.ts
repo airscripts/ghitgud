@@ -1,7 +1,7 @@
 import { Command } from "commander";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
-import orgCommand from "@/commands/org";
+import orgCommand from "@/commands/access-org";
 
 vi.mock("@/services/org", () => ({
   default: {
@@ -37,7 +37,7 @@ describe("org command", () => {
     const program = new Command();
     orgCommand.register(program);
 
-    const cmd = program.commands.find((c) => c.name() === "org");
+    const cmd = program.commands[0]?.commands.find((c) => c.name() === "org");
     expect(cmd).toBeDefined();
 
     const subcommands = cmd!.commands.map((c) => c.name());
@@ -52,7 +52,7 @@ describe("org command", () => {
     orgCommand.register(program);
 
     await expect(
-      program.parseAsync(["node", "test", "org", "members"]),
+      program.parseAsync(["node", "test", "access", "org", "members"]),
     ).rejects.toThrow("Organization name is required.");
   });
 
@@ -62,7 +62,15 @@ describe("org command", () => {
     orgCommand.register(program);
 
     await expect(
-      program.parseAsync(["node", "test", "org", "members", "--org", "   "]),
+      program.parseAsync([
+        "node",
+        "test",
+        "access",
+        "org",
+        "members",
+        "--org",
+        "   ",
+      ]),
     ).rejects.toThrow("Organization name is required.");
   });
 
@@ -75,6 +83,7 @@ describe("org command", () => {
       program.parseAsync([
         "node",
         "test",
+        "access",
         "org",
         "invite",
         "--user",
@@ -92,6 +101,7 @@ describe("org command", () => {
       program.parseAsync([
         "node",
         "test",
+        "access",
         "org",
         "invite",
         "--org",
@@ -109,6 +119,7 @@ describe("org command", () => {
       program.parseAsync([
         "node",
         "test",
+        "access",
         "org",
         "remove",
         "--user",
@@ -126,6 +137,7 @@ describe("org command", () => {
       program.parseAsync([
         "node",
         "test",
+        "access",
         "org",
         "remove",
         "--org",

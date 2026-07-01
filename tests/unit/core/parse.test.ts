@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 
 import parse from "@/core/parse";
-import { GhitgudError } from "@/core/errors";
+import { GitfleetError } from "@/core/errors";
 
 describe("parse core", () => {
   describe("parsePositiveInt", () => {
@@ -14,7 +14,7 @@ describe("parse core", () => {
     it("rejects invalid integer values", () => {
       for (const value of ["", "0", "-1", "1.5", "12abc", "Infinity"]) {
         expect(() => parse.parsePositiveInt(value, "value")).toThrow(
-          GhitgudError,
+          GitfleetError,
         );
       }
     });

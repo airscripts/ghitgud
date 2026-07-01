@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
 import gpgKeyService from "@/services/gpg-key";
-import gpgKeyOperations from "@/tui/operations/gpg-keys";
+import gpgKeyOperations from "@/tui/operations/identity-gpg";
 
 vi.mock("@/services/gpg-key", () => ({
   default: { list: vi.fn(), add: vi.fn(), delete: vi.fn() },

@@ -42,7 +42,7 @@ vi.mock("@/api/workflows", () => ({
   },
 }));
 
-vi.mock("@/api/client", () => ({
+vi.mock("@/providers/github/client", () => ({
   default: {
     getTokenRequired: vi.fn(),
   },
@@ -76,7 +76,7 @@ describe("run service", () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "ghg-run-"));
+    tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "gitfleet-run-"));
     vi.mocked(repoResolver.resolveRepo).mockResolvedValue("owner/repo");
   });
 

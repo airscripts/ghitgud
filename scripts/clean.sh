@@ -1,2 +1,2 @@
 #!/bin/bash
-rm -rf ~/.config/ghitgud
+rm -rf ~/.config/gitfleet

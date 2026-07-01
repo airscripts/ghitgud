@@ -1,8 +1,8 @@
-import client from "@/api/client";
+import client from "@/providers/github/client";
 import notifications from "@/api/notifications";
 import { describe, it, expect, vi, Mock, beforeEach } from "vitest";
 
-vi.mock("@/api/client", () => ({
+vi.mock("@/providers/github/client", () => ({
   default: {
     get: vi.fn(),
     patch: vi.fn(),

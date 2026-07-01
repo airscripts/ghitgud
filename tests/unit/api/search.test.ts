@@ -1,9 +1,9 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
 import search from "@/api/search";
-import client from "@/api/client";
+import client from "@/providers/github/client";
 
-vi.mock("@/api/client", () => ({
+vi.mock("@/providers/github/client", () => ({
   default: {
     getSearchPaginated: vi.fn(),
   },

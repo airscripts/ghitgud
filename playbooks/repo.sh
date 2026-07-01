@@ -3,16 +3,16 @@ set -euo pipefail
 source "$(dirname "$0")/env.sh"
 
 INVITE_USER="${INVITE_USER:-github-actions[bot]}"
-TEST_TEAM="ghg-test-team"
+TEST_TEAM="gitfleet-test-team"
 INVITED_USER=false
 GRANTED_TEAM=false
-TEST_REPO="ghg-test-repo-crud-$$"
+TEST_REPO="gitfleet-test-repo-crud-$$"
 CRUD_REPO="$OWNER/$TEST_REPO"
 
 setup() { :; }
 
 teardown() {
-  ghg repo delete "$CRUD_REPO" --yes >/dev/null 2>&1 || true
+  gitfleet repo delete "$CRUD_REPO" --yes >/dev/null 2>&1 || true
   rm -rf "$TMPDIR/$TEST_REPO" "$TMPDIR/${TEST_REPO}-renamed"
   if [ "$INVITED_USER" = true ]; then
     step "Removing Collaborator"
@@ -33,40 +33,40 @@ trap teardown EXIT
 setup
 
 step "Repo Create"
-expect_exit_0 "repo create succeeds" ghg repo create "$TEST_REPO" --private --description "ghg repository CRUD playbook"
+expect_exit_0 "repo create succeeds" gitfleet repo create "$TEST_REPO" --private --description "gitfleet repository CRUD playbook"
 
 step "Repo View"
-expect_exit_0 "repo view succeeds" ghg repo view "$CRUD_REPO"
+expect_exit_0 "repo view succeeds" gitfleet repo view "$CRUD_REPO"
 
 step "Repo List"
-expect_output "repo list includes test repository" "$TEST_REPO" ghg repo list --owner "$OWNER" --owner-type user
+expect_output "repo list includes test repository" "$TEST_REPO" gitfleet repo list --owner "$OWNER" --owner-type user
 
 step "Repo Edit"
-expect_exit_0 "repo edit succeeds" ghg repo edit "$CRUD_REPO" --description "updated by ghg playbook"
+expect_exit_0 "repo edit succeeds" gitfleet repo edit "$CRUD_REPO" --description "updated by gitfleet playbook"
 
 step "Repo Rename"
 RENAMED_REPO="${TEST_REPO}-renamed"
-expect_exit_0 "repo rename succeeds" ghg repo rename "$CRUD_REPO" "$RENAMED_REPO"
+expect_exit_0 "repo rename succeeds" gitfleet repo rename "$CRUD_REPO" "$RENAMED_REPO"
 CRUD_REPO="$OWNER/$RENAMED_REPO"
 
 step "Repo Archive And Unarchive"
-expect_exit_0 "repo archive succeeds" ghg repo archive "$CRUD_REPO"
-expect_exit_0 "repo unarchive succeeds" ghg repo unarchive "$CRUD_REPO"
+expect_exit_0 "repo archive succeeds" gitfleet repo archive "$CRUD_REPO"
+expect_exit_0 "repo unarchive succeeds" gitfleet repo unarchive "$CRUD_REPO"
 
 step "Repo Star"
-expect_exit_0 "repo star succeeds" ghg repo star "$CRUD_REPO"
-expect_exit_0 "repo unstar succeeds" ghg repo unstar "$CRUD_REPO"
+expect_exit_0 "repo star succeeds" gitfleet repo star "$CRUD_REPO"
+expect_exit_0 "repo unstar succeeds" gitfleet repo unstar "$CRUD_REPO"
 
 step "Repo Clone"
-(cd "$TMPDIR" && expect_exit_0 "repo clone succeeds" ghg repo clone "$CRUD_REPO" --depth 1)
+(cd "$TMPDIR" && expect_exit_0 "repo clone succeeds" gitfleet repo clone "$CRUD_REPO" --depth 1)
 
 step "Repo Invalid Inputs"
-expect_exit_non0 "repo create rejects conflicting visibility" ghg repo create invalid --public --private
-expect_exit_non0 "repo edit requires a change" ghg repo edit "$CRUD_REPO"
-expect_exit_non0 "repo delete requires confirmation" env CI=true ghg repo delete "$CRUD_REPO"
+expect_exit_non0 "repo create rejects conflicting visibility" gitfleet repo create invalid --public --private
+expect_exit_non0 "repo edit requires a change" gitfleet repo edit "$CRUD_REPO"
+expect_exit_non0 "repo delete requires confirmation" env CI=true gitfleet repo delete "$CRUD_REPO"
 
 step "Repo Invite"
-if ghg repo invite --repo "$REPO" --user "$INVITE_USER" --role pull >/dev/null 2>&1; then
+if gitfleet repo invite --repo "$REPO" --user "$INVITE_USER" --role pull >/dev/null 2>&1; then
   pass "repo invite succeeded"
   INVITED_USER=true
 else
@@ -74,7 +74,7 @@ else
 fi
 
 step "Repo Invite JSON"
-output=$(ghg repo invite --repo "$REPO" --user "$INVITE_USER" --role pull --json 2>&1) || true
+output=$(gitfleet repo invite --repo "$REPO" --user "$INVITE_USER" --role pull --json 2>&1) || true
 
 if echo "$output" | grep -q '"success":true\|"success": true'; then
   pass "repo invite JSON succeeded"
@@ -84,7 +84,7 @@ fi
 
 step "Repo Grant"
 if gh api "orgs/$ORG/teams/$TEST_TEAM" >/dev/null 2>&1; then
-  if ghg repo grant --repo "$REPO" --team "$TEST_TEAM" --role pull >/dev/null 2>&1; then
+  if gitfleet repo grant --repo "$REPO" --team "$TEST_TEAM" --role pull >/dev/null 2>&1; then
     pass "repo grant succeeded"
     GRANTED_TEAM=true
   else
@@ -95,7 +95,7 @@ else
 fi
 
 step "Repo Invite Without --user"
-CI=true expect_exit_non0 "repo invite without --user fails" ghg repo invite --repo "$REPO"
+CI=true expect_exit_non0 "repo invite without --user fails" gitfleet repo invite --repo "$REPO"
 
 step "Repo Grant Without --team"
-CI=true expect_exit_non0 "repo grant without --team fails" ghg repo grant --repo "$REPO"
+CI=true expect_exit_non0 "repo grant without --team fails" gitfleet repo grant --repo "$REPO"

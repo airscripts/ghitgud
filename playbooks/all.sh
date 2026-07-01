@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
-# all.sh — Orchestrator that runs every ghg playbook in sequence.
+# all.sh — Orchestrator that runs every gitfleet playbook in sequence.
 #
 # Usage:
 #   bash playbooks/all.sh                              # run all playbooks sequentially
 #   PARALLEL=1 bash playbooks/all.sh                   # run playbooks concurrently
-#   SKIP="run.sh,project.sh" bash playbooks/all.sh     # skip specific playbooks
+#   SKIP="pipeline-run.sh,planning.sh" bash playbooks/all.sh # skip playbooks
 #   REPO=owner/repo ORG=orgname bash playbooks/all.sh  # override pointings
 set -euo pipefail
 
@@ -16,64 +16,65 @@ PARALLEL="${PARALLEL:-0}"
 
 # Order is read-only commands first, then mutation commands, then cleanup-heavy commands.
 PLAYBOOKS=(
-  ping
   config
   auth
+  alias
+  completion
   search
-  activity
-  mentions
-  cache
-  gist
+  inbox-activity
+  inbox-mentions
+  pipeline-cache
+  snippet
   api
-  status
-  ruleset
-  queue
-  insights
-  notifications
-  dependabot
-  leaks
-  audit
-  compliance
-  branch
-  workflow
-  labels
-  pages
+  inbox-status
+  policy
+  change-queue
+  analytics-repo
+  inbox-notifications
+  security-dependabot
+  security-leaks
+  security-audit
+  security-compliance
+  policy-branch
+  pipeline-definition
+  label
+  license
+  site
   wiki
   webhook
   environment
   variable
   secret
-  milestone
+  planning-milestone
   discussion
-  deployment
-  fork
-  org
-  team
+  deploy
+  repo-forks
+  access-org
+  access-team
   issue
   review
-  repos
+  govern
   repo
-  react
-  comment
+  review-reaction
+  review-conversation
   deps
   advisory
-  codeql
+  security-codeql
   workspace
-  actions
+  analytics-pipeline
   code
   template
-  package
+  registry
   runner
-  extension
-  codespace
+  dev
   browse
   attestation
-  ssh-key
-  gpg-key
+  identity-ssh
+  identity-gpg
   release
-  pr
-  project
-  run
+  change
+  planning
+  pipeline-run
 )
 
 TOTAL_PASS=0
@@ -134,7 +135,7 @@ run_playbook() {
   fi
 }
 
-echo "[INFO] ghg playbook pipeline"
+echo "[INFO] gitfleet playbook pipeline"
 echo "[INFO] REPO=$REPO  ORG=$ORG  TMPDIR=$TMPDIR"
 echo ""
 

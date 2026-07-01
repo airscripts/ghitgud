@@ -7,7 +7,7 @@ const attestationOperations: TuiOperation[] = [
     workspace: "Attestations",
     id: "attestation.list",
     title: "List Attestations",
-    command: "ghg attestation list <digest>",
+    command: "gitfleet attestation list <digest>",
     description: "List attestations for an artifact digest.",
     inputs: [
       {
@@ -27,7 +27,7 @@ const attestationOperations: TuiOperation[] = [
     workspace: "Attestations",
     id: "attestation.verify",
     title: "Verify Attestation",
-    command: "ghg attestation verify <digest>",
+    command: "gitfleet attestation verify <digest>",
     description: "Verify artifact provenance for a digest.",
     inputs: [
       {

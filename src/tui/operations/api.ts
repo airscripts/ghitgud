@@ -6,9 +6,9 @@ const apiOperations: TuiOperation[] = [
   {
     id: "api.request",
     workspace: "API",
-    title: "GitHub API Request",
-    command: "ghg api <endpoint>",
-    description: "Make an authenticated GitHub REST API request.",
+    title: "provider API Request",
+    command: "gitfleet api <endpoint>",
+    description: "Make an authenticated provider API request.",
     inputs: [
       { key: "endpoint", label: "Endpoint", type: "string", required: true },
       { key: "method", label: "Method", type: "string" },

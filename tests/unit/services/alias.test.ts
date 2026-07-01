@@ -46,7 +46,7 @@ vi.mock("fs", () => ({
 import fs from "fs";
 import aliasService from "@/services/alias";
 import io from "@/core/io";
-import { GhitgudError } from "@/core/errors";
+import { GitfleetError } from "@/core/errors";
 
 describe("alias service", () => {
   beforeEach(() => {
@@ -69,11 +69,11 @@ describe("alias service", () => {
     });
 
     it("should throw if name is empty", () => {
-      expect(() => aliasService.set("", "checkout")).toThrow(GhitgudError);
+      expect(() => aliasService.set("", "checkout")).toThrow(GitfleetError);
     });
 
     it("should throw if expansion is empty", () => {
-      expect(() => aliasService.set("co", "")).toThrow(GhitgudError);
+      expect(() => aliasService.set("co", "")).toThrow(GitfleetError);
     });
 
     it("should throw if alias already exists without force", () => {
@@ -82,7 +82,7 @@ describe("alias service", () => {
         co: "checkout",
       });
 
-      expect(() => aliasService.set("co", "checkout")).toThrow(GhitgudError);
+      expect(() => aliasService.set("co", "checkout")).toThrow(GitfleetError);
     });
 
     it("should overwrite alias with force flag", () => {
@@ -139,11 +139,11 @@ describe("alias service", () => {
       (io.fileExists as ReturnType<typeof vi.fn>).mockReturnValue(true);
       (io.readJsonFile as ReturnType<typeof vi.fn>).mockReturnValue({});
 
-      expect(() => aliasService.deleteAlias("co")).toThrow(GhitgudError);
+      expect(() => aliasService.deleteAlias("co")).toThrow(GitfleetError);
     });
 
     it("should throw if name is empty", () => {
-      expect(() => aliasService.deleteAlias("")).toThrow(GhitgudError);
+      expect(() => aliasService.deleteAlias("")).toThrow(GitfleetError);
     });
   });
 

@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
 import teamService from "@/services/team";
-import teamOperations from "@/tui/operations/team";
+import teamOperations from "@/tui/operations/access-team";
 
 vi.mock("@/services/team", () => ({
   default: {

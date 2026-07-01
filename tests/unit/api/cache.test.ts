@@ -1,9 +1,9 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
 import cache from "@/api/cache";
-import client from "@/api/client";
+import client from "@/providers/github/client";
 
-vi.mock("@/api/client", () => ({
+vi.mock("@/providers/github/client", () => ({
   default: {
     getTokenRequired: vi.fn(),
     deleteTokenRequired: vi.fn(),

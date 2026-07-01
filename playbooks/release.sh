@@ -20,31 +20,31 @@ trap teardown EXIT
 setup
 
 step "Release List"
-expect_exit_0 "release list succeeds" ghg release list --repo "$REPO" --limit 5
+expect_exit_0 "release list succeeds" gitfleet release list --repo "$REPO" --limit 5
 
 step "Release View Missing Tag"
-expect_exit_non0 "release view rejects a missing tag" ghg release view ghg-test-missing --repo "$REPO"
+expect_exit_non0 "release view rejects a missing tag" gitfleet release view gitfleet-test-missing --repo "$REPO"
 
 step "Release Changelog"
-expect_exit_0 "release changelog succeeds" ghg release changelog
+expect_exit_0 "release changelog succeeds" gitfleet release changelog
 
 step "Release Changelog With --since"
 local_tag=$(git tag --sort=-version:refname 2>/dev/null | head -1 || echo "")
 
 if [ -n "$local_tag" ]; then
-  expect_exit_0 "release changelog --since succeeds" ghg release changelog --since "$local_tag"
+  expect_exit_0 "release changelog --since succeeds" gitfleet release changelog --since "$local_tag"
 else
   skip "release changelog --since (no tags found)"
 fi
 
 step "Release Bump --level Patch (Dry Run)"
-expect_exit_0 "release bump --level patch succeeds" ghg release bump --level patch
+expect_exit_0 "release bump --level patch succeeds" gitfleet release bump --level patch
 
 step "Release Notes"
-expect_exit_0 "release notes succeeds" ghg release notes --repo "$REPO"
+expect_exit_0 "release notes succeeds" gitfleet release notes --repo "$REPO"
 
 step "Release Draft --level Patch"
-output=$(ghg release draft --level patch --repo "$REPO" --json 2>&1) || true
+output=$(gitfleet release draft --level patch --repo "$REPO" --json 2>&1) || true
 
 if echo "$output" | grep -q '"success":true'; then
   pass "release draft succeeded"
@@ -54,4 +54,4 @@ else
 fi
 
 step "Release Bump With Invalid Level"
-expect_exit_non0 "release bump rejects invalid level" ghg release bump --level invalid
+expect_exit_non0 "release bump rejects invalid level" gitfleet release bump --level invalid

@@ -2,7 +2,7 @@ import api from "@/api/advisories";
 import output from "@/core/output";
 import logger from "@/core/logger";
 import repoResolver from "@/core/repo";
-import { GhitgudError } from "@/core/errors";
+import { GitfleetError } from "@/core/errors";
 
 interface AdvisoryEntry {
   ghsaId: string;
@@ -27,12 +27,12 @@ const list = async (
   } = {},
 ) => {
   if (options.state && !VALID_STATES.has(options.state)) {
-    throw new GhitgudError(
+    throw new GitfleetError(
       `Invalid state "${options.state}". Valid: ${[...VALID_STATES].join(", ")}.`,
     );
   }
   if (options.severity && !VALID_SEVERITIES.has(options.severity)) {
-    throw new GhitgudError(
+    throw new GitfleetError(
       `Invalid severity "${options.severity}". Valid: ${[...VALID_SEVERITIES].join(", ")}.`,
     );
   }
@@ -130,7 +130,7 @@ const create = async (options: {
 }) => {
   const repo = options.repo ?? (await repoResolver.resolveRepo());
   if (!VALID_SEVERITIES.has(options.severity)) {
-    throw new GhitgudError(
+    throw new GitfleetError(
       `Invalid severity "${options.severity}". Valid: ${[...VALID_SEVERITIES].join(", ")}.`,
     );
   }

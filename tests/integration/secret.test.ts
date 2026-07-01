@@ -61,7 +61,7 @@ describe("integration > secret commands", () => {
       "--visibility",
       "selected",
       "--repos",
-      "airscripts/ghitgud",
+      "airscripts/gitfleet",
     ]);
 
     expect(secretsService.set).toHaveBeenCalledWith({
@@ -70,7 +70,7 @@ describe("integration > secret commands", () => {
       org: "airscripts",
       value: "secret123",
       visibility: "selected",
-      repos: "airscripts/ghitgud",
+      repos: "airscripts/gitfleet",
     });
   });
 

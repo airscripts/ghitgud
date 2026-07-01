@@ -1,12 +1,14 @@
 import { Command } from "commander";
 import { describe, expect, it } from "vitest";
-import codeqlCommand from "@/commands/codeql";
+import codeqlCommand from "@/commands/security-codeql";
 
 describe("codeql command", () => {
   it("registers codeql subcommands", () => {
     const program = new Command();
     codeqlCommand.register(program);
-    const codeql = program.commands.find((cmd) => cmd.name() === "codeql");
+    const codeql = program.commands[0].commands.find(
+      (cmd) => cmd.name() === "codeql",
+    );
     expect(codeql).toBeDefined();
     const names = codeql!.commands.map((cmd) => cmd.name());
     expect(names).toContain("list");

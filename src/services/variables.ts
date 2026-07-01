@@ -1,7 +1,7 @@
 import output from "@/core/output";
 import logger from "@/core/logger";
 import variablesApi from "@/api/variables";
-import { GhitgudError } from "@/core/errors";
+import { GitfleetError } from "@/core/errors";
 
 import {
   ERROR_NO_REPO,
@@ -18,7 +18,7 @@ import {
 
 function extractOwnerRepo(repo: string): [string, string] {
   const parts = repo.split("/");
-  if (parts.length < 2) throw new GhitgudError("Invalid repository format.");
+  if (parts.length < 2) throw new GitfleetError("Invalid repository format.");
   return [parts[0], parts[1]];
 }
 
@@ -48,7 +48,7 @@ const list = async (options: {
     return { success: true, variables: vars };
   }
 
-  if (!options.repo) throw new GhitgudError(ERROR_NO_REPO);
+  if (!options.repo) throw new GitfleetError(ERROR_NO_REPO);
   const [owner, repo] = extractOwnerRepo(options.repo);
 
   if (options.env) {
@@ -102,8 +102,8 @@ const set = async (options: {
   env?: string;
   org?: string;
 }): Promise<{ success: boolean }> => {
-  if (!options.name) throw new GhitgudError(ERROR_VARIABLE_NAME_REQUIRED);
-  if (!options.value) throw new GhitgudError(ERROR_VARIABLE_VALUE_REQUIRED);
+  if (!options.name) throw new GitfleetError(ERROR_VARIABLE_NAME_REQUIRED);
+  if (!options.value) throw new GitfleetError(ERROR_VARIABLE_VALUE_REQUIRED);
 
   if (options.org) {
     logger.start(
@@ -120,7 +120,7 @@ const set = async (options: {
     return { success: true };
   }
 
-  if (!options.repo) throw new GhitgudError(ERROR_NO_REPO);
+  if (!options.repo) throw new GitfleetError(ERROR_NO_REPO);
   const [owner, repo] = extractOwnerRepo(options.repo);
 
   if (options.env) {
@@ -166,7 +166,7 @@ const remove = async (options: {
   env?: string;
   org?: string;
 }): Promise<{ success: boolean }> => {
-  if (!options.name) throw new GhitgudError(ERROR_VARIABLE_NAME_REQUIRED);
+  if (!options.name) throw new GitfleetError(ERROR_VARIABLE_NAME_REQUIRED);
 
   if (options.org) {
     logger.start(
@@ -178,7 +178,7 @@ const remove = async (options: {
     return { success: true };
   }
 
-  if (!options.repo) throw new GhitgudError(ERROR_NO_REPO);
+  if (!options.repo) throw new GitfleetError(ERROR_NO_REPO);
   const [owner, repo] = extractOwnerRepo(options.repo);
 
   if (options.env) {

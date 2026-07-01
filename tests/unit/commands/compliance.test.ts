@@ -1,7 +1,7 @@
 import { Command } from "commander";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
-import complianceCommand from "@/commands/compliance";
+import complianceCommand from "@/commands/security-compliance";
 
 vi.mock("@/services/compliance", () => ({
   default: {
@@ -24,7 +24,7 @@ describe("compliance command", () => {
     const program = new Command();
     complianceCommand.register(program);
 
-    const compliance = program.commands.find(
+    const compliance = program.commands[0]?.commands.find(
       (command) => command.name() === "compliance",
     );
 
@@ -40,7 +40,7 @@ describe("compliance command", () => {
     complianceCommand.register(program);
 
     await expect(
-      program.parseAsync(["node", "test", "compliance", "check"]),
+      program.parseAsync(["node", "test", "security", "compliance", "check"]),
     ).rejects.toThrow("No repository target provided.");
   });
 });

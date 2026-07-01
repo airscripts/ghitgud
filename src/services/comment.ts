@@ -2,7 +2,7 @@ import api from "@/api/comments";
 import output from "@/core/output";
 import logger from "@/core/logger";
 import repoResolver from "@/core/repo";
-import { GhitgudError } from "@/core/errors";
+import { GitfleetError } from "@/core/errors";
 
 interface CommentEntry {
   id: number;
@@ -23,7 +23,7 @@ const normalize = (raw: Record<string, unknown>): CommentEntry => ({
 });
 
 const list = async (options: { repo?: string; issue?: number }) => {
-  if (!options.issue) throw new GhitgudError("--issue is required.");
+  if (!options.issue) throw new GitfleetError("--issue is required.");
   const repo = options.repo ?? (await repoResolver.resolveRepo());
   logger.start(`Loading comments for issue #${options.issue}.`);
   const response = await api.list(repo, options.issue);
@@ -48,8 +48,8 @@ const reply = async (options: {
   issue?: number;
   body: string;
 }) => {
-  if (!options.issue) throw new GhitgudError("--issue is required.");
-  if (!options.body) throw new GhitgudError("--body is required.");
+  if (!options.issue) throw new GitfleetError("--issue is required.");
+  if (!options.body) throw new GitfleetError("--body is required.");
   const repo = options.repo ?? (await repoResolver.resolveRepo());
   logger.start(`Commenting on issue #${options.issue}.`);
   const response = await api.create(repo, options.issue, options.body);

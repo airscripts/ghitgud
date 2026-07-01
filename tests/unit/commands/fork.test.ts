@@ -1,12 +1,14 @@
 import { Command } from "commander";
 import { describe, expect, it } from "vitest";
-import forkCommand from "@/commands/fork";
+import forkCommand from "@/commands/repo-forks";
 
 describe("fork command", () => {
   it("registers fork subcommands", () => {
     const program = new Command();
     forkCommand.register(program);
-    const fork = program.commands.find((command) => command.name() === "fork");
+    const fork = program.commands[0].commands.find(
+      (command) => command.name() === "forks",
+    );
     expect(fork).toBeDefined();
     expect(fork!.commands.map((c) => c.name())).toEqual([
       "sync",

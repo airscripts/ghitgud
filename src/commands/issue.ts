@@ -5,7 +5,7 @@ import prompt from "@/core/prompt";
 import command from "@/core/command";
 import repoResolver from "@/core/repo";
 import issueService from "@/services/issue";
-import { GhitgudError } from "@/core/errors";
+import { GitfleetError } from "@/core/errors";
 import outputState from "@/core/output-state";
 
 type IssueState = "open" | "closed" | "all";
@@ -182,7 +182,7 @@ const register = (program: Command) => {
 
         if (!options.yes) {
           if (!outputState.isHumanOutput()) {
-            throw new GhitgudError("Use --yes to confirm issue deletion.");
+            throw new GitfleetError("Use --yes to confirm issue deletion.");
           }
 
           if (!(await prompt.confirm(`Permanently delete ${repo}#${number}?`)))

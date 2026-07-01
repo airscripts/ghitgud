@@ -2,7 +2,7 @@ import api from "@/api/dependencies";
 import output from "@/core/output";
 import logger from "@/core/logger";
 import repoResolver from "@/core/repo";
-import { GhitgudError } from "@/core/errors";
+import { GitfleetError } from "@/core/errors";
 
 interface SbomPackage {
   name?: string;
@@ -58,9 +58,9 @@ const review = async (options: {
 }) => {
   const repo = options.repo ?? (await repoResolver.resolveRepo());
   if (!options.base)
-    throw new GhitgudError("--base is required for dependency review.");
+    throw new GitfleetError("--base is required for dependency review.");
   if (!options.head)
-    throw new GhitgudError("--head is required for dependency review.");
+    throw new GitfleetError("--head is required for dependency review.");
   const basehead = `${options.base}...${options.head}`;
   logger.start(`Comparing dependencies for ${repo} (${basehead}).`);
   const response = await api.compare(repo, basehead);

@@ -2,6 +2,7 @@ import api from "@/api/codespaces";
 import output from "@/core/output";
 import logger from "@/core/logger";
 import repoResolver from "@/core/repo";
+import { GitfleetError } from "@/core/errors";
 
 interface CodespaceEntry {
   id: number;
@@ -100,8 +101,7 @@ const deleteCs = async (
   options: { yes?: boolean } = {},
 ) => {
   if (!options.yes) {
-    const { GhitgudError } = await import("@/core/errors");
-    throw new GhitgudError("Codespace deletion requires --yes.");
+    throw new GitfleetError("Development environment deletion requires --yes.");
   }
   logger.start(`Deleting codespace ${codespaceId}.`);
   await api.delete(codespaceId);

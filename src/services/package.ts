@@ -2,7 +2,7 @@ import api from "@/api/packages";
 import output from "@/core/output";
 import logger from "@/core/logger";
 import repoResolver from "@/core/repo";
-import { GhitgudError } from "@/core/errors";
+import { GitfleetError } from "@/core/errors";
 import prompt from "@/core/prompt";
 
 const VALID_PACKAGE_TYPES = [
@@ -23,7 +23,7 @@ const list = async (
     options.packageType &&
     !VALID_PACKAGE_TYPES.includes(options.packageType)
   ) {
-    throw new GhitgudError(
+    throw new GitfleetError(
       `Invalid package type "${options.packageType}". Valid: ${VALID_PACKAGE_TYPES.join(", ")}.`,
     );
   }

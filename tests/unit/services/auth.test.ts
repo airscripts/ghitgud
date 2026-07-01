@@ -43,6 +43,7 @@ vi.mock("@/core/output", () => ({
     renderTable: vi.fn(),
     renderSummary: vi.fn(),
     renderSection: vi.fn(),
+    writeValue: vi.fn(),
   },
 }));
 
@@ -109,6 +110,8 @@ describe("auth service", () => {
       expect(result.profile).toBe(DEFAULT_PROFILE_NAME);
 
       expect(config.addProfile).toHaveBeenCalledWith(DEFAULT_PROFILE_NAME, {
+        host: "github.com",
+        provider: "github",
         token: "ghp_test123",
       });
 
@@ -144,7 +147,11 @@ describe("auth service", () => {
       });
 
       expect(result.success).toBe(true);
-      expect(config.write).toHaveBeenCalledWith("token", "ghp_new123");
+      expect(config.addProfile).toHaveBeenCalledWith("default", {
+        host: "github.com",
+        provider: "github",
+        token: "ghp_new123",
+      });
       expect(config.setActiveProfile).toHaveBeenCalledWith("default");
     });
 
@@ -294,6 +301,7 @@ describe("auth service", () => {
     it("switches the active profile after validation", async () => {
       (config.getProfile as ReturnType<typeof vi.fn>).mockReturnValue({
         token: "ghp_test",
+        host: "github.example.com",
       });
 
       (
@@ -307,7 +315,10 @@ describe("auth service", () => {
 
       expect(result.success).toBe(true);
       expect(result.profile).toBe("work");
-      expect(authApi.fetchAuthenticatedUser).toHaveBeenCalledWith("ghp_test");
+      expect(authApi.fetchAuthenticatedUser).toHaveBeenCalledWith(
+        "ghp_test",
+        "github.example.com",
+      );
       expect(config.setActiveProfile).toHaveBeenCalledWith("work");
 
       expect(logger.success).toHaveBeenCalledWith(

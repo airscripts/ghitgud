@@ -1,7 +1,7 @@
 import sodium from "libsodium-wrappers";
 import { describe, it, expect, vi } from "vitest";
 
-import { GhitgudError } from "@/core/errors";
+import { GitfleetError } from "@/core/errors";
 import { encryptSecret } from "@/core/secrets";
 
 vi.mock("libsodium-wrappers", () => ({
@@ -26,11 +26,11 @@ describe("encryptSecret", () => {
     expect(result).toBe("encrypted");
   });
 
-  it("throws GhitgudError on encryption failure", async () => {
+  it("throws GitfleetError on encryption failure", async () => {
     vi.mocked(sodium.from_base64).mockImplementation(() => {
       throw new Error("invalid base64");
     });
 
-    await expect(encryptSecret("v", "k")).rejects.toBeInstanceOf(GhitgudError);
+    await expect(encryptSecret("v", "k")).rejects.toBeInstanceOf(GitfleetError);
   });
 });

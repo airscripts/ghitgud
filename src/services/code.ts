@@ -85,7 +85,7 @@ const file = async (
     const decoded = Buffer.from(data.content as string, "base64").toString(
       "utf-8",
     );
-    console.log(decoded);
+    output.writeValue(decoded);
   } else {
     output.renderKeyValues([
       ["Path", String(data.path ?? path)],

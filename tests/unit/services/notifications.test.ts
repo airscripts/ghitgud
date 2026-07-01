@@ -36,7 +36,7 @@ const THREAD_RESPONSE = [
     unread: true,
     reason: "review_requested",
     updated_at: "2026-05-09T20:00:00Z",
-    repository: { full_name: "airscripts/ghitgud" },
+    repository: { full_name: "airscripts/gitfleet" },
     subject: { title: "Test PR", type: "PullRequest", url: "..." },
   },
 ];
@@ -47,7 +47,7 @@ const SEARCH_RESPONSE = {
       id: 2,
       title: "Mentioned issue",
       updated_at: "2026-05-08T20:00:00Z",
-      repository_url: "https://api.github.com/repos/airscripts/ghitgud",
+      repository_url: "https://api.github.com/repos/airscripts/gitfleet",
     },
   ],
 };
@@ -73,7 +73,7 @@ describe("notifications service", () => {
 
       expect(result.success).toBe(true);
       expect(result.metadata).toHaveLength(1);
-      expect(result.metadata[0].repository).toBe("airscripts/ghitgud");
+      expect(result.metadata[0].repository).toBe("airscripts/gitfleet");
     });
 
     it("should pass repo to the notifications api", async () => {
@@ -134,10 +134,10 @@ describe("notifications service", () => {
         json: () => Promise.resolve(SEARCH_RESPONSE),
       });
 
-      const result = await service.activity("airscripts/ghitgud");
-      expect(api.assignedIssues).toHaveBeenCalledWith("airscripts/ghitgud");
-      expect(api.reviewRequests).toHaveBeenCalledWith("airscripts/ghitgud");
-      expect(api.mentions).toHaveBeenCalledWith("@me", "airscripts/ghitgud");
+      const result = await service.activity("airscripts/gitfleet");
+      expect(api.assignedIssues).toHaveBeenCalledWith("airscripts/gitfleet");
+      expect(api.reviewRequests).toHaveBeenCalledWith("airscripts/gitfleet");
+      expect(api.mentions).toHaveBeenCalledWith("@me", "airscripts/gitfleet");
       expect(result.success).toBe(true);
       expect(result.metadata.assignedIssues).toHaveLength(0);
       expect(result.metadata.reviewRequests).toHaveLength(1);
@@ -151,8 +151,8 @@ describe("notifications service", () => {
         json: () => Promise.resolve(SEARCH_RESPONSE),
       });
 
-      const result = await service.mentions("airscripts/ghitgud");
-      expect(api.mentions).toHaveBeenCalledWith("@me", "airscripts/ghitgud");
+      const result = await service.mentions("airscripts/gitfleet");
+      expect(api.mentions).toHaveBeenCalledWith("@me", "airscripts/gitfleet");
       expect(result.success).toBe(true);
       expect(result.metadata).toHaveLength(1);
     });

@@ -5,10 +5,10 @@ import { describe, it, expect, beforeEach, afterEach } from "vitest";
 
 import io from "@/core/io";
 import { ENCODING } from "@/core/constants";
-import { GhitgudError } from "@/core/errors";
+import { GitfleetError } from "@/core/errors";
 
 describe("io", () => {
-  const testDir = path.join(os.tmpdir(), "ghitgud-test-io");
+  const testDir = path.join(os.tmpdir(), "gitfleet-test-io");
   const testFile = path.join(testDir, "test.json");
 
   beforeEach(() => {
@@ -82,7 +82,7 @@ describe("io", () => {
 
     it("rejects absolute paths", () => {
       expect(() => io.resolveInsideRoot("/repo", "/tmp/outside.ts")).toThrow(
-        GhitgudError,
+        GitfleetError,
       );
     });
 

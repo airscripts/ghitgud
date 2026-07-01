@@ -1,7 +1,7 @@
 import api from "@/api/ssh-keys";
 import output from "@/core/output";
 import logger from "@/core/logger";
-import { GhitgudError } from "@/core/errors";
+import { GitfleetError } from "@/core/errors";
 import fs from "fs";
 
 interface SshKeyEntry {
@@ -32,12 +32,12 @@ const add = async (options: { title: string; key?: string; file?: string }) => {
   let keyValue = options.key;
   if (!keyValue && options.file) {
     if (!fs.existsSync(options.file)) {
-      throw new GhitgudError(`File not found: ${options.file}`);
+      throw new GitfleetError(`File not found: ${options.file}`);
     }
     keyValue = fs.readFileSync(options.file, "utf-8").trim();
   }
   if (!keyValue) {
-    throw new GhitgudError("Either --key or --file is required.");
+    throw new GitfleetError("Either --key or --file is required.");
   }
   logger.start(`Adding SSH key "${options.title}".`);
   const response = await api.add({ title: options.title, key: keyValue });
@@ -53,7 +53,7 @@ const add = async (options: { title: string; key?: string; file?: string }) => {
 
 const deleteKey = async (id: number, options: { yes?: boolean } = {}) => {
   if (!options.yes) {
-    throw new GhitgudError("SSH key deletion requires --yes.");
+    throw new GitfleetError("SSH key deletion requires --yes.");
   }
   logger.start(`Deleting SSH key ${id}.`);
   await api.delete(id);

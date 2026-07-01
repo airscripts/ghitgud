@@ -2,7 +2,7 @@ import api from "@/api/protection";
 import output from "@/core/output";
 import logger from "@/core/logger";
 import repoResolver from "@/core/repo";
-import { GhitgudError } from "@/core/errors";
+import { GitfleetError } from "@/core/errors";
 
 const protect = async (options: {
   repo?: string;
@@ -37,7 +37,7 @@ const protect = async (options: {
 
   if (!response.ok && response.status !== 200) {
     const error = await response.json().catch(() => ({}));
-    throw new GhitgudError(
+    throw new GitfleetError(
       `Failed to protect branch: ${(error as Record<string, unknown>).message ?? response.statusText}`,
     );
   }
@@ -107,7 +107,7 @@ const tagUnprotect = async (options: { repo?: string; pattern: string }) => {
   const rule = rules.find((r) => r.pattern === options.pattern);
 
   if (!rule)
-    throw new GhitgudError(
+    throw new GitfleetError(
       `Tag protection rule "${options.pattern}" not found.`,
     );
 

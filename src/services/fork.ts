@@ -3,7 +3,7 @@ import reposApi from "@/api/repos";
 import output from "@/core/output";
 import logger from "@/core/logger";
 import repoResolver from "@/core/repo";
-import { GhitgudError } from "@/core/errors";
+import { GitfleetError } from "@/core/errors";
 
 interface ForkSyncResult {
   repo: string;
@@ -56,7 +56,7 @@ const compare = async (
   const repoInfo = await reposApi.get(repo);
   const upstream = options.upstream ?? repoInfo.parent?.full_name;
   if (!upstream)
-    throw new GhitgudError(
+    throw new GitfleetError(
       "No upstream parent found. Use --upstream to specify.",
     );
   const branch = options.branch ?? repoInfo.default_branch ?? "main";

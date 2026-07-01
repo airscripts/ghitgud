@@ -1,35 +1,56 @@
-# Ghitgud Roadmap
+# Gitfleet Roadmap
 
-This document tracks planned features that have not yet been implemented. Entries follow a consistent format so that the transition from roadmap to implementation is unambiguous.
+This roadmap begins after the TypeScript-based Gitfleet `0.1.0` foundation in
+`PLAN.md` is complete. It tracks major platform work that is intentionally out
+of scope for the initial refactor.
 
-Each milestone entry must include:
+## Rust Rewrite
 
-- **ID** — A short, unique identifier (alphanumeric, e.g. `a1b2c3d4`) used to cross-reference the milestone across CHANGELOG and commits.
-- **Title** — A concise, human-readable name for the feature family.
-- **Why gh doesn't have it** — A one-sentence explanation of the gap this fills compared to the official `gh` CLI.
-- **Commands** — Every `ghg` subcommand the milestone will add, listed with their full invocation (flags are optional but positional args and required flags must be shown).
-- **Value** — A one-sentence summary of the user benefit.
+Rewrite the validated Gitfleet architecture in Rust after the TypeScript
+implementation has stabilized its domain contracts, operation registry, GitHub
+provider behavior, CLI/TUI semantics, and JSON schemas.
 
-Example:
+The rewrite must:
 
-```
-## k8l9m0n1 — Code Search & Navigation
+- preserve the public command names, options, exit codes, and JSON contracts;
+- preserve configuration and credential file compatibility within Gitfleet;
+- keep provider-neutral domain and application boundaries;
+- keep all network traffic inside provider adapters;
+- retain a single operation catalog for CLI and TUI exposure;
+- provide bounded concurrent fleet operations and cancellation;
+- replace the Node.js runtime without reducing supported capabilities;
+- ship only after fixture-based parity and live GitHub playbooks pass against
+  both implementations.
 
-**Why gh doesn't have it:** `gh search` is limited to text queries. No symbol navigation, definition lookup, or PR-aware blame exists.
+The Rust runtime, CLI, TUI, HTTP, serialization, and async libraries will be
+selected during this milestone using measured prototypes. Library selection is
+not part of the TypeScript foundation.
 
-**Commands:**
+## GitLab Provider
 
-- `ghg code search <query> --repo <repo>` — semantic code search
-- `ghg code definitions <symbol>` — find symbol definitions
-- `ghg code references <symbol>` — find symbol references
-- `ghg code file <path> --line <num>` — view file at specific commit
-- `ghg code blame <file>` — enhanced blame with PR context
+Add GitLab as the second provider against the provider contracts established
+by the Gitfleet foundation. Support GitLab.com and self-managed instances.
 
-**Value:** Code review and debugging stay in the terminal without switching to the browser for navigation.
-```
+Initial GitLab coverage must include:
 
-When a milestone is fully implemented, remove its entry from this file and add the corresponding CHANGELOG entries under `[Unreleased]`.
+- authentication, profiles, host selection, and remote detection;
+- repositories and groups;
+- merge requests through `change`;
+- reviews, discussions, issues, labels, and milestones;
+- GitLab CI/CD pipelines, jobs, logs, artifacts, and caches;
+- releases, deployments, environments, variables, and protected secrets;
+- issue boards through `planning`;
+- project wikis and GitLab Pages through `wiki` and `site`;
+- package and container registries;
+- runners, webhooks, access management, snippets, and analytics;
+- security, policy, governance, and fleet operations where the GitLab tier and
+  API expose the required capability;
+- GitLab Workspaces through `dev` when supported by the target instance.
 
----
+The provider must declare capabilities dynamically because GitLab features
+vary by version, subscription tier, and deployment type. Unsupported features
+must produce stable capability errors rather than GitHub-shaped emulation.
 
-(This roadmap is currently empty. All planned milestones have been implemented.)
+Completion requires the shared provider contract suite, GitLab-specific unit
+and integration tests, reversible live playbooks for GitLab.com, and a
+self-managed compatibility matrix.

@@ -9,11 +9,11 @@ import { CredentialsFile, Profile, ProfileRcFile } from "@/types";
 import {
   ENCODING,
   ERROR_NO_TOKEN,
-  GHITGUD_FOLDER,
-  GHITGUD_RC_FILE,
+  GITFLEET_FOLDER,
+  GITFLEET_RC_FILE,
   CREDENTIALS_PATH,
   ERROR_NO_GIT_ROOT,
-  GHITGUD_PROFILE_ENV,
+  GITFLEET_PROFILE_ENV,
   DEFAULT_PROFILE_NAME,
   ERROR_PROFILE_NOT_FOUND,
   ERROR_INVALID_PROFILE_RC,
@@ -45,7 +45,7 @@ function readCredentialsFile(): CredentialsFile | null {
 function readRepoLocalConfig(): ProfileRcFile | null {
   try {
     const repoRoot = git.getRepoRoot();
-    const rcPath = path.join(repoRoot, GHITGUD_RC_FILE);
+    const rcPath = path.join(repoRoot, GITFLEET_RC_FILE);
 
     if (!fs.existsSync(rcPath)) return null;
     return parseJsonFile<ProfileRcFile>(rcPath, ERROR_INVALID_PROFILE_RC);
@@ -69,26 +69,18 @@ function normalizeCredentials(
     };
   }
 
-  if (credentials.profiles) {
-    return {
-      activeProfile: credentials.activeProfile ?? DEFAULT_PROFILE_NAME,
-      profiles: credentials.profiles,
-    };
+  if (
+    typeof credentials.activeProfile !== "string" ||
+    !credentials.profiles ||
+    typeof credentials.profiles !== "object" ||
+    Array.isArray(credentials.profiles)
+  ) {
+    throw new ConfigError(ERROR_INVALID_CREDENTIALS);
   }
 
-  const legacyProfile: Profile = {
-    token: credentials.token,
-  };
-
-  const hasLegacyData = legacyProfile.token;
-
-  const profiles: Record<string, Profile> = hasLegacyData
-    ? { [DEFAULT_PROFILE_NAME]: legacyProfile }
-    : {};
-
   return {
-    activeProfile: DEFAULT_PROFILE_NAME,
-    profiles,
+    activeProfile: credentials.activeProfile,
+    profiles: credentials.profiles,
   };
 }
 
@@ -97,7 +89,7 @@ function readCredentials(): NormalizedCredentials {
 }
 
 function writeCredentials(credentials: NormalizedCredentials): void {
-  fs.mkdirSync(GHITGUD_FOLDER, { recursive: true });
+  fs.mkdirSync(GITFLEET_FOLDER, { recursive: true });
 
   fs.writeFileSync(CREDENTIALS_PATH, JSON.stringify(credentials, null, 2), {
     encoding: ENCODING,
@@ -137,7 +129,7 @@ function getRepoLocalProfile(): string | null {
 function getResolvedProfileName(
   credentials: NormalizedCredentials,
 ): string | null {
-  const envProfile = process.env[GHITGUD_PROFILE_ENV];
+  const envProfile = process.env[GITFLEET_PROFILE_ENV];
   if (envProfile) {
     if (!credentials.profiles[envProfile]) {
       throw new ConfigError(ERROR_PROFILE_NOT_FOUND);
@@ -211,7 +203,7 @@ function setActiveProfile(name: string): void {
 
 function setRepoLocalProfile(name: string): void {
   const repoRoot = git.getRepoRoot();
-  const rcPath = path.join(repoRoot, GHITGUD_RC_FILE);
+  const rcPath = path.join(repoRoot, GITFLEET_RC_FILE);
 
   fs.writeFileSync(
     rcPath,
@@ -230,7 +222,7 @@ function read(key: string): string | null {
 }
 
 function has(key: string): boolean {
-  const envKey = "GHITGUD_GITHUB_TOKEN";
+  const envKey = "GITFLEET_GITHUB_TOKEN";
 
   if (process.env[envKey]) return true;
 
@@ -283,7 +275,7 @@ function getToken(): string {
 }
 
 function getTokenOptional(): string | null {
-  const token = process.env.GHITGUD_GITHUB_TOKEN;
+  const token = process.env.GITFLEET_GITHUB_TOKEN;
   if (token) return token;
 
   const value = read("token");

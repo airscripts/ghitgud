@@ -19,7 +19,7 @@ vi.mock("@/core/output", () => ({
 }));
 
 vi.mock("@/core/errors", () => ({
-  GhitgudError: class extends Error {},
+  GitfleetError: class extends Error {},
 }));
 
 import workspaceConfig from "@/core/workspace";
@@ -32,7 +32,7 @@ describe("workspace service", () => {
   it("defines a workspace", () => {
     (workspaceConfig.define as Mock).mockReturnValue({
       name: "my-team",
-      repos: ["owner/repo1"],
+      repositories: [],
     });
     const result = workspaceService.define("my-team", ["owner/repo1"]);
     expect(result.success).toBe(true);
@@ -51,7 +51,7 @@ describe("workspace service", () => {
 
   it("lists workspaces", () => {
     (workspaceConfig.list as Mock).mockReturnValue([
-      { name: "my-team", repos: ["owner/repo1"] },
+      { name: "my-team", repositories: [] },
     ]);
     const result = workspaceService.list();
     expect(result.success).toBe(true);
@@ -61,5 +61,57 @@ describe("workspace service", () => {
     (workspaceConfig.list as Mock).mockReturnValue([]);
     const result = workspaceService.list();
     expect(result.success).toBe(true);
+  });
+
+  it("dispatches workspace operations in process", async () => {
+    (workspaceConfig.get as Mock).mockReturnValue({
+      name: "my-team",
+      repositories: [
+        {
+          provider: "github",
+          host: "github.com",
+          namespace: "owner",
+          name: "one",
+        },
+        {
+          provider: "github",
+          host: "github.com",
+          namespace: "owner",
+          name: "two",
+        },
+      ],
+    });
+    const execute = vi.fn().mockResolvedValue(undefined);
+
+    const result = await workspaceService.run(
+      "my-team",
+      "issue list --state open",
+      execute,
+    );
+
+    expect(result.success).toBe(true);
+    expect(execute).toHaveBeenNthCalledWith(
+      1,
+      ["issue", "list", "--state", "open", "--repo", "owner/one"],
+      "owner/one",
+    );
+  });
+
+  it("rejects recursive workspace execution", async () => {
+    (workspaceConfig.get as Mock).mockReturnValue({
+      name: "my-team",
+      repositories: [
+        {
+          provider: "github",
+          host: "github.com",
+          namespace: "owner",
+          name: "one",
+        },
+      ],
+    });
+
+    await expect(
+      workspaceService.run("my-team", "workspace run", vi.fn()),
+    ).rejects.toThrow("cannot invoke itself");
   });
 });

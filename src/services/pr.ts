@@ -2,7 +2,7 @@ import api from "@/api/pr";
 import git from "@/core/git";
 import output from "@/core/output";
 import logger from "@/core/logger";
-import { GhitgudError } from "@/core/errors";
+import { GitfleetError } from "@/core/errors";
 import type { PullRequest, RepositoryMergeSettings } from "@/types";
 
 interface CleanupResult {
@@ -35,7 +35,7 @@ interface SearchPayload {
 function parsePrNumber(value: string | number): number {
   const number = Number(value);
   if (!Number.isInteger(number) || number <= 0) {
-    throw new GhitgudError(`Invalid PR number: ${value}.`);
+    throw new GitfleetError(`Invalid PR number: ${value}.`);
   }
 
   return number;
@@ -81,11 +81,11 @@ const create = async (
   const head = options.head ?? git.getCurrentBranch();
 
   if (!base) {
-    throw new GhitgudError("Repository does not include a default branch.");
+    throw new GitfleetError("Repository does not include a default branch.");
   }
 
   if (!head) {
-    throw new GhitgudError("Could not infer the current branch.");
+    throw new GitfleetError("Could not infer the current branch.");
   }
 
   logger.start(`Creating pull request from ${head} into ${base}.`);
@@ -112,7 +112,7 @@ const create = async (
 
 const list = async (repo: string, options: PullRequestListOptions = {}) => {
   const limit = options.limit ?? 10;
-  if (limit > 100) throw new GhitgudError("PR list limit cannot exceed 100.");
+  if (limit > 100) throw new GitfleetError("PR list limit cannot exceed 100.");
 
   const state = options.state ?? "open";
   logger.start(`Loading ${state} pull requests from ${repo}.`);
@@ -204,7 +204,7 @@ const edit = async (
 ) => {
   const number = parsePrNumber(value);
   if (options.body !== undefined && options.removeBody) {
-    throw new GhitgudError("Use either --body or --remove-body, not both.");
+    throw new GitfleetError("Use either --body or --remove-body, not both.");
   }
 
   if (
@@ -213,7 +213,7 @@ const edit = async (
     options.base === undefined &&
     !options.removeBody
   ) {
-    throw new GhitgudError(
+    throw new GitfleetError(
       "Provide --title, --body, --base, or --remove-body.",
     );
   }
@@ -265,11 +265,11 @@ function selectMergeMethod(
 
   if (requested) {
     if (!(requested in enabled)) {
-      throw new GhitgudError(`Invalid merge strategy: ${requested}.`);
+      throw new GitfleetError(`Invalid merge strategy: ${requested}.`);
     }
 
     if (!enabled[requested]) {
-      throw new GhitgudError(
+      throw new GitfleetError(
         `Repository does not allow the ${requested} merge strategy.`,
       );
     }
@@ -280,7 +280,7 @@ function selectMergeMethod(
   if (settings.allow_merge_commit) return "merge";
   if (settings.allow_squash_merge) return "squash";
   if (settings.allow_rebase_merge) return "rebase";
-  throw new GhitgudError("Repository does not allow any merge strategy.");
+  throw new GitfleetError("Repository does not allow any merge strategy.");
 }
 
 const merge = async (
@@ -305,7 +305,7 @@ const merge = async (
   };
 
   if (!result.merged) {
-    throw new GhitgudError(
+    throw new GitfleetError(
       result.message || `Pull request #${number} was not merged.`,
     );
   }
@@ -326,7 +326,7 @@ const merge = async (
 const checkout = async (repo: string, value: string | number) => {
   const number = parsePrNumber(value);
   if (!git.isWorkingTreeClean()) {
-    throw new GhitgudError(
+    throw new GitfleetError(
       "Working tree must be clean before checking out a pull request.",
     );
   }
@@ -363,7 +363,7 @@ const checks = async (repo: string, value: string | number) => {
   const sha = pullRequest.head.sha;
 
   if (!sha) {
-    throw new GhitgudError(
+    throw new GitfleetError(
       `Pull request #${number} does not include a head SHA.`,
     );
   }
@@ -473,7 +473,7 @@ const ready = async (repo: string, value: string | number) => {
   const pullRequest = await api.fetch(number, repo);
 
   if (!pullRequest.draft) {
-    throw new GhitgudError(`Pull request #${number} is not a draft.`);
+    throw new GitfleetError(`Pull request #${number} is not a draft.`);
   }
 
   logger.start(`Marking pull request #${number} ready for review.`);
@@ -665,7 +665,7 @@ const push = async (prNumber: number, repo: string, force: boolean) => {
   const pr = await api.fetch(prNumber, repo);
 
   if (!pr.head.repo) {
-    throw new GhitgudError(
+    throw new GitfleetError(
       "PR is from a deleted fork or same-repo branch. " +
         "Cannot push to a non-existent fork.",
     );
@@ -689,7 +689,7 @@ const push = async (prNumber: number, repo: string, force: boolean) => {
   }
 
   if (!pr.maintainer_can_modify) {
-    throw new GhitgudError(
+    throw new GitfleetError(
       `PR #${prNumber} does not allow edits from maintainers. ` +
         "Ask the contributor to enable 'Allow edits from maintainers'.",
     );
@@ -700,7 +700,7 @@ const push = async (prNumber: number, repo: string, force: boolean) => {
   if (!force && git.branchExistsOnRemote(remoteName, forkBranch)) {
     const diverged = git.hasDiverged(currentBranch, remoteRef);
     if (diverged) {
-      throw new GhitgudError(
+      throw new GitfleetError(
         "Local branch has diverged from remote. " +
           "Use --force to push anyway.",
       );

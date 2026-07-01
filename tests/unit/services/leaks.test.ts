@@ -52,7 +52,7 @@ describe("leaks service", () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "ghg-leaks-"));
+    tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "gitfleet-leaks-"));
     vi.mocked(git.getRepoRoot).mockReturnValue(tempDir);
   });
 

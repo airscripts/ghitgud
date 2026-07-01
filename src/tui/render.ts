@@ -28,9 +28,9 @@ const COLORS = {
 } as const;
 
 const LABELS = {
-  title: "ghg",
+  title: "gitfleet",
   context: "Context",
-  tagline: "A better GitHub CLI that extends the official gh CLI.",
+  tagline: "Command every repository as one fleet.",
 } as const;
 
 const CONTEXT_LINE_PATTERNS = {
@@ -445,7 +445,7 @@ const renderDashboard = (
   dashboardData: DashboardData,
 ) => {
   const art = figlet
-    .textSync("Ghitgud", {
+    .textSync("Gitfleet", {
       width: ASCII_WIDTH,
       font: "Standard",
       whitespaceBreak: true,

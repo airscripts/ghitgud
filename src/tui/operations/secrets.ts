@@ -7,7 +7,7 @@ const secretOperations: TuiOperation[] = [
     id: "secret.list",
     workspace: "Secrets",
     title: "List Secrets",
-    command: "ghg secret list",
+    command: "gitfleet secret list",
     description: "List repository, environment, or organization secrets.",
 
     inputs: [
@@ -32,7 +32,7 @@ const secretOperations: TuiOperation[] = [
     id: "secret.set",
     title: "Set Secret",
     workspace: "Secrets",
-    command: "ghg secret set --name <key> --value <val>",
+    command: "gitfleet secret set --name <key> --value <val>",
     description: "Create or update an encrypted secret.",
 
     inputs: [
@@ -87,7 +87,7 @@ const secretOperations: TuiOperation[] = [
     workspace: "Secrets",
     title: "Delete Secret",
     description: "Delete a secret.",
-    command: "ghg secret delete --name <key>",
+    command: "gitfleet secret delete --name <key>",
 
     inputs: [
       repoInput,

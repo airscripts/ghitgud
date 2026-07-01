@@ -7,7 +7,7 @@ import reposApi, {
 import git from "@/core/git";
 import output from "@/core/output";
 import logger from "@/core/logger";
-import { GhitgudError } from "@/core/errors";
+import { GitfleetError } from "@/core/errors";
 
 type RepoType = "public" | "private" | "all";
 
@@ -27,19 +27,19 @@ const renderRepository = (repo: GitHubRepoResponse): void => {
 
 const create = async (options: CreateRepoOptions) => {
   if (options.ownerType === "org" && !options.owner) {
-    throw new GhitgudError(
+    throw new GitfleetError(
       "--owner is required for organization repositories.",
     );
   }
 
   if (options.ownerType !== "org" && options.visibility === "internal") {
-    throw new GhitgudError(
+    throw new GitfleetError(
       "Internal visibility requires an organization owner.",
     );
   }
 
   if (options.template && options.template.split("/").length !== 2) {
-    throw new GhitgudError("Template must use owner/repo format.");
+    throw new GitfleetError("Template must use owner/repo format.");
   }
 
   logger.start(`Creating repository ${options.name}.`);
@@ -93,7 +93,7 @@ const view = async (repo: string) => {
 
 const clone = async (repo: string, depth?: number) => {
   if (depth !== undefined && (!Number.isInteger(depth) || depth <= 0)) {
-    throw new GhitgudError("Depth must be a positive integer.");
+    throw new GitfleetError("Depth must be a positive integer.");
   }
 
   const repository = await reposApi.get(repo);
@@ -114,7 +114,7 @@ const remove = async (repo: string) => {
 
 const update = async (repo: string, options: UpdateRepoOptions) => {
   if (!Object.keys(options).length) {
-    throw new GhitgudError("At least one repository change is required.");
+    throw new GitfleetError("At least one repository change is required.");
   }
 
   const repository = await reposApi.update(repo, options);
@@ -165,7 +165,7 @@ const sync = async (repo: string, branch?: string) => {
   const current = git.parseRepoFromRemoteUrl(git.getRemoteUrl());
 
   if (current?.toLowerCase() !== repo.toLowerCase()) {
-    throw new GhitgudError(
+    throw new GitfleetError(
       `Current checkout is ${current ?? "unknown"}, not ${repo}.`,
     );
   }

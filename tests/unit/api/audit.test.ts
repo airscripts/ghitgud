@@ -1,9 +1,9 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
 import audit from "@/api/audit";
-import client from "@/api/client";
+import client from "@/providers/github/client";
 
-vi.mock("@/api/client", () => ({
+vi.mock("@/providers/github/client", () => ({
   default: {
     getPaginated: vi.fn(),
     getDefaultPerPage: vi.fn(() => 100),
@@ -23,11 +23,11 @@ describe("audit api", () => {
       actor: "octocat",
       org: "airscripts",
       action: "repo.create",
-      repo: "airscripts/ghitgud",
+      repo: "airscripts/gitfleet",
     });
 
     expect(client.getPaginated).toHaveBeenCalledWith(
-      "/orgs/airscripts/audit-log?per_page=100&phrase=actor%3Aoctocat+action%3Arepo.create+repo%3Aairscripts%2Fghitgud&order=desc",
+      "/orgs/airscripts/audit-log?per_page=100&phrase=actor%3Aoctocat+action%3Arepo.create+repo%3Aairscripts%2Fgitfleet&order=desc",
     );
   });
 

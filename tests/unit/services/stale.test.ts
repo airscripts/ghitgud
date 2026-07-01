@@ -13,7 +13,7 @@ vi.mock("@/core/logger", () => ({
 }));
 
 vi.mock("@/core/errors", () => ({
-  GhitgudError: class extends Error {},
+  GitfleetError: class extends Error {},
 }));
 
 import staleService from "@/services/stale";

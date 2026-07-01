@@ -2,7 +2,7 @@ import io from "@/core/io";
 import api from "@/api/labels";
 import logger from "@/core/logger";
 import labelsService from "@/services/labels";
-import { GhitgudError, NotFoundError } from "@/core/errors";
+import { GitfleetError, NotFoundError } from "@/core/errors";
 import { describe, it, expect, vi, Mock, beforeEach, afterEach } from "vitest";
 
 vi.mock("@/api/labels", () => ({
@@ -55,12 +55,6 @@ describe("labels", () => {
 
   afterEach(() => {
     vi.restoreAllMocks();
-  });
-
-  it("should return pong for ping", () => {
-    const result = labelsService.ping();
-    expect(result).toEqual({ success: true, message: "pong" });
-    expect(logger.success).toHaveBeenCalledWith("pong.");
   });
 
   it("should list labels", async () => {
@@ -154,7 +148,7 @@ describe("labels", () => {
     );
 
     await expect(labelsService.push("owner/repo")).rejects.toThrow(
-      GhitgudError,
+      GitfleetError,
     );
   });
 
@@ -188,7 +182,7 @@ describe("labels", () => {
 
     await expect(
       labelsService.pullTemplate("nonexistent", "/mock/templates"),
-    ).rejects.toThrow(GhitgudError);
+    ).rejects.toThrow(GitfleetError);
   });
 
   it("should push from template", async () => {

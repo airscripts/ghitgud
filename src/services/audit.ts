@@ -1,7 +1,7 @@
 import logger from "@/core/logger";
 import output from "@/core/output";
 import { AuditEvent } from "@/types";
-import { GhitgudError } from "@/core/errors";
+import { GitfleetError } from "@/core/errors";
 import { ERROR_AUDIT_TARGET_REQUIRED } from "@/core/constants";
 import auditApi, { AuditListOptions, AuditLogResponse } from "@/api/audit";
 
@@ -14,7 +14,7 @@ function parseLimit(limit?: number | string): number | undefined {
   const value = Number(limit);
 
   if (!Number.isSafeInteger(value) || value <= 0) {
-    throw new GhitgudError(`Invalid limit: ${limit}.`);
+    throw new GitfleetError(`Invalid limit: ${limit}.`);
   }
 
   return value;
@@ -40,7 +40,7 @@ function normalizeEvent(event: AuditLogResponse): AuditEvent {
 
 const list = async (options: AuditOptions) => {
   if (!options.org && !options.enterprise) {
-    throw new GhitgudError(ERROR_AUDIT_TARGET_REQUIRED);
+    throw new GitfleetError(ERROR_AUDIT_TARGET_REQUIRED);
   }
 
   logger.start("Loading audit events.");

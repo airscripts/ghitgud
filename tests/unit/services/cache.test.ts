@@ -8,7 +8,7 @@ import repoResolver from "@/core/repo";
 import artifactsApi from "@/api/artifacts";
 import workflowsApi from "@/api/workflows";
 import cacheService from "@/services/cache";
-import { GhitgudError } from "@/core/errors";
+import { GitfleetError } from "@/core/errors";
 import { makeArtifact, makeCacheEntry } from "../helpers/github";
 import { binaryResponse, jsonResponse } from "../helpers/response";
 
@@ -58,7 +58,7 @@ describe("cache service", () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "ghg-cache-"));
+    tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "gitfleet-cache-"));
     vi.mocked(repoResolver.resolveRepo).mockResolvedValue("owner/repo");
   });
 
@@ -152,7 +152,7 @@ describe("cache service", () => {
 
     await expect(
       cacheService.download("missing", { outputDir: tempDir }),
-    ).rejects.toThrow(GhitgudError);
+    ).rejects.toThrow(GitfleetError);
   });
 
   it("writes cache debug bundle metadata, logs, and artifacts", async () => {

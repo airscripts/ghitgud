@@ -1,6 +1,7 @@
 import type { TuiOperation } from "../types";
 import invitesService from "@/services/invites";
 import repositoryService from "@/services/repository";
+import { GitfleetError } from "@/core/errors";
 
 import {
   text,
@@ -17,7 +18,7 @@ const repoOperations: TuiOperation[] = [
     id: "repo.create",
     title: "Create Repository",
     workspace: "Repository Access",
-    command: "ghg repo create <name>",
+    command: "gitfleet repo create <name>",
     description: "Create a personal or organization repository.",
 
     inputs: [
@@ -63,7 +64,7 @@ const repoOperations: TuiOperation[] = [
     workspace: "Repository Access",
     title: "List Repositories",
     description: "List repositories for a user or organization.",
-    command: "ghg repo list",
+    command: "gitfleet repo list",
 
     inputs: [
       { key: "owner", label: "Owner", type: "string" },
@@ -91,7 +92,7 @@ const repoOperations: TuiOperation[] = [
     title: "View Repository",
     workspace: "Repository Access",
     description: "View repository details.",
-    command: "ghg repo view",
+    command: "gitfleet repo view",
     inputs: [repoInput],
 
     run: async ({ values }) =>
@@ -104,7 +105,7 @@ const repoOperations: TuiOperation[] = [
     title: "Clone Repository",
     workspace: "Repository Access",
     description: "Clone a repository locally.",
-    command: "ghg repo clone <repo>",
+    command: "gitfleet repo clone <repo>",
     inputs: [repoInput, { key: "depth", label: "Depth", type: "number" }],
 
     run: ({ values }) =>
@@ -120,7 +121,7 @@ const repoOperations: TuiOperation[] = [
       workspace: "Repository Access",
       id: `repo.${archived ? "archive" : "unarchive"}`,
       title: `${archived ? "Archive" : "Unarchive"} Repository`,
-      command: `ghg repo ${archived ? "archive" : "unarchive"} <repo>`,
+      command: `gitfleet repo ${archived ? "archive" : "unarchive"} <repo>`,
       description: `${archived ? "Archive" : "Unarchive"} a repository.`,
       inputs: [repoInput],
 
@@ -135,7 +136,7 @@ const repoOperations: TuiOperation[] = [
     title: "Rename Repository",
     workspace: "Repository Access",
     description: "Rename a repository.",
-    command: "ghg repo rename <repo> <new-name>",
+    command: "gitfleet repo rename <repo> <new-name>",
 
     inputs: [
       repoInput,
@@ -154,7 +155,7 @@ const repoOperations: TuiOperation[] = [
     title: "Star Repository",
     workspace: "Repository Access",
     description: "Star a repository.",
-    command: "ghg repo star <repo>",
+    command: "gitfleet repo star <repo>",
     inputs: [repoInput],
     run: ({ values }) => repositoryService.star(requiredText(values, "repo")),
   },
@@ -164,7 +165,7 @@ const repoOperations: TuiOperation[] = [
     id: "repo.unstar",
     title: "Unstar Repository",
     workspace: "Repository Access",
-    command: "ghg repo unstar <repo>",
+    command: "gitfleet repo unstar <repo>",
     description: "Remove a star from a repository.",
     inputs: [repoInput],
     run: ({ values }) => repositoryService.unstar(requiredText(values, "repo")),
@@ -176,7 +177,7 @@ const repoOperations: TuiOperation[] = [
     title: "Delete Repository",
     workspace: "Repository Access",
     description: "Permanently delete a repository.",
-    command: "ghg repo delete <repo> --yes",
+    command: "gitfleet repo delete <repo> --yes",
     inputs: [repoInput],
     run: ({ values }) => repositoryService.remove(requiredText(values, "repo")),
   },
@@ -187,7 +188,7 @@ const repoOperations: TuiOperation[] = [
     title: "Edit Repository",
     workspace: "Repository Access",
     description: "Edit repository metadata.",
-    command: "ghg repo edit <repo>",
+    command: "gitfleet repo edit <repo>",
 
     inputs: [
       repoInput,
@@ -214,7 +215,7 @@ const repoOperations: TuiOperation[] = [
     title: "Fork Repository",
     workspace: "Repository Access",
     description: "Fork and optionally clone a repository.",
-    command: "ghg repo fork <repo>",
+    command: "gitfleet repo fork <repo>",
 
     inputs: [
       repoInput,
@@ -241,7 +242,7 @@ const repoOperations: TuiOperation[] = [
     title: "Sync Repository",
     workspace: "Repository Access",
     description: "Fast-forward a branch from its upstream.",
-    command: "ghg repo sync",
+    command: "gitfleet repo sync",
     inputs: [repoInput, { key: "branch", label: "Branch", type: "string" }],
 
     run: async ({ values }) => {
@@ -256,7 +257,7 @@ const repoOperations: TuiOperation[] = [
     title: "Invite Collaborator",
     workspace: "Repository Access",
     description: "Invite a collaborator to a repository.",
-    command: "ghg repo invite --user <user> --role <role>",
+    command: "gitfleet repo invite --user <user> --role <role>",
 
     inputs: [
       repoInput,
@@ -275,7 +276,9 @@ const repoOperations: TuiOperation[] = [
       const parts = repo.split("/");
 
       if (parts.length !== 2) {
-        throw new Error("Repository must be in owner/repo format.");
+        throw new GitfleetError(
+          "Repository must be in namespace/repository format.",
+        );
       }
 
       return invitesService.invite(
@@ -293,7 +296,7 @@ const repoOperations: TuiOperation[] = [
     workspace: "Repository Access",
     title: "Grant Team Access",
     description: "Grant team access to a repository.",
-    command: "ghg repo grant --team <team> --role <role>",
+    command: "gitfleet repo grant --team <team> --role <role>",
 
     inputs: [
       repoInput,
@@ -312,7 +315,9 @@ const repoOperations: TuiOperation[] = [
       const parts = repo.split("/");
 
       if (parts.length !== 2) {
-        throw new Error("Repository must be in owner/repo format.");
+        throw new GitfleetError(
+          "Repository must be in namespace/repository format.",
+        );
       }
 
       return invitesService.grant(

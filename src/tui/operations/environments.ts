@@ -1,5 +1,5 @@
 import type { TuiOperation } from "../types";
-import { GhitgudError } from "@/core/errors";
+import { GitfleetError } from "@/core/errors";
 import environmentsService from "@/services/environments";
 
 import {
@@ -15,7 +15,7 @@ const environmentOperations: TuiOperation[] = [
     id: "environment.list",
     workspace: "Environments",
     title: "List Environments",
-    command: "ghg environment list",
+    command: "gitfleet environment list",
     description: "List configured environments.",
     inputs: [repoInput],
 
@@ -30,7 +30,7 @@ const environmentOperations: TuiOperation[] = [
     id: "environment.create",
     workspace: "Environments",
     title: "Create Environment",
-    command: "ghg environment create --name <name>",
+    command: "gitfleet environment create --name <name>",
     description: "Create an environment with optional wait timer.",
 
     inputs: [
@@ -62,7 +62,7 @@ const environmentOperations: TuiOperation[] = [
     workspace: "Environments",
     title: "List Protection Rules",
     id: "environment.protection.list",
-    command: "ghg environment protection list --env <name>",
+    command: "gitfleet environment protection list --env <name>",
     description: "List protection rules for an environment.",
 
     inputs: [
@@ -86,7 +86,7 @@ const environmentOperations: TuiOperation[] = [
     title: "Add Protection Rule",
     id: "environment.protection.add",
     description: "Add a protection rule to an environment.",
-    command: "ghg environment protection add --env <name> --type <type>",
+    command: "gitfleet environment protection add --env <name> --type <type>",
 
     inputs: [
       repoInput,
@@ -110,7 +110,7 @@ const environmentOperations: TuiOperation[] = [
       try {
         parsed = JSON.parse(requiredText(values, "value"));
       } catch {
-        throw new GhitgudError("Invalid JSON value.");
+        throw new GitfleetError("Invalid JSON value.");
       }
 
       return environmentsService.addProtectionRule(repo, {
@@ -130,7 +130,8 @@ const environmentOperations: TuiOperation[] = [
     title: "Remove Protection Rule",
     id: "environment.protection.remove",
     description: "Remove a protection rule from an environment.",
-    command: "ghg environment protection remove --env <name> --rule-id <id>",
+    command:
+      "gitfleet environment protection remove --env <name> --rule-id <id>",
 
     inputs: [
       repoInput,

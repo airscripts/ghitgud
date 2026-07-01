@@ -1,7 +1,7 @@
 import { Command } from "commander";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
-import leaksCommand from "@/commands/leaks";
+import leaksCommand from "@/commands/security-leaks";
 
 vi.mock("@/services/leaks", () => ({
   default: {
@@ -25,7 +25,7 @@ describe("leaks command", () => {
     const program = new Command();
     leaksCommand.register(program);
 
-    const leaks = program.commands.find(
+    const leaks = program.commands[0]?.commands.find(
       (command) => command.name() === "leaks",
     );
 
@@ -42,7 +42,7 @@ describe("leaks command", () => {
     leaksCommand.register(program);
 
     await expect(
-      program.parseAsync(["node", "test", "leaks", "alerts"]),
+      program.parseAsync(["node", "test", "security", "leaks", "alerts"]),
     ).rejects.toThrow("No repository target provided.");
   });
 });

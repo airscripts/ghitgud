@@ -1,9 +1,9 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
-import client from "@/api/client";
+import client from "@/providers/github/client";
 import checks from "@/api/checks";
 
-vi.mock("@/api/client", () => ({
+vi.mock("@/providers/github/client", () => ({
   default: {
     getTokenRequired: vi.fn(),
   },
@@ -13,7 +13,7 @@ describe("checks api", () => {
   beforeEach(() => vi.clearAllMocks());
 
   it("gets a check run", async () => {
-    vi.mocked(client.getTokenRequired).mockResolvedValue({ ok: true });
+    vi.mocked(client.getTokenRequired).mockResolvedValue(new Response());
     await checks.getCheckRun(
       "https://api.github.com/repos/owner/repo/check-runs/123",
     );
@@ -23,7 +23,7 @@ describe("checks api", () => {
   });
 
   it("lists check run annotations", async () => {
-    vi.mocked(client.getTokenRequired).mockResolvedValue({ ok: true });
+    vi.mocked(client.getTokenRequired).mockResolvedValue(new Response());
     await checks.listCheckRunAnnotations(
       "https://api.github.com/repos/owner/repo/check-runs/123",
     );

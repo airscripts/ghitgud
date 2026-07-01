@@ -191,7 +191,7 @@ describe("codespace service", () => {
 
   it("throws when deleting codespace without yes flag", async () => {
     await expect(codespaceService.delete("cs-123")).rejects.toThrow(
-      "Codespace deletion requires --yes.",
+      "Development environment deletion requires --yes.",
     );
   });
 });

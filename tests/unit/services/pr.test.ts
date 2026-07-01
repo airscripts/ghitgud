@@ -3,7 +3,7 @@ import prService from "@/services/pr";
 import api from "@/api/pr";
 import git from "@/core/git";
 import logger from "@/core/logger";
-import { GhitgudError } from "@/core/errors";
+import { GitfleetError } from "@/core/errors";
 
 vi.mock("@/api/pr", () => ({
   default: {
@@ -286,7 +286,7 @@ describe("pr service", () => {
       (git.getCurrentBranch as Mock).mockReturnValue("fix");
 
       await expect(prService.push(1, "owner/repo", false)).rejects.toThrow(
-        GhitgudError,
+        GitfleetError,
       );
 
       await expect(prService.push(1, "owner/repo", false)).rejects.toThrow(
@@ -300,7 +300,7 @@ describe("pr service", () => {
       (git.getCurrentBranch as Mock).mockReturnValue("fix");
 
       await expect(prService.push(1, "owner/repo", false)).rejects.toThrow(
-        GhitgudError,
+        GitfleetError,
       );
 
       await expect(prService.push(1, "owner/repo", false)).rejects.toThrow(
@@ -317,7 +317,7 @@ describe("pr service", () => {
       (git.hasDiverged as Mock).mockReturnValue(true);
 
       await expect(prService.push(1, "owner/repo", false)).rejects.toThrow(
-        GhitgudError,
+        GitfleetError,
       );
 
       await expect(prService.push(1, "owner/repo", false)).rejects.toThrow(

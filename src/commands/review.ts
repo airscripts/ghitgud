@@ -4,11 +4,11 @@ import parse from "@/core/parse";
 import prompt from "@/core/prompt";
 import command from "@/core/command";
 import repoResolver from "@/core/repo";
-import { GhitgudError } from "@/core/errors";
+import { GitfleetError } from "@/core/errors";
 import reviewService from "@/services/review";
 
 import {
-  ERROR_REVIEW_PR_REQUIRED,
+  ERROR_CHANGE_NUMBER_REQUIRED,
   ERROR_REVIEW_BODY_REQUIRED,
 } from "@/core/constants";
 
@@ -56,22 +56,22 @@ const promptNumber = async (
 
 const promptPr = (value: string | undefined): Promise<number> => {
   if (!value) {
-    prompt.guardNonInteractive("PR number is required.");
-    throw new GhitgudError(ERROR_REVIEW_PR_REQUIRED);
+    prompt.guardNonInteractive("Change number is required.");
+    throw new GitfleetError(ERROR_CHANGE_NUMBER_REQUIRED);
   }
 
   return promptNumber(
     value,
-    "Enter the PR number:",
+    "Enter the change number:",
     { placeholder: "42" },
-    "PR",
+    "change",
   );
 };
 
 const promptThreadId = (value: string | undefined): Promise<number> => {
   if (!value) {
     prompt.guardNonInteractive("Thread ID is required.");
-    throw new GhitgudError("Thread id is required.");
+    throw new GitfleetError("Thread id is required.");
   }
 
   return promptNumber(
@@ -104,7 +104,7 @@ const promptLine = (value: string | undefined): Promise<number> => {
 const promptCommentBody = (value: string | undefined): Promise<string> => {
   if (!value) {
     prompt.guardNonInteractive("Comment body is required.");
-    throw new GhitgudError(ERROR_REVIEW_BODY_REQUIRED);
+    throw new GitfleetError(ERROR_REVIEW_BODY_REQUIRED);
   }
 
   return promptValue(value, "Enter the comment body:", {
@@ -120,11 +120,11 @@ const promptReplacement = (value: string | undefined): Promise<string> =>
 const register = (program: Command) => {
   const review = program
     .command("review")
-    .description("Perform code review actions on pull requests.");
+    .description("Perform code review actions on proposed changes.");
 
   review
     .command("comment")
-    .description("Add a line-specific comment to a pull request.")
+    .description("Add a line-specific comment to a proposed change.")
     .argument("[pr]", "Pull request number")
     .option("--file <path>", "File path to comment on")
     .option("--line <number>", "Line number to comment on")
@@ -152,7 +152,7 @@ const register = (program: Command) => {
 
   review
     .command("threads")
-    .description("List all review threads on a pull request.")
+    .description("List all review threads on a proposed change.")
     .argument("[pr]", "Pull request number")
     .option("--repo <repo>", "Repository (owner/repo)")
     .action(async (prArg: string | undefined, options: ReviewOptions) => {
@@ -183,7 +183,7 @@ const register = (program: Command) => {
 
   review
     .command("suggest")
-    .description("Create a suggestion comment on a pull request.")
+    .description("Create a suggestion comment on a proposed change.")
     .argument("[pr]", "Pull request number")
     .option("--file <path>", "File path")
     .option("--line <number>", "Line number")
@@ -209,7 +209,7 @@ const register = (program: Command) => {
 
   review
     .command("apply")
-    .description("Apply all suggestions from a pull request as commits.")
+    .description("Apply all suggestions from a proposed change as commits.")
     .argument("[pr]", "Pull request number")
     .option("--repo <repo>", "Repository (owner/repo)")
     .option("--push", "Push after applying", false)

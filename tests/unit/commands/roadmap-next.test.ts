@@ -2,9 +2,9 @@ import { Command } from "commander";
 import { describe, expect, it, vi } from "vitest";
 
 import apiCommand from "@/commands/api";
-import queueCommand from "@/commands/queue";
-import statusCommand from "@/commands/status";
-import rulesetCommand from "@/commands/ruleset";
+import queueCommand from "@/commands/change-queue";
+import statusCommand from "@/commands/inbox-status";
+import rulesetCommand from "@/commands/policy";
 
 vi.mock("@/services/api", () => ({ default: { request: vi.fn() } }));
 vi.mock("@/services/status", () => ({ default: { status: vi.fn() } }));
@@ -36,7 +36,7 @@ describe("next roadmap commands", () => {
     statusCommand.register(program);
     expect(program.commands.map((command) => command.name())).toEqual([
       "api",
-      "status",
+      "inbox",
     ]);
   });
 
@@ -59,7 +59,7 @@ describe("next roadmap commands", () => {
     const program = new Command();
     queueCommand.register(program);
     expect(
-      program.commands[0].commands.map((command) => command.name()),
+      program.commands[0].commands[0].commands.map((command) => command.name()),
     ).toEqual(["list", "status", "add", "remove", "history"]);
   });
 });

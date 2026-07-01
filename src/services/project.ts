@@ -3,7 +3,7 @@ import pc from "picocolors";
 import api from "@/api/projects";
 import output from "@/core/output";
 import logger from "@/core/logger";
-import { GhitgudError } from "@/core/errors";
+import { GitfleetError } from "@/core/errors";
 import {
   ProjectBoard,
   ProjectBoardItem,
@@ -51,7 +51,7 @@ interface ProjectPayload {
 function getDefaultOwner(repo: string): string {
   const [owner] = repo.split("/");
   if (!owner) {
-    throw new GhitgudError("Could not resolve project owner.");
+    throw new GitfleetError("Could not resolve project owner.");
   }
 
   return owner;
@@ -131,7 +131,7 @@ const board = async (
 ) => {
   const number = Number(projectNumber);
   if (!Number.isInteger(number) || number <= 0) {
-    throw new GhitgudError(`Invalid project id: ${projectNumber}`);
+    throw new GitfleetError(`Invalid project id: ${projectNumber}`);
   }
 
   const owner = options.owner ?? getDefaultOwner(options.repo ?? "");
@@ -141,14 +141,14 @@ const board = async (
   const payload = (await response.json()) as ProjectResponse;
 
   if (payload.errors?.length) {
-    throw new GhitgudError(payload.errors[0].message);
+    throw new GitfleetError(payload.errors[0].message);
   }
 
   const project =
     payload.data?.organization?.projectV2 ?? payload.data?.user?.projectV2;
 
   if (!project) {
-    throw new GhitgudError(`Project ${owner}/${number} was not found.`);
+    throw new GitfleetError(`Project ${owner}/${number} was not found.`);
   }
 
   const metadata = buildBoard(owner, number, project);
@@ -166,7 +166,8 @@ const readGraph = async (
   response: Response,
 ): Promise<Record<string, unknown>> => {
   const payload = (await response.json()) as GraphPayload;
-  if (payload.errors?.length) throw new GhitgudError(payload.errors[0].message);
+  if (payload.errors?.length)
+    throw new GitfleetError(payload.errors[0].message);
   return payload.data ?? {};
 };
 
@@ -182,16 +183,16 @@ const resolveOwner = async (options: { owner?: string; repo?: string }) => {
   const owner = organization ?? user;
 
   if (requested && !owner) {
-    throw new GhitgudError(`Project owner not found: ${requested}.`);
+    throw new GitfleetError(`Project owner not found: ${requested}.`);
   }
 
   if (owner) return owner;
   if (!viewer?.login)
-    throw new GhitgudError("Could not resolve project owner.");
+    throw new GitfleetError("Could not resolve project owner.");
 
   const viewerData = await readGraph(await api.owner(viewer.login));
   const viewerOwner = viewerData.user as { id: string; login: string } | null;
-  if (!viewerOwner) throw new GhitgudError("Could not resolve project owner.");
+  if (!viewerOwner) throw new GitfleetError("Could not resolve project owner.");
   return viewerOwner;
 };
 
@@ -213,7 +214,7 @@ const getProject = async (
 ) => {
   const number = Number(value);
   if (!Number.isInteger(number) || number <= 0) {
-    throw new GhitgudError(`Invalid project id: ${value}`);
+    throw new GitfleetError(`Invalid project id: ${value}`);
   }
   const owner = await resolveOwner(options);
   const data = await readGraph(
@@ -226,7 +227,7 @@ const getProject = async (
     unknown
   > | null;
   if (!project)
-    throw new GhitgudError(`Project ${owner.login}/${number} was not found.`);
+    throw new GitfleetError(`Project ${owner.login}/${number} was not found.`);
   return { owner: owner.login, project };
 };
 
@@ -240,7 +241,7 @@ const list = async (options: {
     options.limit < 1 ||
     options.limit > 100
   ) {
-    throw new GhitgudError("Project limit must be between 1 and 100.");
+    throw new GitfleetError("Project limit must be between 1 and 100.");
   }
   const owner = await resolveOwner(options);
   const data = await readGraph(await api.list(owner.login, options.limit));
@@ -280,7 +281,7 @@ const create = async (
   title: string,
   options: { owner?: string; repo?: string },
 ) => {
-  if (!title.trim()) throw new GhitgudError("Project title is required.");
+  if (!title.trim()) throw new GitfleetError("Project title is required.");
   const owner = await resolveOwner(options);
   const data = await readGraph(await api.create(owner.id, title));
   const created = (
@@ -369,7 +370,7 @@ const itemList = async (
     options.limit < 1 ||
     options.limit > 100
   ) {
-    throw new GhitgudError("Project item limit must be between 1 and 100.");
+    throw new GitfleetError("Project item limit must be between 1 and 100.");
   }
   const { owner, project } = await getProject(value, options);
   const items = normalizeItems(project);
@@ -396,7 +397,7 @@ const itemAdd = async (
   const repository = issueData.repository as { issue?: { id?: string } } | null;
   const issueId = repository?.issue?.id;
   if (!issueId)
-    throw new GhitgudError(
+    throw new GitfleetError(
       `Issue ${options.repo}#${issueNumber} was not found.`,
     );
   const data = await readGraph(await api.addItem(String(project.id), issueId));
@@ -447,7 +448,8 @@ const setLinked = async (
   const { owner, project } = await getProject(value, options);
   const repoData = await readGraph(await api.repository(repo));
   const repository = repoData.repository as { id?: string } | null;
-  if (!repository?.id) throw new GhitgudError(`Repository not found: ${repo}.`);
+  if (!repository?.id)
+    throw new GitfleetError(`Repository not found: ${repo}.`);
   await readGraph(
     await (linked
       ? api.link(String(project.id), repository.id)

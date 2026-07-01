@@ -14,7 +14,7 @@ const discussionOperations: TuiOperation[] = [
     id: "discussion.list",
     workspace: "Discussions",
     title: "List Discussions",
-    command: "ghg discussion list",
+    command: "gitfleet discussion list",
     description: "List discussions with optional category filter.",
     inputs: [
       repoInput,
@@ -35,7 +35,7 @@ const discussionOperations: TuiOperation[] = [
     id: "discussion.view",
     workspace: "Discussions",
     title: "View Discussion",
-    command: "ghg discussion view <number>",
+    command: "gitfleet discussion view <number>",
     description: "View a discussion and its comments.",
 
     inputs: [
@@ -60,7 +60,7 @@ const discussionOperations: TuiOperation[] = [
     workspace: "Discussions",
     title: "Create Discussion",
     description: "Create a new discussion.",
-    command: "ghg discussion create --title <title> --category <category>",
+    command: "gitfleet discussion create --title <title> --category <category>",
 
     inputs: [
       repoInput,
@@ -86,7 +86,7 @@ const discussionOperations: TuiOperation[] = [
     workspace: "Discussions",
     id: "discussion.comment",
     description: "Add a comment to a discussion.",
-    command: "ghg discussion comment <number> --body <body>",
+    command: "gitfleet discussion comment <number> --body <body>",
 
     inputs: [
       repoInput,
@@ -116,7 +116,7 @@ const discussionOperations: TuiOperation[] = [
     workspace: "Discussions",
     title: "Close Discussion",
     description: "Close a discussion.",
-    command: "ghg discussion close <number>",
+    command: "gitfleet discussion close <number>",
 
     inputs: [
       repoInput,
@@ -142,7 +142,7 @@ const discussionOperations: TuiOperation[] = [
     workspace: "Discussions",
     title: "List Categories",
     id: "discussion.categories",
-    command: "ghg discussion categories",
+    command: "gitfleet discussion categories",
     description: "List available discussion categories.",
     inputs: [repoInput],
 

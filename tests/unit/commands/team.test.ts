@@ -1,7 +1,7 @@
 import { Command } from "commander";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
-import teamCommand from "@/commands/team";
+import teamCommand from "@/commands/access-team";
 
 vi.mock("@/services/team", () => ({
   default: {
@@ -42,7 +42,7 @@ describe("team command", () => {
     const program = new Command();
     teamCommand.register(program);
 
-    const cmd = program.commands.find((c) => c.name() === "team");
+    const cmd = program.commands[0]?.commands.find((c) => c.name() === "team");
     expect(cmd).toBeDefined();
 
     const subcommands = cmd!.commands.map((c) => c.name());
@@ -58,7 +58,7 @@ describe("team command", () => {
     teamCommand.register(program);
 
     await expect(
-      program.parseAsync(["node", "test", "team", "list"]),
+      program.parseAsync(["node", "test", "access", "team", "list"]),
     ).rejects.toThrow("Organization name is required.");
   });
 
@@ -68,7 +68,15 @@ describe("team command", () => {
     teamCommand.register(program);
 
     await expect(
-      program.parseAsync(["node", "test", "team", "list", "--org", "   "]),
+      program.parseAsync([
+        "node",
+        "test",
+        "access",
+        "team",
+        "list",
+        "--org",
+        "   ",
+      ]),
     ).rejects.toThrow("Organization name is required.");
   });
 
@@ -78,7 +86,15 @@ describe("team command", () => {
     teamCommand.register(program);
 
     await expect(
-      program.parseAsync(["node", "test", "team", "create", "--name", "ops"]),
+      program.parseAsync([
+        "node",
+        "test",
+        "access",
+        "team",
+        "create",
+        "--name",
+        "ops",
+      ]),
     ).rejects.toThrow("Organization name is required.");
   });
 
@@ -91,6 +107,7 @@ describe("team command", () => {
       program.parseAsync([
         "node",
         "test",
+        "access",
         "team",
         "create",
         "--org",
@@ -108,6 +125,7 @@ describe("team command", () => {
       program.parseAsync([
         "node",
         "test",
+        "access",
         "team",
         "add",
         "--team",
@@ -127,6 +145,7 @@ describe("team command", () => {
       program.parseAsync([
         "node",
         "test",
+        "access",
         "team",
         "add",
         "--org",
@@ -146,6 +165,7 @@ describe("team command", () => {
       program.parseAsync([
         "node",
         "test",
+        "access",
         "team",
         "add",
         "--org",
@@ -165,6 +185,7 @@ describe("team command", () => {
       program.parseAsync([
         "node",
         "test",
+        "access",
         "team",
         "remove",
         "--team",
@@ -184,6 +205,7 @@ describe("team command", () => {
       program.parseAsync([
         "node",
         "test",
+        "access",
         "team",
         "remove",
         "--org",
@@ -203,6 +225,7 @@ describe("team command", () => {
       program.parseAsync([
         "node",
         "test",
+        "access",
         "team",
         "remove",
         "--org",

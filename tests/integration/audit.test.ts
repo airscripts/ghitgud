@@ -1,7 +1,7 @@
 import { Command } from "commander";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
-import auditCommand from "@/commands/audit";
+import auditCommand from "@/commands/security-audit";
 
 vi.mock("@/services/audit", () => ({
   default: {
@@ -24,6 +24,7 @@ describe("integration > audit command", () => {
     await program.parseAsync([
       "node",
       "test",
+      "security",
       "audit",
       "--org",
       "airscripts",
@@ -50,7 +51,14 @@ describe("integration > audit command", () => {
     const program = new Command();
     program.exitOverride();
     auditCommand.register(program);
-    await program.parseAsync(["node", "test", "audit", "--org", "airscripts"]);
+    await program.parseAsync([
+      "node",
+      "test",
+      "security",
+      "audit",
+      "--org",
+      "airscripts",
+    ]);
 
     expect(auditService.list).toHaveBeenCalledWith(
       expect.objectContaining({ order: "desc" }),

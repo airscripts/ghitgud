@@ -7,7 +7,7 @@ const syncOperations: TuiOperation[] = [
     workspace: "Workspaces",
     id: "repo.syncall",
     title: "Sync All Repos",
-    command: "ghg repo syncall",
+    command: "gitfleet repo syncall",
     description: "Pull latest changes for all local repositories.",
     mutates: true,
     inputs: [{ key: "root", label: "Root directory", type: "string" }],
@@ -18,7 +18,7 @@ const syncOperations: TuiOperation[] = [
     workspace: "Workspaces",
     id: "repo.statusall",
     title: "Status All Repos",
-    command: "ghg repo statusall",
+    command: "gitfleet repo statusall",
     description: "Check status across multiple local repositories.",
     inputs: [{ key: "root", label: "Root directory", type: "string" }],
     run: async ({ values }) =>

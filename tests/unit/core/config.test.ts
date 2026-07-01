@@ -4,7 +4,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 
 vi.mock("os", () => ({
   default: {
-    homedir: () => "/tmp/ghitgud-home",
+    homedir: () => "/tmp/gitfleet-home",
   },
 }));
 
@@ -12,8 +12,8 @@ import git from "@/core/git";
 
 import {
   ERROR_NO_TOKEN,
-  GHITGUD_FOLDER,
-  GHITGUD_RC_FILE,
+  GITFLEET_FOLDER,
+  GITFLEET_RC_FILE,
   CREDENTIALS_FILE,
 } from "@/core/constants";
 
@@ -29,18 +29,18 @@ vi.mock("@/core/git", () => ({
 }));
 
 const originalEnv = { ...process.env };
-const TEST_HOME = "/tmp/ghitgud-home";
-const credentialsPath = path.join(GHITGUD_FOLDER, CREDENTIALS_FILE);
-const repoRoot = path.join(TEST_HOME, ".config", "ghitgud", "repo");
-const repoRcPath = path.join(repoRoot, GHITGUD_RC_FILE);
+const TEST_HOME = "/tmp/gitfleet-home";
+const credentialsPath = path.join(GITFLEET_FOLDER, CREDENTIALS_FILE);
+const repoRoot = path.join(TEST_HOME, ".config", "gitfleet", "repo");
+const repoRcPath = path.join(repoRoot, GITFLEET_RC_FILE);
 
 describe("config", () => {
   beforeEach(() => {
-    delete process.env.GHITGUD_GITHUB_TOKEN;
-    delete process.env.GHITGUD_PROFILE;
+    delete process.env.GITFLEET_GITHUB_TOKEN;
+    delete process.env.GITFLEET_PROFILE;
 
-    if (fs.existsSync(GHITGUD_FOLDER)) {
-      fs.rmSync(GHITGUD_FOLDER, { recursive: true });
+    if (fs.existsSync(GITFLEET_FOLDER)) {
+      fs.rmSync(GITFLEET_FOLDER, { recursive: true });
     }
 
     (git.getRepoRoot as ReturnType<typeof vi.fn>).mockImplementation(() => {
@@ -50,8 +50,8 @@ describe("config", () => {
 
   afterEach(() => {
     process.env = { ...originalEnv };
-    if (fs.existsSync(GHITGUD_FOLDER)) {
-      fs.rmSync(GHITGUD_FOLDER, { recursive: true });
+    if (fs.existsSync(GITFLEET_FOLDER)) {
+      fs.rmSync(GITFLEET_FOLDER, { recursive: true });
     }
 
     vi.restoreAllMocks();
@@ -65,7 +65,7 @@ describe("config", () => {
     });
 
     it("should return value from environment variable", async () => {
-      process.env.GHITGUD_GITHUB_TOKEN = "my-token";
+      process.env.GITFLEET_GITHUB_TOKEN = "my-token";
       vi.resetModules();
       const { default: config } = await import("@/core/config");
       expect(config.getToken()).toBe("my-token");
@@ -98,8 +98,8 @@ describe("config", () => {
       expect(mode).toBe(0o600);
     });
 
-    it("should migrate legacy credentials into the new profile format on write", async () => {
-      fs.mkdirSync(GHITGUD_FOLDER, { recursive: true });
+    it("should reject pre-profile credential shapes", async () => {
+      fs.mkdirSync(GITFLEET_FOLDER, { recursive: true });
 
       fs.writeFileSync(
         credentialsPath,
@@ -108,17 +108,9 @@ describe("config", () => {
 
       vi.resetModules();
       const { default: config } = await import("@/core/config");
-      config.write("token", "new-token");
-
-      const data = JSON.parse(fs.readFileSync(credentialsPath, "utf8"));
-      expect(data).toEqual({
-        activeProfile: "default",
-        profiles: {
-          default: {
-            token: "new-token",
-          },
-        },
-      });
+      expect(() => config.write("token", "new-token")).toThrow(
+        "Invalid credentials file.",
+      );
     });
 
     it("should return null for non-existent key", async () => {
@@ -151,7 +143,7 @@ describe("config", () => {
     it("should resolve repo-local profiles before the active profile", async () => {
       fs.mkdirSync(repoRoot, { recursive: true });
       fs.writeFileSync(repoRcPath, JSON.stringify({ profile: "work" }));
-      fs.mkdirSync(GHITGUD_FOLDER, { recursive: true });
+      fs.mkdirSync(GITFLEET_FOLDER, { recursive: true });
 
       fs.writeFileSync(
         credentialsPath,
@@ -177,7 +169,7 @@ describe("config", () => {
     });
 
     it("should resolve the stored active profile when no repo-local profile is set", async () => {
-      fs.mkdirSync(GHITGUD_FOLDER, { recursive: true });
+      fs.mkdirSync(GITFLEET_FOLDER, { recursive: true });
 
       fs.writeFileSync(
         credentialsPath,
@@ -201,7 +193,7 @@ describe("config", () => {
     });
 
     it("should set the active profile explicitly", async () => {
-      fs.mkdirSync(GHITGUD_FOLDER, { recursive: true });
+      fs.mkdirSync(GITFLEET_FOLDER, { recursive: true });
       fs.writeFileSync(
         credentialsPath,
         JSON.stringify({
@@ -227,7 +219,7 @@ describe("config", () => {
 
   describe("has", () => {
     it("should return true when env var is set", async () => {
-      process.env.GHITGUD_GITHUB_TOKEN = "my-token";
+      process.env.GITFLEET_GITHUB_TOKEN = "my-token";
       vi.resetModules();
       const { default: config } = await import("@/core/config");
       expect(config.has("token")).toBe(true);

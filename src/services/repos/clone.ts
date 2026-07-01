@@ -3,7 +3,7 @@ import { execSync } from "child_process";
 import service from "./index";
 import output from "@/core/output";
 import { RepoTargetOptions } from "@/types";
-import { GhitgudError } from "@/core/errors";
+import { GitfleetError } from "@/core/errors";
 
 interface CloneOptions extends RepoTargetOptions {
   dryRun?: boolean;
@@ -77,7 +77,7 @@ const clone = async (options: CloneOptions) => {
       execSync(`git clone ${cloneUrl}`, { stdio: "pipe" });
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
-      throw new GhitgudError(`Clone failed: ${message}`);
+      throw new GitfleetError(`Clone failed: ${message}`);
     }
 
     return {

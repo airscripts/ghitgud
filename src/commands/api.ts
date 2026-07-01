@@ -10,7 +10,7 @@ const collect = (value: string, previous: string[]): string[] => [
 const register = (program: Command) => {
   program
     .command("api <endpoint>")
-    .description("Make an authenticated GitHub REST API request.")
+    .description("Make an authenticated request to the active provider API.")
     .option("--method <method>", "HTTP method")
     .option("--field <key=value>", "Request field", collect, [])
     .option("--paginate", "Fetch and flatten every response page")

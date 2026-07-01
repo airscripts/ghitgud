@@ -97,7 +97,7 @@ const markDone = async (id: string) => {
 };
 
 const activity = async (repo?: string) => {
-  logger.start("Loading your GitHub activity.");
+  logger.start("Loading your provider activity.");
 
   const [issuesRes, reviewsRes, mentionsRes] = await Promise.all([
     api.assignedIssues(repo),

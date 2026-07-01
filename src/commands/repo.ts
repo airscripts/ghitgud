@@ -6,7 +6,8 @@ import repoResolver from "@/core/repo";
 import inviteService from "@/services/invites";
 import repositoryService from "@/services/repository";
 import licensesService from "@/services/licenses";
-import { ConfigError, GhitgudError } from "@/core/errors";
+import syncService from "@/services/sync";
+import { ConfigError, GitfleetError } from "@/core/errors";
 
 const VALID_REPO_ROLES = new Set([
   "pull",
@@ -18,7 +19,7 @@ const VALID_REPO_ROLES = new Set([
 
 const validateRepoRole = (value: string): string => {
   if (!VALID_REPO_ROLES.has(value)) {
-    throw new Error(
+    throw new GitfleetError(
       `Invalid role: ${value}. Expected: ${Array.from(VALID_REPO_ROLES).join(", ")}.`,
     );
   }
@@ -46,7 +47,7 @@ const parsePositiveInt = (value: string): number => {
   const parsed = Number(value);
 
   if (!Number.isInteger(parsed) || parsed <= 0) {
-    throw new GhitgudError(`Invalid positive integer: ${value}.`);
+    throw new GitfleetError(`Invalid positive integer: ${value}.`);
   }
 
   return parsed;
@@ -56,7 +57,7 @@ const parseChoice =
   <T extends string>(choices: readonly T[]) =>
   (value: string): T => {
     if (!choices.includes(value as T)) {
-      throw new GhitgudError(
+      throw new GitfleetError(
         `Invalid value: ${value}. Expected: ${choices.join(", ")}.`,
       );
     }
@@ -73,11 +74,11 @@ const register = (program: Command) => {
     "after",
     `
 Examples:
-  ghg repo create demo --private
-  ghg repo list --owner airscripts --owner-type org
-  ghg repo view airscripts/ghitgud
-  ghg repo invite --repo airscripts/ghitgud --user octocat --role push
-  ghg repo grant --repo airscripts/ghitgud --team ops --role admin
+  gitfleet repo create demo --private
+  gitfleet repo list --owner airscripts --owner-type org
+  gitfleet repo view airscripts/gitfleet
+  gitfleet repo invite --repo airscripts/gitfleet --user octocat --role push
+  gitfleet repo grant --repo airscripts/gitfleet --team ops --role admin
 `,
   );
 
@@ -104,7 +105,7 @@ Examples:
       ].filter(Boolean);
 
       if (selected.length > 1) {
-        throw new GhitgudError("Visibility flags are mutually exclusive.");
+        throw new GitfleetError("Visibility flags are mutually exclusive.");
       }
 
       const visibility = options.private
@@ -259,7 +260,7 @@ Examples:
       const username = options.user || (await prompt.text("Username:"));
 
       if (!username.trim()) {
-        throw new GhitgudError("Username is required.");
+        throw new GitfleetError("Username is required.");
       }
 
       await command.run(() =>
@@ -284,7 +285,7 @@ Examples:
       const teamSlug = options.team || (await prompt.text("Team slug:"));
 
       if (!teamSlug.trim()) {
-        throw new GhitgudError("Team slug is required.");
+        throw new GitfleetError("Team slug is required.");
       }
 
       await command.run(() =>
@@ -297,7 +298,6 @@ Examples:
     .description("Pull latest changes for all local repositories.")
     .option("--root <dir>", "Root directory to scan", process.cwd())
     .action(async (options: { root?: string }) => {
-      const { default: syncService } = await import("@/services/sync");
       await command.run(() => syncService.syncall({ root: options.root }));
     });
 
@@ -306,7 +306,6 @@ Examples:
     .description("Check status across multiple local repositories.")
     .option("--root <dir>", "Root directory to scan", process.cwd())
     .action(async (options: { root?: string }) => {
-      const { default: syncService } = await import("@/services/sync");
       await command.run(() => syncService.statusall({ root: options.root }));
     });
 

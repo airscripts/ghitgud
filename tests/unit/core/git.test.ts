@@ -168,9 +168,9 @@ describe("git core", () => {
       git.parseRepoFromRemoteUrl("https://github.com/owner/repo.git"),
     ).toBe("owner/repo");
 
-    expect(git.parseRepoFromRemoteUrl("https://example.com/repo.git")).toBe(
-      null,
-    );
+    expect(
+      git.parseRepoFromRemoteUrl("https://example.com/owner/repo.git"),
+    ).toBe("owner/repo");
   });
 
   it("deleteLocalBranch deletes branch and returns true", () => {

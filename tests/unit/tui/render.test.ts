@@ -29,7 +29,7 @@ const operation: TuiOperation = {
   id: "review-list",
   workspace: "Review",
   title: "Review list",
-  command: "ghg review list",
+  command: "gitfleet review list",
   description: "List review threads for the current pull request.",
 
   inputs: [
@@ -138,7 +138,7 @@ describe("tui render helpers", () => {
     ]);
 
     expect(__testing.jsonLineColor('"enabled": false')).toBe("yellow");
-    expect(__testing.jsonLineColor('"name": "ghg"')).toBe("green");
+    expect(__testing.jsonLineColor('"name": "gitfleet"')).toBe("green");
     expect(__testing.jsonLineColor("{")).toBe("gray");
   });
 

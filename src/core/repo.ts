@@ -6,7 +6,13 @@ import { ERROR_NO_REPO } from "@/core/constants";
 const REPO_PATTERN = /^[^/\s]+\/[^/\s]+$/;
 
 function normalizeRepo(repo: string): string {
-  const normalized = repo.trim().replace(/^https:\/\/github\.com\//, "");
+  let normalized = repo.trim();
+  try {
+    const url = new URL(normalized);
+    normalized = url.pathname.replace(/^\//, "");
+  } catch {
+    // A provider-neutral namespace/repository value is already normalized.
+  }
   const withoutSuffix = normalized.replace(/\.git$/, "");
 
   if (!REPO_PATTERN.test(withoutSuffix)) {

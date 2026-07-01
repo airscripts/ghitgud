@@ -1,9 +1,11 @@
 import { describe, expect, it, vi } from "vitest";
 
-import client from "@/api/client";
+import client from "@/providers/github/client";
 import status from "@/api/status";
 
-vi.mock("@/api/client", () => ({ default: { getTokenRequired: vi.fn() } }));
+vi.mock("@/providers/github/client", () => ({
+  default: { getTokenRequired: vi.fn() },
+}));
 
 describe("status api", () => {
   it("builds global and organization search queries", async () => {

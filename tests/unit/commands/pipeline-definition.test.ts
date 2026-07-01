@@ -1,0 +1,23 @@
+import { Command } from "commander";
+import workflowCommand from "@/commands/pipeline-definition";
+import { describe, it, expect } from "vitest";
+
+describe("workflow command", () => {
+  it("should register workflow command with subcommands", () => {
+    const program = new Command();
+    workflowCommand.register(program);
+
+    const workflow = program.commands[0].commands.find(
+      (command) => command.name() === "definition",
+    );
+
+    expect(workflow).toBeDefined();
+
+    const subcommands = workflow!.commands.map((command) => command.name());
+    expect(subcommands).toContain("validate");
+    expect(subcommands).toContain("preview");
+    expect(subcommands).toEqual(
+      expect.arrayContaining(["list", "view", "run", "enable", "disable"]),
+    );
+  });
+});

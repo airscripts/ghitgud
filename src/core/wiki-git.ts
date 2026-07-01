@@ -35,7 +35,7 @@ async function withClone<T>(
   repo: string,
   task: (directory: string) => Promise<T>,
 ): Promise<T> {
-  const root = await fs.mkdtemp(path.join(os.tmpdir(), "ghg-wiki-"));
+  const root = await fs.mkdtemp(path.join(os.tmpdir(), "gitfleet-wiki-"));
   const directory = path.join(root, "wiki");
 
   try {

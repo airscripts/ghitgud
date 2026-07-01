@@ -31,7 +31,7 @@ vi.mock("@/core/output-state", () => ({
 }));
 
 vi.mock("@/core/errors", () => ({
-  GhitgudError: class extends Error {},
+  GitfleetError: class extends Error {},
 }));
 
 describe("prompt", () => {

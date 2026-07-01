@@ -1,14 +1,14 @@
 import { Command } from "commander";
 import { describe, expect, it } from "vitest";
 
-import milestoneCommand from "@/commands/milestone";
+import milestoneCommand from "@/commands/planning-milestone";
 
 describe("milestone command", () => {
   it("registers milestone subcommands", () => {
     const program = new Command();
     milestoneCommand.register(program);
 
-    const milestone = program.commands.find(
+    const milestone = program.commands[0].commands.find(
       (command) => command.name() === "milestone",
     );
 

@@ -20,7 +20,7 @@ vi.mock("@/core/output", () => ({
 }));
 
 vi.mock("@/core/errors", () => ({
-  GhitgudError: class extends Error {},
+  GitfleetError: class extends Error {},
 }));
 
 import fs from "fs";

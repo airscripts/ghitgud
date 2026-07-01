@@ -2,32 +2,33 @@ import fs from "fs";
 import path from "path";
 import { load as yamlLoad } from "js-yaml";
 
-import api, { RulesetTarget } from "@/api/rulesets";
+import api from "@/api/rulesets";
 import output from "@/core/output";
 import logger from "@/core/logger";
-import { GhitgudError } from "@/core/errors";
+import { GitfleetError } from "@/core/errors";
 import { RulesetInput } from "@/types";
+import type { PolicyTarget } from "@/domain/provider";
 
 const VALID_TARGETS = new Set(["branch", "tag", "push", "repository"]);
 const VALID_ENFORCEMENT = new Set(["disabled", "active", "evaluate"]);
 
 const validateDefinition = (value: unknown): RulesetInput => {
   if (!value || typeof value !== "object" || Array.isArray(value)) {
-    throw new GhitgudError("Ruleset definition must be an object.");
+    throw new GitfleetError("Ruleset definition must be an object.");
   }
   const ruleset = value as RulesetInput;
   if (!ruleset.name?.trim())
-    throw new GhitgudError("Ruleset name is required.");
+    throw new GitfleetError("Ruleset name is required.");
   if (ruleset.target && !VALID_TARGETS.has(ruleset.target)) {
-    throw new GhitgudError(`Invalid ruleset target: ${ruleset.target}.`);
+    throw new GitfleetError(`Invalid ruleset target: ${ruleset.target}.`);
   }
   if (ruleset.enforcement && !VALID_ENFORCEMENT.has(ruleset.enforcement)) {
-    throw new GhitgudError(
+    throw new GitfleetError(
       `Invalid ruleset enforcement: ${ruleset.enforcement}.`,
     );
   }
   if (!Array.isArray(ruleset.rules)) {
-    throw new GhitgudError("Ruleset rules must be an array.");
+    throw new GitfleetError("Ruleset rules must be an array.");
   }
   if (
     ruleset.conditions !== undefined &&
@@ -35,7 +36,7 @@ const validateDefinition = (value: unknown): RulesetInput => {
       typeof ruleset.conditions !== "object" ||
       Array.isArray(ruleset.conditions))
   ) {
-    throw new GhitgudError("Ruleset conditions must be an object.");
+    throw new GitfleetError("Ruleset conditions must be an object.");
   }
   return ruleset;
 };
@@ -43,22 +44,22 @@ const validateDefinition = (value: unknown): RulesetInput => {
 const readDefinition = (file: string): RulesetInput => {
   const absolutePath = path.resolve(file);
   if (!fs.existsSync(absolutePath) || !fs.statSync(absolutePath).isFile()) {
-    throw new GhitgudError(`Ruleset file not found: ${file}.`);
+    throw new GitfleetError(`Ruleset file not found: ${file}.`);
   }
   try {
     return validateDefinition(yamlLoad(fs.readFileSync(absolutePath, "utf8")));
   } catch (error) {
-    if (error instanceof GhitgudError) throw error;
-    throw new GhitgudError(
+    if (error instanceof GitfleetError) throw error;
+    throw new GitfleetError(
       `Invalid ruleset file: ${error instanceof Error ? error.message : String(error)}.`,
     );
   }
 };
 
-const targetLabel = (target: RulesetTarget): string =>
-  "repo" in target ? target.repo : target.org;
+const targetLabel = (target: PolicyTarget): string =>
+  "repository" in target ? target.repository : target.namespace;
 
-const list = async (target: RulesetTarget) => {
+const list = async (target: PolicyTarget) => {
   const rulesets = await api.listTarget(target);
   output.renderTable(
     rulesets.map((ruleset) => ({
@@ -73,7 +74,7 @@ const list = async (target: RulesetTarget) => {
   return { success: true, target, rulesets };
 };
 
-const view = async (id: number, target: RulesetTarget) => {
+const view = async (id: number, target: PolicyTarget) => {
   const response = await api.getTarget(target, id);
   const ruleset = (await response.json()) as Record<string, unknown>;
   output.renderKeyValues([
@@ -106,7 +107,7 @@ const check = async (repo: string, branch: string) => {
   return { success: true, repo, branch, rules };
 };
 
-const create = async (file: string, target: RulesetTarget) => {
+const create = async (file: string, target: PolicyTarget) => {
   const definition = readDefinition(file);
   const response = await api.createTarget(target, definition);
   const ruleset = (await response.json()) as Record<string, unknown>;
@@ -114,7 +115,7 @@ const create = async (file: string, target: RulesetTarget) => {
   return { success: true, target, ruleset };
 };
 
-const edit = async (id: number, file: string, target: RulesetTarget) => {
+const edit = async (id: number, file: string, target: PolicyTarget) => {
   const definition = readDefinition(file);
   const response = await api.updateTarget(target, id, definition);
   const ruleset = (await response.json()) as Record<string, unknown>;
@@ -122,7 +123,7 @@ const edit = async (id: number, file: string, target: RulesetTarget) => {
   return { success: true, target, ruleset };
 };
 
-const remove = async (id: number, target: RulesetTarget) => {
+const remove = async (id: number, target: PolicyTarget) => {
   await api.deleteTarget(target, id);
   logger.success(`Deleted ruleset ${id}.`);
   return { success: true, target, ruleset: id };

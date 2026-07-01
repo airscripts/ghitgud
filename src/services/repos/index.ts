@@ -4,7 +4,7 @@ import output from "@/core/output";
 import logger from "@/core/logger";
 import progress from "@/core/progress";
 import repoResolver from "@/core/repo";
-import { GhitgudError } from "@/core/errors";
+import { GitfleetError } from "@/core/errors";
 
 import {
   ENCODING,
@@ -27,7 +27,7 @@ function normalizeRepoName(fullName: string): string {
     .filter(Boolean);
 
   if (parts.length !== 2) {
-    throw new GhitgudError(`Invalid repository name: ${fullName}.`);
+    throw new GitfleetError(`Invalid repository name: ${fullName}.`);
   }
 
   return `${parts[0]}/${parts[1]}`;
@@ -38,7 +38,7 @@ function parseLimit(limit?: number | string): number | undefined {
   const value = Number(limit);
 
   if (Number.isNaN(value) || value <= 0) {
-    throw new GhitgudError(`Invalid limit: ${limit}.`);
+    throw new GitfleetError(`Invalid limit: ${limit}.`);
   }
 
   return value;
@@ -115,7 +115,7 @@ const resolveTargets = async (
   const repos = await resolveRepos(options);
 
   if (!repos.length) {
-    throw new GhitgudError(ERROR_NO_REPO_TARGET);
+    throw new GitfleetError(ERROR_NO_REPO_TARGET);
   }
 
   const uniqueRepos = dedupeRepos(repos);
@@ -124,7 +124,7 @@ const resolveTargets = async (
 
 const requireMutationConfirmation = (dryRun?: boolean, yes?: boolean) => {
   if (!dryRun && !yes) {
-    throw new GhitgudError(ERROR_MUTATION_REQUIRES_YES);
+    throw new GitfleetError(ERROR_MUTATION_REQUIRES_YES);
   }
 };
 
@@ -137,7 +137,7 @@ const parsePeriod = (period?: string): Date => {
 
   const match = period.match(/^(\d+)([dwm])$/);
   if (!match) {
-    throw new GhitgudError(`Invalid period: ${period}.`);
+    throw new GitfleetError(`Invalid period: ${period}.`);
   }
 
   const value = Number(match[1]);
@@ -156,7 +156,7 @@ const parseMonths = (months?: number | string, fallback = 12): number => {
   const value = Number(months);
 
   if (Number.isNaN(value) || value <= 0) {
-    throw new GhitgudError(`Invalid months value: ${months}.`);
+    throw new GitfleetError(`Invalid months value: ${months}.`);
   }
 
   return value;

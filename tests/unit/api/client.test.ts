@@ -1,6 +1,6 @@
-import client from "@/api/client";
+import client from "@/providers/github/client";
 import config from "@/core/config";
-import { GhitgudError, RateLimitError } from "@/core/errors";
+import { GitfleetError, RateLimitError } from "@/core/errors";
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 
 vi.mock("@/core/config", () => ({
@@ -19,6 +19,7 @@ const mockFetch = () => global.fetch as ReturnType<typeof vi.fn>;
 describe("client", () => {
   beforeEach(() => {
     global.fetch = vi.fn();
+    vi.mocked(config.read).mockReturnValue(null);
   });
 
   afterEach(() => {
@@ -32,6 +33,29 @@ describe("client", () => {
 
       const result = await client.get("/repos/owner/repo/labels");
       expect(result.status).toBe(200);
+    });
+
+    it("uses the active GitHub Enterprise REST endpoint", async () => {
+      vi.mocked(config.read).mockReturnValue("github.example.com");
+      mockFetch().mockResolvedValue({ status: 200 });
+
+      await client.get("/user");
+
+      expect(global.fetch).toHaveBeenCalledWith(
+        "https://github.example.com/api/v3/user",
+        expect.objectContaining({ method: "GET" }),
+      );
+    });
+
+    it("validates a token against the requested enterprise host", async () => {
+      mockFetch().mockResolvedValue({ status: 200 });
+
+      await client.validateToken("explicit-token", "github.example.com");
+
+      expect(global.fetch).toHaveBeenCalledWith(
+        "https://github.example.com/api/v3/user",
+        expect.objectContaining({ method: "GET" }),
+      );
     });
 
     it("should accept 201 Created response", async () => {
@@ -103,24 +127,24 @@ describe("client", () => {
       );
     });
 
-    it("should throw GhitgudError on unexpected status", async () => {
+    it("should throw GitfleetError on unexpected status", async () => {
       mockFetch().mockResolvedValue({ status: 500, headers: { get: vi.fn() } });
 
       await expect(client.get("/test")).rejects.toThrow(
         "Unexpected status code.: 500",
       );
 
-      await expect(client.get("/test")).rejects.toThrow(GhitgudError);
+      await expect(client.get("/test")).rejects.toThrow(GitfleetError);
     });
 
-    it("should wrap network failures in GhitgudError", async () => {
+    it("should wrap network failures in GitfleetError", async () => {
       mockFetch().mockRejectedValue(new TypeError("fetch failed"));
 
       await expect(client.get("/test")).rejects.toThrow(
         "Network request failed: fetch failed",
       );
 
-      await expect(client.get("/test")).rejects.toThrow(GhitgudError);
+      await expect(client.get("/test")).rejects.toThrow(GitfleetError);
     });
 
     it("should throw RateLimitError with valid rate-limit headers", async () => {

@@ -2,7 +2,7 @@ import api from "@/api/deployments";
 import output from "@/core/output";
 import logger from "@/core/logger";
 import repoResolver from "@/core/repo";
-import { GhitgudError } from "@/core/errors";
+import { GitfleetError } from "@/core/errors";
 
 interface DeploymentApiEntry {
   id: number;
@@ -68,7 +68,7 @@ const list = async (
   const repo = options.repo ?? (await repoResolver.resolveRepo());
   const limit = options.limit ?? 30;
   if (limit < 1 || limit > 100)
-    throw new GhitgudError("Limit must be between 1 and 100.");
+    throw new GitfleetError("Limit must be between 1 and 100.");
   logger.start(`Loading deployments for ${repo}.`);
   const response = await api.list(repo, {
     environment: options.environment,
@@ -145,7 +145,7 @@ const createStatus = async (options: {
 }) => {
   const repo = options.repo ?? (await repoResolver.resolveRepo());
   if (!VALID_STATES.has(options.state)) {
-    throw new GhitgudError(
+    throw new GitfleetError(
       `Invalid state "${options.state}". Valid states: ${[...VALID_STATES].join(", ")}.`,
     );
   }

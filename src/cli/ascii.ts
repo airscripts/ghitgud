@@ -2,7 +2,7 @@ import figlet from "figlet";
 import pc from "picocolors";
 
 const WIDTH = 80;
-const TITLE = "Ghitgud";
+const TITLE = "Gitfleet";
 const FONT = "Standard";
 const WHITESPACE_BREAK = true;
 const VERTICAL_LAYOUT = "default";

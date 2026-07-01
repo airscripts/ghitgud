@@ -28,7 +28,7 @@ describe("ruleset service", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     file = path.join(
-      fs.mkdtempSync(path.join(os.tmpdir(), "ghg-ruleset-")),
+      fs.mkdtempSync(path.join(os.tmpdir(), "gitfleet-ruleset-")),
       "rules.yml",
     );
     fs.writeFileSync(
@@ -81,11 +81,11 @@ describe("ruleset service", () => {
     vi.mocked(api.checkBranch).mockResolvedValue(
       jsonResponse([{ type: "required_status_checks", ruleset_id: 1 }]),
     );
-    expect((await service.list({ repo: "owner/repo" })).rulesets).toHaveLength(
-      1,
-    );
     expect(
-      (await service.view(1, { repo: "owner/repo" })).ruleset,
+      (await service.list({ repository: "owner/repo" })).rulesets,
+    ).toHaveLength(1);
+    expect(
+      (await service.view(1, { repository: "owner/repo" })).ruleset,
     ).toMatchObject({ id: 1 });
     expect((await service.check("owner/repo", "main")).rules).toHaveLength(1);
   });
@@ -94,9 +94,9 @@ describe("ruleset service", () => {
     vi.mocked(api.createTarget).mockResolvedValue(jsonResponse({ id: 1 }));
     vi.mocked(api.updateTarget).mockResolvedValue(jsonResponse({ id: 1 }));
     vi.mocked(api.deleteTarget).mockResolvedValue(emptyResponse());
-    await service.create(file, { org: "acme" });
-    await service.edit(1, file, { org: "acme" });
-    await service.remove(1, { org: "acme" });
+    await service.create(file, { namespace: "acme" });
+    await service.edit(1, file, { namespace: "acme" });
+    await service.remove(1, { namespace: "acme" });
     expect(api.createTarget).toHaveBeenCalled();
     expect(api.updateTarget).toHaveBeenCalled();
     expect(api.deleteTarget).toHaveBeenCalled();

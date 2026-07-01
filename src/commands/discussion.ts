@@ -8,7 +8,7 @@ import discussionService from "@/services/discussion";
 const register = (program: Command) => {
   const discussion = program
     .command("discussion")
-    .description("Manage GitHub Discussions.");
+    .description("Manage provider discussions and forums.");
 
   discussion
     .command("list")

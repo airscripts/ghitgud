@@ -1,9 +1,9 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
-import client from "@/api/client";
+import client from "@/providers/github/client";
 import dependabot from "@/api/dependabot";
 
-vi.mock("@/api/client", () => ({
+vi.mock("@/providers/github/client", () => ({
   default: {
     getPaginated: vi.fn(),
     patchTokenRequired: vi.fn(),

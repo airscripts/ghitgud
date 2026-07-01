@@ -2,7 +2,7 @@ import { execFileSync } from "child_process";
 
 import client from "@/api/client";
 import output from "@/core/output";
-import { GhitgudError } from "@/core/errors";
+import { GitfleetError } from "@/core/errors";
 
 const JQ_NOT_FOUND =
   "jq is not installed. Install it from https://jqlang.org/ and try again.";
@@ -15,10 +15,10 @@ const parseFields = (fields: string[]): Record<string, string> => {
   const result: Record<string, string> = {};
   for (const field of fields) {
     const separator = field.indexOf("=");
-    if (separator <= 0) throw new GhitgudError(`Invalid API field: ${field}.`);
+    if (separator <= 0) throw new GitfleetError(`Invalid API field: ${field}.`);
     const key = field.slice(0, separator).trim();
     if (!key || key in result)
-      throw new GhitgudError(`Duplicate or empty API field: ${key}.`);
+      throw new GitfleetError(`Duplicate or empty API field: ${key}.`);
     result[key] = field.slice(separator + 1);
   }
   return result;
@@ -26,7 +26,9 @@ const parseFields = (fields: string[]): Record<string, string> => {
 
 const validateEndpoint = (endpoint: string): string => {
   if (/^https?:\/\//i.test(endpoint) || endpoint.startsWith("//")) {
-    throw new GhitgudError("API endpoint must be a relative GitHub API path.");
+    throw new GitfleetError(
+      "API endpoint must be a relative provider API path.",
+    );
   }
   return endpoint.startsWith("/") ? endpoint : `/${endpoint}`;
 };
@@ -54,16 +56,16 @@ const request = async (
   },
 ) => {
   if (options.silent && options.jq) {
-    throw new GhitgudError("--silent cannot be combined with --jq.");
+    throw new GitfleetError("--silent cannot be combined with --jq.");
   }
   const fields = parseFields(options.fields ?? []);
   const method = (
     options.method ?? (Object.keys(fields).length ? "POST" : "GET")
   ).toUpperCase() as ApiMethod;
   if (!METHODS.has(method))
-    throw new GhitgudError(`Unsupported API method: ${method}.`);
+    throw new GitfleetError(`Unsupported API method: ${method}.`);
   if (options.paginate && method !== "GET") {
-    throw new GhitgudError(
+    throw new GitfleetError(
       "API pagination is only supported for GET requests.",
     );
   }
@@ -77,7 +79,7 @@ const request = async (
 
   if (options.paginate) {
     if (!Array.isArray(value)) {
-      throw new GhitgudError(
+      throw new GitfleetError(
         "Paginated API responses must be top-level arrays.",
       );
     }
@@ -87,12 +89,14 @@ const request = async (
       ?.match(/<([^>]+)>;\s*rel="next"/)?.[1];
     while (next) {
       if (!next.startsWith("https://api.github.com/")) {
-        throw new GhitgudError("GitHub pagination returned an unexpected URL.");
+        throw new GitfleetError(
+          "GitHub pagination returned an unexpected URL.",
+        );
       }
       response = await client.requestUrlTokenRequired(next, { method: "GET" });
       const page = await readResponse(response);
       if (!Array.isArray(page)) {
-        throw new GhitgudError(
+        throw new GitfleetError(
           "Paginated API responses must be top-level arrays.",
         );
       }
@@ -120,14 +124,14 @@ const request = async (
         "code" in error &&
         (error as NodeJS.ErrnoException).code === "ENOENT"
       ) {
-        throw new GhitgudError(JQ_NOT_FOUND);
+        throw new GitfleetError(JQ_NOT_FOUND);
       }
       const message =
         error instanceof Error && "stderr" in error
           ? (error as { stderr: string | Buffer }).stderr.toString().trim() ||
             error.message
           : String(error);
-      throw new GhitgudError(`jq filter failed: ${message}.`);
+      throw new GitfleetError(`jq filter failed: ${message}.`);
     }
   }
 

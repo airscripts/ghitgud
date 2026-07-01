@@ -2,7 +2,7 @@ import { describe, it, expect, vi } from "vitest";
 
 import completionService from "@/services/completion";
 import outputState from "@/core/output-state";
-import { GhitgudError } from "@/core/errors";
+import { GitfleetError } from "@/core/errors";
 
 vi.mock("@/core/output", () => ({
   default: {
@@ -34,20 +34,20 @@ describe("completion service", () => {
   describe("generate", () => {
     it("should generate bash completion", () => {
       const result = completionService.generate("bash", commands);
-      expect(result).toContain("_ghg_completions");
+      expect(result).toContain("_gitfleet_completions");
       expect(result).toContain("auth");
       expect(result).toContain("labels");
     });
 
     it("should generate zsh completion", () => {
       const result = completionService.generate("zsh", commands);
-      expect(result).toContain("#compdef ghg");
-      expect(result).toContain("_ghg");
+      expect(result).toContain("#compdef gitfleet");
+      expect(result).toContain("_gitfleet");
     });
 
     it("should generate fish completion", () => {
       const result = completionService.generate("fish", commands);
-      expect(result).toContain("complete -c ghg");
+      expect(result).toContain("complete -c gitfleet");
     });
 
     it("should generate powershell completion", () => {
@@ -59,7 +59,7 @@ describe("completion service", () => {
     it("should throw for unsupported shell", () => {
       expect(() =>
         completionService.generate("csh" as never, commands),
-      ).toThrow(GhitgudError);
+      ).toThrow(GitfleetError);
     });
   });
 
@@ -79,7 +79,7 @@ describe("completion service", () => {
       const result = completionService.getCompletion("bash", commands);
       expect(result.success).toBe(true);
       expect(result.shell).toBe("bash");
-      expect(result.script).toContain("_ghg_completions");
+      expect(result.script).toContain("_gitfleet_completions");
     });
 
     it("should not render for JSON output", () => {

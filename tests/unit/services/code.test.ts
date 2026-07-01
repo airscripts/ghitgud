@@ -21,6 +21,7 @@ vi.mock("@/core/output", () => ({
     renderTable: vi.fn(),
     renderSummary: vi.fn(),
     renderKeyValues: vi.fn(),
+    writeValue: vi.fn(),
   },
 }));
 

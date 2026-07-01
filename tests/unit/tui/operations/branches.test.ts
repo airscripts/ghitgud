@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
 import branchService from "@/services/branch";
-import branchOperations from "@/tui/operations/branches";
+import branchOperations from "@/tui/operations/policy-branches";
 
 vi.mock("@/services/branch", () => ({
   default: {

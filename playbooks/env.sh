@@ -1,29 +1,29 @@
 #!/usr/bin/env bash
-# env.sh — Centralized configuration and helpers for ghg playbooks.
+# env.sh — Centralized configuration and helpers for gitfleet playbooks.
 #
 # Override defaults with environment variables:
 #   REPO=owner/repo  — Repository for repo-scoped commands (default: aircsripts/chore)
 #   ORG=orgname      — Organization for org-scoped commands (default: airchive)
-#   TMPDIR=/path     — Scratch directory (default: /tmp/ghg-playbooks)
+#   TMPDIR=/path     — Scratch directory (default: /tmp/gitfleet-playbooks)
 #
 # Every playbook sources this file. Change pointings here or via env vars.
 set -euo pipefail
 
 export REPO="${REPO:-airscripts/chore}"
 export ORG="${ORG:-airchive}"
-export TMPDIR="${TMPDIR:-/tmp/ghg-playbooks}"
+export TMPDIR="${TMPDIR:-/tmp/gitfleet-playbooks}"
 mkdir -p "$TMPDIR"
 
 export OWNER="${REPO%%/*}"
 export REPO_NAME="${REPO#*/}"
 
-if [ -z "${GHG_TOKEN:-}" ]; then
-  GHG_TOKEN=$(ghg config get token 2>/dev/null | grep -oP '(?<=\s)\S+$' || true)
-  if [ -n "$GHG_TOKEN" ]; then
-    export GHG_TOKEN
+if [ -z "${GITFLEET_GITHUB_TOKEN:-}" ]; then
+  GITFLEET_GITHUB_TOKEN=$(gitfleet auth token --raw 2>/dev/null || true)
+  if [ -n "$GITFLEET_GITHUB_TOKEN" ]; then
+    export GITFLEET_GITHUB_TOKEN
   else
-    echo "[ERROR] GHG_TOKEN is not set. Export your GitHub token before running playbooks."
-    echo "        export GHG_TOKEN=ghp_..."
+    echo "[ERROR] GITFLEET_GITHUB_TOKEN is not set. Export your GitHub token before running playbooks."
+    echo "        export GITFLEET_GITHUB_TOKEN=ghp_..."
     exit 1
   fi
 fi

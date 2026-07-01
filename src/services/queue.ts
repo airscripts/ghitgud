@@ -3,7 +3,7 @@ import reposApi from "@/api/repos";
 import rulesetsApi from "@/api/rulesets";
 import output from "@/core/output";
 import logger from "@/core/logger";
-import { GhitgudError } from "@/core/errors";
+import { GitfleetError } from "@/core/errors";
 
 interface GraphPayload {
   errors?: Array<{ message: string }>;
@@ -14,7 +14,8 @@ const readGraph = async (
   response: Response,
 ): Promise<Record<string, unknown>> => {
   const payload = (await response.json()) as GraphPayload;
-  if (payload.errors?.length) throw new GhitgudError(payload.errors[0].message);
+  if (payload.errors?.length)
+    throw new GitfleetError(payload.errors[0].message);
   return payload.data ?? {};
 };
 
@@ -145,14 +146,14 @@ const resolvePullRequest = async (repo: string, number: number) => {
   } | null;
   const pullRequest = repository?.pullRequest;
   if (!pullRequest)
-    throw new GhitgudError(`Pull request ${repo}#${number} was not found.`);
+    throw new GitfleetError(`Pull request ${repo}#${number} was not found.`);
   return pullRequest;
 };
 
 const add = async (repo: string, number: number) => {
   const pullRequest = await resolvePullRequest(repo, number);
   if (pullRequest.mergeQueueEntry) {
-    throw new GhitgudError(
+    throw new GitfleetError(
       `Pull request #${number} is already in the merge queue.`,
     );
   }
@@ -168,7 +169,7 @@ const add = async (repo: string, number: number) => {
 const remove = async (repo: string, number: number) => {
   const pullRequest = await resolvePullRequest(repo, number);
   if (!pullRequest.mergeQueueEntry) {
-    throw new GhitgudError(
+    throw new GitfleetError(
       `Pull request #${number} is not in the merge queue.`,
     );
   }
@@ -188,7 +189,7 @@ const history = async (
     options.limit < 1 ||
     options.limit > 100
   ) {
-    throw new GhitgudError("Queue history limit must be between 1 and 100.");
+    throw new GitfleetError("Queue history limit must be between 1 and 100.");
   }
   const branch = await resolveBranch(repo, options.branch);
   const data = await readGraph(await api.history(repo, branch, options.limit));

@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
 import complianceService from "@/services/compliance";
-import complianceOperations from "@/tui/operations/compliance";
+import complianceOperations from "@/tui/operations/security-compliance";
 
 vi.mock("@/services/compliance", () => ({
   default: {

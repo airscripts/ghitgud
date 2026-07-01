@@ -7,7 +7,7 @@ const variableOperations: TuiOperation[] = [
     id: "variable.list",
     workspace: "Variables",
     title: "List Variables",
-    command: "ghg variable list",
+    command: "gitfleet variable list",
     description: "List repository, environment, or organization variables.",
 
     inputs: [
@@ -33,7 +33,7 @@ const variableOperations: TuiOperation[] = [
     title: "Set Variable",
     workspace: "Variables",
     description: "Create or update a variable.",
-    command: "ghg variable set --name <key> --value <val>",
+    command: "gitfleet variable set --name <key> --value <val>",
 
     inputs: [
       repoInput,
@@ -62,7 +62,7 @@ const variableOperations: TuiOperation[] = [
     workspace: "Variables",
     title: "Delete Variable",
     description: "Delete a variable.",
-    command: "ghg variable delete --name <key>",
+    command: "gitfleet variable delete --name <key>",
 
     inputs: [
       repoInput,

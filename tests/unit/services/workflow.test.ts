@@ -13,7 +13,9 @@ vi.mock("@/core/git", () => ({
 }));
 
 describe("workflow service", () => {
-  const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), "ghg-workflow-test-"));
+  const tempRoot = fs.mkdtempSync(
+    path.join(os.tmpdir(), "gitfleet-workflow-test-"),
+  );
   const workflowsDir = path.join(tempRoot, ".github", "workflows");
   const workflowFile = path.join(workflowsDir, "ci.yml");
 

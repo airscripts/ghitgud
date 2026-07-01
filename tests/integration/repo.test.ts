@@ -5,8 +5,8 @@ import repoCommand from "@/commands/repo";
 
 vi.mock("@/core/repo", () => ({
   default: {
-    resolveRepo: vi.fn(() => Promise.resolve("airscripts/ghitgud")),
-    resolveRepoSync: vi.fn((repo?: string) => repo || "airscripts/ghitgud"),
+    resolveRepo: vi.fn(() => Promise.resolve("airscripts/gitfleet")),
+    resolveRepoSync: vi.fn((repo?: string) => repo || "airscripts/gitfleet"),
   },
 }));
 
@@ -35,7 +35,7 @@ describe("integration > repo commands", () => {
       "repo",
       "invite",
       "--repo",
-      "airscripts/ghitgud",
+      "airscripts/gitfleet",
       "--user",
       "octocat",
       "--role",
@@ -44,7 +44,7 @@ describe("integration > repo commands", () => {
 
     expect(inviteService.invite).toHaveBeenCalledWith(
       "airscripts",
-      "ghitgud",
+      "gitfleet",
       "octocat",
       "push",
     );
@@ -61,14 +61,14 @@ describe("integration > repo commands", () => {
       "repo",
       "invite",
       "--repo",
-      "airscripts/ghitgud",
+      "airscripts/gitfleet",
       "--user",
       "octocat",
     ]);
 
     expect(inviteService.invite).toHaveBeenCalledWith(
       "airscripts",
-      "ghitgud",
+      "gitfleet",
       "octocat",
       "push",
     );
@@ -90,7 +90,7 @@ describe("integration > repo commands", () => {
 
     expect(inviteService.invite).toHaveBeenCalledWith(
       "airscripts",
-      "ghitgud",
+      "gitfleet",
       "octocat",
       "push",
     );
@@ -107,7 +107,7 @@ describe("integration > repo commands", () => {
       "repo",
       "grant",
       "--repo",
-      "airscripts/ghitgud",
+      "airscripts/gitfleet",
       "--team",
       "platform",
       "--role",
@@ -116,7 +116,7 @@ describe("integration > repo commands", () => {
 
     expect(inviteService.grant).toHaveBeenCalledWith(
       "airscripts",
-      "ghitgud",
+      "gitfleet",
       "platform",
       "admin",
     );
@@ -133,14 +133,14 @@ describe("integration > repo commands", () => {
       "repo",
       "grant",
       "--repo",
-      "airscripts/ghitgud",
+      "airscripts/gitfleet",
       "--team",
       "platform",
     ]);
 
     expect(inviteService.grant).toHaveBeenCalledWith(
       "airscripts",
-      "ghitgud",
+      "gitfleet",
       "platform",
       "push",
     );

@@ -4,7 +4,7 @@ import { describe, it, expect } from "vitest";
 describe("ascii", () => {
   it("should contain the figlet-rendered title", () => {
     expect(ascii).toContain("____");
-    expect(ascii).toContain("|___");
+    expect(ascii.split("\n").length).toBeGreaterThan(3);
   });
 
   it("should be a non-empty string", () => {

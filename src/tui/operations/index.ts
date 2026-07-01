@@ -1,20 +1,20 @@
-import prOperations from "./prs";
-import runOperations from "./run";
-import orgOperations from "./org";
-import teamOperations from "./team";
+import prOperations from "./changes";
+import runOperations from "./pipeline-runs";
+import orgOperations from "./access-org";
+import teamOperations from "./access-team";
 import repoOperations from "./repo";
 import wikiOperations from "./wiki";
 import webhookOperations from "./webhook";
 import authOperations from "./auth";
-import cacheOperations from "./cache";
-import gistOperations from "./gists";
+import cacheOperations from "./pipeline-caches";
+import gistOperations from "./snippets";
 import apiOperations from "./api";
-import queueOperations from "./queue";
-import statusOperations from "./status";
-import rulesetOperations from "./rulesets";
-import auditOperations from "./audit";
-import leaksOperations from "./leaks";
-import pagesOperations from "./pages";
+import queueOperations from "./change-queue";
+import statusOperations from "./inbox-status";
+import rulesetOperations from "./policies";
+import auditOperations from "./security-audit";
+import leaksOperations from "./security-leaks";
+import pagesOperations from "./sites";
 import labelOperations from "./labels";
 import issueOperations from "./issues";
 import searchOperations from "./search";
@@ -23,43 +23,48 @@ import configOperations from "./config";
 import utilityOperations from "./utility";
 import releaseOperations from "./release";
 import secretsOperations from "./secrets";
-import projectOperations from "./projects";
-import insightsOperations from "./insights";
-import workflowOperations from "./workflow";
+import projectOperations from "./planning";
+import insightsOperations from "./analytics-repo";
+import workflowOperations from "./pipeline-definitions";
 import variableOperations from "./variables";
 import dashboardOperations from "./dashboard";
-import milestoneOperations from "./milestones";
-import dependabotOperations from "./dependabot";
-import complianceOperations from "./compliance";
+import milestoneOperations from "./planning-milestones";
+import dependabotOperations from "./security-dependencies";
+import complianceOperations from "./security-compliance";
 import discussionOperations from "./discussions";
 import deploymentOperations from "./deployments";
 import repositoryOperations from "./repositories";
 import environmentOperations from "./environments";
-import notificationOperations from "./notifications";
-import forkOperations from "./forks";
-import branchOperations from "./branches";
-import reactionOperations from "./reactions";
-import commentOperations from "./comments";
+import notificationOperations from "./inbox";
+import forkOperations from "./repo-forks";
+import branchOperations from "./policy-branches";
+import reactionOperations from "./review-reactions";
+import commentOperations from "./review-conversations";
 import depsOperations from "./dependencies";
 import advisoryOperations from "./advisories";
-import codeqlOperations from "./codeql";
+import codeqlOperations from "./security-code";
 import workspaceOperations from "./workspaces";
 import syncOperations from "./sync";
-import actionsOperations from "./actions";
+import actionsOperations from "./analytics-pipeline";
 import codeOperations from "./code";
 import templateOperations from "./templates";
-import packageOperations from "./packages";
+import packageOperations from "./registries";
 import runnerOperations from "./runners";
-import extensionOperations from "./extensions";
-import codespaceOperations from "./codespaces";
+import codespaceOperations from "./dev";
 import browseOperations from "./browse";
 import attestationOperations from "./attestations";
-import sshKeyOperations from "./ssh-keys";
-import gpgKeyOperations from "./gpg-keys";
+import sshKeyOperations from "./identity-ssh";
+import gpgKeyOperations from "./identity-gpg";
+import licenseOperations from "./licenses";
 
 import type { TuiOperation } from "../types";
+import providerRegistry from "@/providers/registry";
+import {
+  getOperationFamily,
+  normalizeOperationCommand,
+} from "@/operations/registry";
 
-const operations: TuiOperation[] = [
+const sourceOperations: TuiOperation[] = [
   ...dashboardOperations,
   ...notificationOperations,
   ...labelOperations,
@@ -112,13 +117,29 @@ const operations: TuiOperation[] = [
   ...templateOperations,
   ...packageOperations,
   ...runnerOperations,
-  ...extensionOperations,
   ...codespaceOperations,
   ...browseOperations,
   ...attestationOperations,
   ...sshKeyOperations,
   ...gpgKeyOperations,
+  ...licenseOperations,
 ];
+
+const provider = providerRegistry.get("github");
+const operations = sourceOperations
+  .map((operation) => ({
+    ...operation,
+    command: normalizeOperationCommand(operation.command),
+    workspace:
+      getOperationFamily(
+        normalizeOperationCommand(operation.command).split(/\s+/)[1],
+      )?.name ?? operation.workspace,
+  }))
+  .filter((operation) => {
+    const familyName = operation.command.split(/\s+/)[1];
+    const capability = getOperationFamily(familyName)?.capability;
+    return !capability || provider.capabilities()[capability];
+  });
 
 const workspaces = Array.from(new Set(operations.map((op) => op.workspace)));
 

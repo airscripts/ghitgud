@@ -1,27 +1,27 @@
 import output from "@/core/output";
 import outputState from "@/core/output-state";
-import { GhitgudError } from "@/core/errors";
+import { GitfleetError } from "@/core/errors";
 
 const VALID_SHELLS = ["bash", "zsh", "fish", "powershell"] as const;
 type Shell = (typeof VALID_SHELLS)[number];
 
 const generateBash = (commands: string[]): string => {
   const completions = commands.join(" ");
-  return `# ghg bash completion
-_ghg_completions() {
+  return `# gitfleet bash completion
+_gitfleet_completions() {
   local cur="\${COMP_WORDS[COMP_CWORD]}"
   COMPREPLY=($(compgen -W "${completions}" -- "$cur"))
 }
-complete -F _ghg_completions ghg`;
+complete -F _gitfleet_completions gitfleet`;
 };
 
 const generateZsh = (commands: string[]): string => {
   const completions = commands
     .map((c) => `    "${c}":"${c} command"`)
     .join("\n");
-  return `#compdef ghg
-# ghg zsh completion
-_ghg() {
+  return `#compdef gitfleet
+# gitfleet zsh completion
+_gitfleet() {
   local -a commands
   commands=(
 ${completions}
@@ -30,16 +30,16 @@ ${completions}
   _arguments '::command: :->command' '*:: :->command'
 }
 
-_ghg "$@"`;
+_gitfleet "$@"`;
 };
 
 const generateFish = (commands: string[]): string => {
-  return `# ghg fish completion
-complete -c ghg -f
+  return `# gitfleet fish completion
+complete -c gitfleet -f
 
-${commands.map((c) => `complete -c ghg -n "__ghg_use_subcommand" -a ${c} -d "${c} command"`).join("\n")}
+${commands.map((c) => `complete -c gitfleet -n "__gitfleet_use_subcommand" -a ${c} -d "${c} command"`).join("\n")}
 
-function __ghg_use_subcommand
+function __gitfleet_use_subcommand
     set -l cmd (commandline -opc)
     for c in ${commands.join(" ")}
         if test "$cmd[1]" = "$c"
@@ -52,8 +52,8 @@ end`;
 
 const generatePowershell = (commands: string[]): string => {
   const completions = commands.join('", "');
-  return `# ghg PowerShell completion
-Register-ArgumentCompleter -CommandName ghg -ScriptBlock {
+  return `# gitfleet PowerShell completion
+Register-ArgumentCompleter -CommandName gitfleet -ScriptBlock {
     param($commandName, $wordToComplete, $commandAst, $fakeBoundParameter)
     $completions = @(
         "${completions}"
@@ -77,7 +77,7 @@ const generate = (shell: Shell, commands: string[]) => {
     case "powershell":
       return generatePowershell(commands);
     default:
-      throw new GhitgudError(
+      throw new GitfleetError(
         `Unsupported shell: ${shell}. Supported: ${VALID_SHELLS.join(", ")}`,
       );
   }

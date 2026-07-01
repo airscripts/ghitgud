@@ -14,7 +14,7 @@ const searchOperations: TuiOperation[] = [
     workspace: "Search",
     id: "search.issues",
     title: "Search Issues",
-    command: "ghg search issues <query>",
+    command: "gitfleet search issues <query>",
     description: "Search issues across GitHub.",
 
     inputs: [
@@ -49,7 +49,7 @@ const searchOperations: TuiOperation[] = [
     workspace: "Search",
     id: "search.prs",
     title: "Search Pull Requests",
-    command: "ghg search prs <query>",
+    command: "gitfleet search prs <query>",
     description: "Search pull requests across GitHub.",
 
     inputs: [
@@ -84,8 +84,8 @@ const searchOperations: TuiOperation[] = [
     workspace: "Search",
     id: "search.repos",
     title: "Search Repositories",
-    command: "ghg search repos <query>",
-    description: "Search repositories on GitHub.",
+    command: "gitfleet search repos <query>",
+    description: "Search repositories on the provider.",
 
     inputs: [
       { key: "query", label: "Query", type: "string", required: true },
@@ -107,8 +107,8 @@ const searchOperations: TuiOperation[] = [
     workspace: "Search",
     id: "search.code",
     title: "Search Code",
-    command: "ghg search code <query>",
-    description: "Search code across GitHub repositories.",
+    command: "gitfleet search code <query>",
+    description: "Search code across provider repositories.",
 
     inputs: [
       { key: "query", label: "Query", type: "string", required: true },
@@ -135,8 +135,8 @@ const searchOperations: TuiOperation[] = [
     workspace: "Search",
     id: "search.commits",
     title: "Search Commits",
-    command: "ghg search commits <query>",
-    description: "Search commits across GitHub repositories.",
+    command: "gitfleet search commits <query>",
+    description: "Search commits across provider repositories.",
 
     inputs: [
       { key: "query", label: "Query", type: "string", required: true },

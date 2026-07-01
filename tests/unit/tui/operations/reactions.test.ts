@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
 import reactionService from "@/services/reaction";
-import reactionOperations from "@/tui/operations/reactions";
+import reactionOperations from "@/tui/operations/review-reactions";
 
 vi.mock("@/services/reaction", () => ({
   default: { list: vi.fn(), add: vi.fn(), remove: vi.fn() },

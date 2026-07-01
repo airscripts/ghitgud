@@ -2,7 +2,7 @@ import fs from "fs";
 import path from "path";
 
 import { ENCODING } from "@/core/constants";
-import { GhitgudError } from "@/core/errors";
+import { GitfleetError } from "@/core/errors";
 
 const readJsonFile = <T>(filePath: string): T => {
   const data = fs.readFileSync(filePath, ENCODING);
@@ -23,7 +23,7 @@ const ensureDir = (dirPath: string): void => {
 
 const resolveInsideRoot = (root: string, relativePath: string): string => {
   if (path.isAbsolute(relativePath)) {
-    throw new GhitgudError(`Path must be relative: ${relativePath}`);
+    throw new GitfleetError(`Path must be relative: ${relativePath}`);
   }
 
   const resolvedRoot = path.resolve(root);
@@ -31,7 +31,7 @@ const resolveInsideRoot = (root: string, relativePath: string): string => {
   const relative = path.relative(resolvedRoot, resolvedPath);
 
   if (relative.startsWith("..") || path.isAbsolute(relative)) {
-    throw new GhitgudError(`Path escapes repository root: ${relativePath}`);
+    throw new GitfleetError(`Path escapes repository root: ${relativePath}`);
   }
 
   return resolvedPath;

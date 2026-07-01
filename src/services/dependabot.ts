@@ -1,7 +1,7 @@
 import output from "@/core/output";
 import logger from "@/core/logger";
 import repoService from "@/services/repos";
-import { GhitgudError } from "@/core/errors";
+import { GitfleetError } from "@/core/errors";
 import { DependabotAlert, RepoTargetOptions } from "@/types";
 import dependabotApi, { DependabotListOptions } from "@/api/dependabot";
 
@@ -88,23 +88,23 @@ const list = async (options: ListOptions = {}) => {
 
 const dismiss = async (alertNumber: number, options: DismissOptions) => {
   if (!alertNumber) {
-    throw new GhitgudError(ERROR_DEPENDABOT_ALERT_REQUIRED);
+    throw new GitfleetError(ERROR_DEPENDABOT_ALERT_REQUIRED);
   }
 
   if (!options.repo) {
-    throw new GhitgudError(ERROR_NO_REPO);
+    throw new GitfleetError(ERROR_NO_REPO);
   }
 
   if (!options.reason) {
-    throw new GhitgudError(ERROR_DEPENDABOT_DISMISS_REASON_REQUIRED);
+    throw new GitfleetError(ERROR_DEPENDABOT_DISMISS_REASON_REQUIRED);
   }
 
   if (!DEPENDABOT_DISMISS_REASONS.includes(options.reason as never)) {
-    throw new GhitgudError(ERROR_INVALID_DEPENDABOT_DISMISS_REASON);
+    throw new GitfleetError(ERROR_INVALID_DEPENDABOT_DISMISS_REASON);
   }
 
   if (!options.yes) {
-    throw new GhitgudError(ERROR_MUTATION_REQUIRES_YES);
+    throw new GitfleetError(ERROR_MUTATION_REQUIRES_YES);
   }
 
   const repo = options.repo;

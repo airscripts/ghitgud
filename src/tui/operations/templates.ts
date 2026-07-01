@@ -7,8 +7,8 @@ const templateOperations: TuiOperation[] = [
     workspace: "Templates",
     id: "template.list",
     title: "List Templates",
-    command: "ghg template list",
-    description: "List available issue and PR templates.",
+    command: "gitfleet template list",
+    description: "List available issue and change templates.",
     inputs: [repoInput],
     run: async ({ values }) =>
       templateService.list({
@@ -19,7 +19,7 @@ const templateOperations: TuiOperation[] = [
     workspace: "Templates",
     id: "template.show",
     title: "Show Template",
-    command: "ghg template show <name>",
+    command: "gitfleet template show <name>",
     description: "Preview a specific template.",
     inputs: [
       { key: "name", label: "Template name", type: "string", required: true },

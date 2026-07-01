@@ -12,7 +12,7 @@ const repositoryOperations: TuiOperation[] = [
     id: "repos.inspect",
     inputs: targetInputs,
     workspace: "Repositories",
-    command: "ghg repos inspect",
+    command: "gitfleet repos inspect",
     title: "Inspect Repositories",
     description: "Inspect repository governance files.",
     run: ({ values }) => reposInspectService.inspect(targetOptions(values)),
@@ -23,7 +23,7 @@ const repositoryOperations: TuiOperation[] = [
     id: "repos.govern",
     dryRunDefault: true,
     workspace: "Repositories",
-    command: "ghg repos govern",
+    command: "gitfleet repos govern",
     title: "Govern Repositories",
     description: "Apply repository rulesets.",
 
@@ -48,7 +48,7 @@ const repositoryOperations: TuiOperation[] = [
     id: "repos.label",
     dryRunDefault: true,
     workspace: "Repositories",
-    command: "ghg repos label",
+    command: "gitfleet repos label",
     title: "Label Repositories",
     description: "Sync labels across repository targets.",
 
@@ -75,7 +75,7 @@ const repositoryOperations: TuiOperation[] = [
     id: "repos.retire",
     dryRunDefault: true,
     workspace: "Repositories",
-    command: "ghg repos retire",
+    command: "gitfleet repos retire",
     title: "Retire Repositories",
     description: "Find and optionally archive inactive repositories.",
 
@@ -108,7 +108,7 @@ const repositoryOperations: TuiOperation[] = [
     id: "repos.report",
     workspace: "Repositories",
     title: "Repository Report",
-    command: "ghg repos report",
+    command: "gitfleet repos report",
     description: "Report repository health and velocity.",
     inputs: [...targetInputs, { key: "since", label: "Since", type: "string" }],
 
@@ -124,7 +124,7 @@ const repositoryOperations: TuiOperation[] = [
     id: "repos.clone",
     dryRunDefault: true,
     workspace: "Repositories",
-    command: "ghg repos clone",
+    command: "gitfleet repos clone",
     title: "Clone Repositories",
 
     description:

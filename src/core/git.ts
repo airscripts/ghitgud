@@ -133,11 +133,18 @@ function getRemoteUrl(remote = "origin"): string {
 }
 
 function parseRepoFromRemoteUrl(remoteUrl: string): string | null {
-  const sshMatch = remoteUrl.match(/github\.com[:/](.+?)(?:\.git)?$/);
-  if (sshMatch?.[1]) return sshMatch[1];
+  const scpMatch = remoteUrl.match(/^[^@\s]+@([^:/\s]+):(.+?)(?:\.git)?$/);
+  if (scpMatch?.[2]) return scpMatch[2];
 
-  const httpsMatch = remoteUrl.match(/github\.com\/(.+?)(?:\.git)?$/);
-  if (httpsMatch?.[1]) return httpsMatch[1];
+  try {
+    const url = new URL(remoteUrl);
+    if ((url.protocol === "https:" || url.protocol === "ssh:") && url.host) {
+      const path = url.pathname.replace(/^\//, "").replace(/\.git$/, "");
+      return path || null;
+    }
+  } catch {
+    return null;
+  }
 
   return null;
 }

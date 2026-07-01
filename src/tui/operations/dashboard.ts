@@ -4,7 +4,7 @@ import notificationsService from "@/services/notifications";
 
 const dashboardOperations: TuiOperation[] = [
   {
-    command: "ghg tui",
+    command: "gitfleet tui",
     workspace: "Dashboard",
     id: "dashboard.overview",
     title: "Dashboard Overview",

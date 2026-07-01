@@ -1,6 +1,6 @@
 import output from "@/core/output";
 import logger from "@/core/logger";
-import { GhitgudError } from "@/core/errors";
+import { GitfleetError } from "@/core/errors";
 import environmentsApi from "@/api/environments";
 import { ERROR_ENVIRONMENT_NAME_REQUIRED } from "@/core/constants";
 
@@ -12,7 +12,7 @@ import {
 
 function extractOwnerRepo(repo: string): [string, string] {
   const parts = repo.split("/");
-  if (parts.length < 2) throw new GhitgudError("Invalid repository format.");
+  if (parts.length < 2) throw new GitfleetError("Invalid repository format.");
   return [parts[0], parts[1]];
 }
 
@@ -50,7 +50,7 @@ const create = async (
     waitTimer?: number;
   },
 ): Promise<{ success: boolean }> => {
-  if (!options.name) throw new GhitgudError(ERROR_ENVIRONMENT_NAME_REQUIRED);
+  if (!options.name) throw new GitfleetError(ERROR_ENVIRONMENT_NAME_REQUIRED);
 
   const [owner, name] = extractOwnerRepo(repo);
   logger.start(`Creating environment ${options.name}.`);
@@ -67,7 +67,7 @@ const listProtectionRules = async (
   success: boolean;
   rules: EnvironmentProtectionRule[];
 }> => {
-  if (!env) throw new GhitgudError(ERROR_ENVIRONMENT_NAME_REQUIRED);
+  if (!env) throw new GitfleetError(ERROR_ENVIRONMENT_NAME_REQUIRED);
 
   const [owner, name] = extractOwnerRepo(repo);
   logger.start(`Loading protection rules for environment ${env}.`);
@@ -107,7 +107,7 @@ const addProtectionRule = async (
     value: Record<string, unknown>;
   },
 ): Promise<{ success: boolean }> => {
-  if (!options.env) throw new GhitgudError(ERROR_ENVIRONMENT_NAME_REQUIRED);
+  if (!options.env) throw new GitfleetError(ERROR_ENVIRONMENT_NAME_REQUIRED);
 
   const [owner, name] = extractOwnerRepo(repo);
   logger.start(`Adding ${options.type} protection rule to ${options.env}.`);
@@ -131,7 +131,7 @@ const removeProtectionRule = async (
     ruleId: number;
   },
 ): Promise<{ success: boolean }> => {
-  if (!options.env) throw new GhitgudError(ERROR_ENVIRONMENT_NAME_REQUIRED);
+  if (!options.env) throw new GitfleetError(ERROR_ENVIRONMENT_NAME_REQUIRED);
 
   const [owner, name] = extractOwnerRepo(repo);
   logger.start(

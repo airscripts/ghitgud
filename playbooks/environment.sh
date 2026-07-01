@@ -2,7 +2,7 @@
 set -euo pipefail
 source "$(dirname "$0")/env.sh"
 
-ENV_NAME="ghg-test-env"
+ENV_NAME="gitfleet-test-env"
 ENV_CREATED=false
 
 setup() { :; }
@@ -19,10 +19,10 @@ trap teardown EXIT
 setup
 
 step "List Environments"
-expect_exit_0 "environment list succeeds" ghg environment list --repo "$REPO"
+expect_exit_0 "environment list succeeds" gitfleet environment list --repo "$REPO"
 
 step "Create Environment"
-if ghg environment create --name "$ENV_NAME" --repo "$REPO" >/dev/null 2>&1; then
+if gitfleet environment create --name "$ENV_NAME" --repo "$REPO" >/dev/null 2>&1; then
   pass "environment create succeeded"
   ENV_CREATED=true
 else
@@ -32,14 +32,14 @@ fi
 
 if [ "$ENV_CREATED" = true ]; then
   step "List Environments After Create"
-  expect_output "list shows new environment" "$ENV_NAME" ghg environment list --repo "$REPO"
+  expect_output "list shows new environment" "$ENV_NAME" gitfleet environment list --repo "$REPO"
 else
   skip "environment list after create"
 fi
 
 if [ "$ENV_CREATED" = true ]; then
   step "Environment Protection List"
-  output=$(ghg environment protection list --env "$ENV_NAME" --repo "$REPO" 2>&1) || true
+  output=$(gitfleet environment protection list --env "$ENV_NAME" --repo "$REPO" 2>&1) || true
 
   if echo "$output" | grep -qi "No protection rules\|0 protection rules"; then
     pass "protection list succeeds (no rules)"
@@ -54,4 +54,4 @@ else
 fi
 
 step "Create Environment Without --name"
-expect_exit_non0 "environment create without name fails" ghg environment create --repo "$REPO"
+expect_exit_non0 "environment create without name fails" gitfleet environment create --repo "$REPO"

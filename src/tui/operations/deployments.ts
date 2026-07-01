@@ -13,7 +13,7 @@ const deploymentOperations: TuiOperation[] = [
     workspace: "Deployments",
     id: "deployment.list",
     title: "List Deployments",
-    command: "ghg deployment list",
+    command: "gitfleet deployment list",
     description: "List repository deployments.",
     inputs: [
       repoInput,
@@ -31,7 +31,7 @@ const deploymentOperations: TuiOperation[] = [
     workspace: "Deployments",
     id: "deployment.view",
     title: "View Deployment",
-    command: "ghg deployment view <id>",
+    command: "gitfleet deployment view <id>",
     description: "View deployment details.",
     inputs: [
       repoInput,
@@ -48,7 +48,7 @@ const deploymentOperations: TuiOperation[] = [
     workspace: "Deployments",
     id: "deployment.create",
     title: "Create Deployment",
-    command: "ghg deployment create --ref <ref> --environment <env>",
+    command: "gitfleet deployment create --ref <ref> --environment <env>",
     description: "Create a new deployment.",
     inputs: [
       repoInput,
@@ -73,7 +73,7 @@ const deploymentOperations: TuiOperation[] = [
     workspace: "Deployments",
     id: "deployment.status",
     title: "List Deployment Statuses",
-    command: "ghg deployment status <id>",
+    command: "gitfleet deployment status <id>",
     description: "List statuses for a deployment.",
     inputs: [
       repoInput,

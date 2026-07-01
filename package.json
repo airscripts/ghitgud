@@ -1,7 +1,7 @@
 {
-  "name": "@airscript/ghitgud",
-  "version": "2.15.0",
-  "description": "A better GitHub CLI that extends the official gh CLI.",
+  "name": "gitfleet",
+  "version": "0.1.0",
+  "description": "Command every repository as one fleet.",
   "main": "dist/index.js",
   "files": [
     "dist",
@@ -9,8 +9,8 @@
     "VERSION"
   ],
   "bin": {
-    "ghitgud": "dist/index.js",
-    "ghg": "dist/index.js"
+    "gitfleet": "dist/index.js",
+    "gf": "dist/index.js"
   },
   "engines": {
     "node": ">=24",
@@ -47,14 +47,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/airscripts/ghitgud.git"
+    "url": "git+https://github.com/airscripts/gitfleet.git"
   },
   "author": "airscripts",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/airscripts/ghitgud/issues"
+    "url": "https://github.com/airscripts/gitfleet/issues"
   },
-  "homepage": "https://github.com/airscripts/ghitgud#readme",
+  "homepage": "https://github.com/airscripts/gitfleet#readme",
   "devDependencies": {
     "@eslint/js": "10.0.1",
     "@types/cli-progress": "^3.11.6",

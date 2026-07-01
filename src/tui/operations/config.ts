@@ -9,7 +9,7 @@ const configOperations: TuiOperation[] = [
     title: "Set Config",
     workspace: "Config",
     description: "Set a config value.",
-    command: "ghg config set <key> <value>",
+    command: "gitfleet config set <key> <value>",
 
     inputs: [
       { key: "key", label: "Key", type: "string", required: true },
@@ -33,7 +33,7 @@ const configOperations: TuiOperation[] = [
     id: "config.get",
     title: "Get Config",
     workspace: "Config",
-    command: "ghg config get <key>",
+    command: "gitfleet config get <key>",
     description: "Read a config value.",
     inputs: [{ key: "key", label: "Key", type: "string", required: true }],
     run: ({ values }) => configService.get(requiredText(values, "key")),
@@ -44,7 +44,7 @@ const configOperations: TuiOperation[] = [
     id: "config.unset",
     workspace: "Config",
     title: "Unset Config",
-    command: "ghg config unset <key>",
+    command: "gitfleet config unset <key>",
     description: "Remove a config value.",
     inputs: [{ key: "key", label: "Key", type: "string", required: true }],
     run: ({ values }) => configService.unset(requiredText(values, "key")),

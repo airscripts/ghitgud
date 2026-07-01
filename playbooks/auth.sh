@@ -2,18 +2,18 @@
 set -euo pipefail
 source "$(dirname "$0")/env.sh"
 
-AUTH_PROFILE="ghg-test-auth"
+AUTH_PROFILE="gitfleet-test-auth"
 ORIGINAL_TOKEN=""
 LOGGED_IN=false
 
 setup() {
-  ORIGINAL_TOKEN=$(ghg auth token --raw 2>/dev/null || echo "")
+  ORIGINAL_TOKEN=$(gitfleet auth token --raw 2>/dev/null || echo "")
 }
 
 teardown() {
   if [ -n "$ORIGINAL_TOKEN" ]; then
     step "Restoring Original Authentication"
-    ghg auth login --token "$ORIGINAL_TOKEN" >/dev/null 2>&1 || true
+    gitfleet auth login --token "$ORIGINAL_TOKEN" >/dev/null 2>&1 || true
   fi
 
   print_summary
@@ -23,16 +23,16 @@ trap teardown EXIT
 setup
 
 step "Auth Status"
-expect_exit_0 "auth status succeeds" ghg auth status
+expect_exit_0 "auth status succeeds" gitfleet auth status
 
 step "Auth Token (masked)"
-expect_exit_0 "auth token succeeds" ghg auth token
+expect_exit_0 "auth token succeeds" gitfleet auth token
 
 step "Auth Token (raw)"
-expect_exit_0 "auth token --raw succeeds" ghg auth token --raw
+expect_exit_0 "auth token --raw succeeds" gitfleet auth token --raw
 
 step "Auth Login"
-if ghg auth login --token "$GHG_TOKEN" >/dev/null 2>&1; then
+if gitfleet auth login --token "$GITFLEET_GITHUB_TOKEN" >/dev/null 2>&1; then
   pass "auth login succeeded"
   LOGGED_IN=true
 else
@@ -40,17 +40,17 @@ else
 fi
 
 step "Auth List"
-expect_exit_0 "auth list succeeds" ghg auth list
+expect_exit_0 "auth list succeeds" gitfleet auth list
 
 step "Auth Detect"
-expect_exit_0 "auth detect succeeds" ghg auth detect
+expect_exit_0 "auth detect succeeds" gitfleet auth detect
 
 step "Auth Login Without Token"
-CI=true expect_exit_non0 "auth login without token fails" ghg auth login
+CI=true expect_exit_non0 "auth login without token fails" gitfleet auth login
 
 step "Auth Logout"
 if [ "$LOGGED_IN" = true ]; then
-  expect_exit_0 "auth logout succeeds" ghg auth logout --yes
+  expect_exit_0 "auth logout succeeds" gitfleet auth logout --yes
 else
   skip "auth logout (was not logged in)"
 fi

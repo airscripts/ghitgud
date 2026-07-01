@@ -4,17 +4,17 @@ import fs from "fs/promises";
 import output from "@/core/output";
 import spinner from "@/core/spinner";
 import wikiGit from "@/core/wiki-git";
-import { GhitgudError } from "@/core/errors";
+import { GitfleetError } from "@/core/errors";
 import type { WikiPage, WikiPageContent } from "@/types";
 
 const INVALID_TITLE = /[\\/:*?"<>|]/;
 
 function validateTitle(page: string): string {
   const title = page.trim();
-  if (!title) throw new GhitgudError("Wiki page title is required.");
+  if (!title) throw new GitfleetError("Wiki page title is required.");
 
   if (INVALID_TITLE.test(title)) {
-    throw new GhitgudError(
+    throw new GitfleetError(
       `Invalid wiki page title "${page}". Avoid \\ / : * ? " < > |.`,
     );
   }
@@ -30,20 +30,20 @@ async function sourceFile(
   try {
     stats = await fs.open(file, "r");
   } catch {
-    throw new GhitgudError(`Wiki source file not found: ${file}.`);
+    throw new GitfleetError(`Wiki source file not found: ${file}.`);
   }
 
   try {
     const stat = await stats.stat();
     if (!stat.isFile()) {
-      throw new GhitgudError(`Wiki source path is not a file: ${file}.`);
+      throw new GitfleetError(`Wiki source path is not a file: ${file}.`);
     }
 
     const content = await stats.readFile();
     return { content, extension: path.extname(file) || ".md" };
   } catch (error) {
-    if (error instanceof GhitgudError) throw error;
-    throw new GhitgudError(`Wiki source file is not readable: ${file}.`);
+    if (error instanceof GitfleetError) throw error;
+    throw new GitfleetError(`Wiki source file is not readable: ${file}.`);
   } finally {
     await stats.close();
   }
@@ -104,7 +104,7 @@ async function resolvePage(
   });
 
   if (matches.length > 1) {
-    throw new GhitgudError(
+    throw new GitfleetError(
       `Wiki page "${requested}" is ambiguous. Include its file extension.`,
     );
   }
@@ -113,11 +113,11 @@ async function resolvePage(
 }
 
 function wikiError(error: unknown): never {
-  if (error instanceof GhitgudError) throw error;
+  if (error instanceof GitfleetError) throw error;
 
   const message = error instanceof Error ? error.message : String(error);
   if (/repository not found|not appear to be a git repository/i.test(message)) {
-    throw new GhitgudError(
+    throw new GitfleetError(
       "The wiki does not exist or has not been initialized for this repository.",
     );
   }
@@ -127,16 +127,16 @@ function wikiError(error: unknown): never {
       message,
     )
   ) {
-    throw new GhitgudError(
+    throw new GitfleetError(
       "Wiki authentication failed. Check the token and repository permissions.",
     );
   }
 
   if (/nothing to commit/i.test(message)) {
-    throw new GhitgudError("The wiki page content is unchanged.");
+    throw new GitfleetError("The wiki page content is unchanged.");
   }
 
-  throw new GhitgudError("Wiki Git operation failed.");
+  throw new GitfleetError("Wiki Git operation failed.");
 }
 
 const list = async (
@@ -182,7 +182,7 @@ const view = async (
           const resolved = await resolvePage(directory, page);
 
           if (!resolved)
-            throw new GhitgudError(`Wiki page not found: ${page}.`);
+            throw new GitfleetError(`Wiki page not found: ${page}.`);
 
           const content = await fs.readFile(
             path.join(directory, resolved.path),
@@ -216,7 +216,7 @@ const edit = async (
           const resolved = await resolvePage(directory, page);
 
           if (!resolved)
-            throw new GhitgudError(`Wiki page not found: ${page}.`);
+            throw new GitfleetError(`Wiki page not found: ${page}.`);
 
           await fs.writeFile(
             path.join(directory, resolved.path),
@@ -253,7 +253,7 @@ const create = async (
       async () => {
         return await wikiGit.withClone(repo, async (directory) => {
           if (await resolvePage(directory, page)) {
-            throw new GhitgudError(`Wiki page already exists: ${page}.`);
+            throw new GitfleetError(`Wiki page already exists: ${page}.`);
           }
 
           const filename = path.extname(normalized)
@@ -294,7 +294,7 @@ const deletePage = async (
           const resolved = await resolvePage(directory, page);
 
           if (!resolved) {
-            throw new GhitgudError(`Wiki page not found: ${page}.`);
+            throw new GitfleetError(`Wiki page not found: ${page}.`);
           }
 
           await fs.rm(path.join(directory, resolved.path));

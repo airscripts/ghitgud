@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
 import dependabotService from "@/services/dependabot";
-import dependabotOperations from "@/tui/operations/dependabot";
+import dependabotOperations from "@/tui/operations/security-dependencies";
 
 vi.mock("@/services/dependabot", () => ({
   default: {
@@ -12,9 +12,9 @@ vi.mock("@/services/dependabot", () => ({
 
 vi.mock("@/core/repo", () => ({
   default: {
-    resolveRepo: vi.fn().mockResolvedValue("airscripts/ghitgud"),
-    resolveRepoSync: vi.fn().mockReturnValue("airscripts/ghitgud"),
-    resolveRepos: vi.fn().mockResolvedValue(["airscripts/ghitgud"]),
+    resolveRepo: vi.fn().mockResolvedValue("airscripts/gitfleet"),
+    resolveRepoSync: vi.fn().mockReturnValue("airscripts/gitfleet"),
+    resolveRepos: vi.fn().mockResolvedValue(["airscripts/gitfleet"]),
   },
 }));
 
@@ -55,7 +55,7 @@ describe("tui dependabot operations", () => {
         alert: 1,
         dismissed: true,
         reason: "fix_started",
-        repo: "airscripts/ghitgud",
+        repo: "airscripts/gitfleet",
       },
     });
 
@@ -68,7 +68,7 @@ describe("tui dependabot operations", () => {
       yes: true,
       comment: undefined,
       reason: "fix_started",
-      repo: "airscripts/ghitgud",
+      repo: "airscripts/gitfleet",
     });
   });
 });

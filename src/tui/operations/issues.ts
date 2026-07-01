@@ -14,7 +14,7 @@ const issueOperations: TuiOperation[] = [
     workspace: "Issues",
     title: "List Sub-Issues",
     id: "issue.subtasks.list",
-    command: "ghg issue subtasks <issue>",
+    command: "gitfleet issue subtasks <issue>",
     description: "List sub-issues for a parent issue.",
 
     inputs: [
@@ -33,7 +33,7 @@ const issueOperations: TuiOperation[] = [
     workspace: "Issues",
     title: "Create Sub-Issue",
     id: "issue.subtasks.create",
-    command: "ghg issue subtasks <issue> --create",
+    command: "gitfleet issue subtasks <issue> --create",
     description: "Create a new issue and link it as a sub-issue.",
 
     inputs: [
@@ -59,7 +59,7 @@ const issueOperations: TuiOperation[] = [
     workspace: "Issues",
     title: "Link Sub-Issue",
     id: "issue.subtasks.link",
-    command: "ghg issue subtasks <issue> --link <issue>",
+    command: "gitfleet issue subtasks <issue> --link <issue>",
     description: "Link an existing issue as a sub-issue.",
 
     inputs: [
@@ -82,7 +82,7 @@ const issueOperations: TuiOperation[] = [
     id: "issue.parent",
     workspace: "Issues",
     title: "Set Issue Parent",
-    command: "ghg issue parent <child> --parent <parent>",
+    command: "gitfleet issue parent <child> --parent <parent>",
     description: "Link an existing issue to a parent issue.",
 
     inputs: [
@@ -105,7 +105,7 @@ const issueOperations: TuiOperation[] = [
     id: "issue.create",
     workspace: "Issues",
     title: "Create Issue",
-    command: "ghg issue create",
+    command: "gitfleet issue create",
     description: "Create a repository issue.",
 
     inputs: [
@@ -153,7 +153,7 @@ const issueOperations: TuiOperation[] = [
     id: "issue.list",
     workspace: "Issues",
     title: "List Issues",
-    command: "ghg issue list",
+    command: "gitfleet issue list",
     description: "List filtered repository issues.",
 
     inputs: [
@@ -186,7 +186,7 @@ const issueOperations: TuiOperation[] = [
     id: "issue.view",
     workspace: "Issues",
     title: "View Issue",
-    command: "ghg issue view <number>",
+    command: "gitfleet issue view <number>",
     description: "View issue details.",
 
     inputs: [
@@ -206,7 +206,7 @@ const issueOperations: TuiOperation[] = [
     id: "issue.edit",
     workspace: "Issues",
     title: "Edit Issue",
-    command: "ghg issue edit <number>",
+    command: "gitfleet issue edit <number>",
     description: "Replace an issue title or body.",
 
     inputs: [
@@ -238,7 +238,7 @@ const issueOperations: TuiOperation[] = [
       id: `issue.${action}`,
       workspace: "Issues",
       title: `${action[0].toUpperCase()}${action.slice(1)} Issue`,
-      command: `ghg issue ${action} <number>`,
+      command: `gitfleet issue ${action} <number>`,
       description: `${action[0].toUpperCase()}${action.slice(1)} an issue.`,
 
       inputs: [
@@ -259,7 +259,7 @@ const issueOperations: TuiOperation[] = [
     id: "issue.comment",
     workspace: "Issues",
     title: "Comment on Issue",
-    command: "ghg issue comment <number>",
+    command: "gitfleet issue comment <number>",
     description: "Add an issue comment.",
     inputs: [
       repoInput,
@@ -279,7 +279,7 @@ const issueOperations: TuiOperation[] = [
     id: "issue.transfer",
     workspace: "Issues",
     title: "Transfer Issue",
-    command: "ghg issue transfer <number> --repo <target>",
+    command: "gitfleet issue transfer <number> --repo <target>",
     description: "Transfer an issue to another repository.",
 
     inputs: [
@@ -306,7 +306,7 @@ const issueOperations: TuiOperation[] = [
     id: "issue.status",
     workspace: "Issues",
     title: "Issue Status",
-    command: "ghg issue status",
+    command: "gitfleet issue status",
     description: "Show assigned, created, and mentioned open issues.",
     inputs: [repoInput],
     run: async ({ values }) => issueService.status(text(values, "repo")),
@@ -316,7 +316,7 @@ const issueOperations: TuiOperation[] = [
     id: "issue.type.list",
     workspace: "Issues",
     title: "List Issue Types",
-    command: "ghg issue type list",
+    command: "gitfleet issue type list",
     description: "List available issue types for the repository.",
     inputs: [repoInput],
     run: async ({ values }) =>

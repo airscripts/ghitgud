@@ -5,7 +5,7 @@ import io from "@/core/io";
 import git from "@/core/git";
 import logger from "@/core/logger";
 import stackService from "@/services/stack";
-import { GhitgudError } from "@/core/errors";
+import { GitfleetError } from "@/core/errors";
 
 vi.mock("@/api/pr", () => ({
   default: {
@@ -104,7 +104,7 @@ describe("stack service", () => {
       (git.branchExistsLocally as Mock).mockReturnValue(false);
 
       await expect(stackService.create({ base: "auto" })).rejects.toThrow(
-        GhitgudError,
+        GitfleetError,
       );
     });
   });

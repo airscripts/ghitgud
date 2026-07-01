@@ -7,7 +7,7 @@ const depsOperations: TuiOperation[] = [
     workspace: "Dependencies",
     id: "deps.list",
     title: "List Dependencies",
-    command: "ghg deps list",
+    command: "gitfleet deps list",
     description: "List dependencies for a repository.",
     inputs: [repoInput],
     run: async ({ values }) =>
@@ -17,7 +17,7 @@ const depsOperations: TuiOperation[] = [
     workspace: "Dependencies",
     id: "deps.direct",
     title: "List Direct Dependencies",
-    command: "ghg deps direct",
+    command: "gitfleet deps direct",
     description: "List direct dependencies only.",
     inputs: [repoInput],
     run: async ({ values }) =>
@@ -27,7 +27,7 @@ const depsOperations: TuiOperation[] = [
     workspace: "Dependencies",
     id: "deps.review",
     title: "Review Dependency Changes",
-    command: "ghg deps review --base <ref> --head <ref>",
+    command: "gitfleet deps review --base <ref> --head <ref>",
     description: "Compare dependencies between two refs.",
     inputs: [
       repoInput,

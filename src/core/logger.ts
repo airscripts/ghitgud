@@ -5,7 +5,7 @@ import { createConsola } from "consola";
 
 import outputState from "@/core/output-state";
 
-const baseLogger = createConsola({ defaults: { tag: "ghg" } });
+const baseLogger = createConsola({ defaults: { tag: "gitfleet" } });
 
 const callIfHuman =
   (method: (message: unknown, ...args: unknown[]) => unknown) =>
@@ -17,7 +17,7 @@ const callIfHuman =
 
 const debugLogPath = path.join(
   process.env.TMPDIR || "/tmp",
-  `ghg-debug-${process.pid}.log`,
+  `gitfleet-debug-${process.pid}.log`,
 );
 
 const writeDebugLog = (line: string) => {

@@ -1,8 +1,8 @@
-import client from "@/api/client";
+import client from "@/providers/github/client";
 import invites from "@/api/invites";
 import { describe, it, expect, vi, Mock } from "vitest";
 
-vi.mock("@/api/client", () => ({
+vi.mock("@/providers/github/client", () => ({
   default: {
     put: vi.fn(),
   },
@@ -13,23 +13,23 @@ describe("invites api", () => {
     (client.put as Mock).mockResolvedValue({ status: 201 });
     await invites.inviteCollaborator(
       "airscripts",
-      "ghitgud",
+      "gitfleet",
       "octocat",
       "push",
     );
 
     expect(client.put).toHaveBeenCalledWith(
-      "/repos/airscripts/ghitgud/collaborators/octocat",
+      "/repos/airscripts/gitfleet/collaborators/octocat",
       { permission: "push" },
     );
   });
 
   it("should call client.put for grantTeamAccess", async () => {
     (client.put as Mock).mockResolvedValue({ status: 201 });
-    await invites.grantTeamAccess("airscripts", "ghitgud", "ops", "admin");
+    await invites.grantTeamAccess("airscripts", "gitfleet", "ops", "admin");
 
     expect(client.put).toHaveBeenCalledWith(
-      "/repos/airscripts/ghitgud/teams/ops",
+      "/repos/airscripts/gitfleet/teams/ops",
       { permission: "admin" },
     );
   });

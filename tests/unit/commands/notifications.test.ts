@@ -2,13 +2,13 @@ import { Command } from "commander";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
 import service from "@/services/notifications";
-import notificationsCommand from "@/commands/notifications";
+import notificationsCommand from "@/commands/inbox-notifications";
 
 vi.mock("@/core/repo", () => ({
   default: {
-    resolveRepo: vi.fn().mockResolvedValue("airscripts/ghitgud"),
-    resolveRepoSync: vi.fn().mockReturnValue("airscripts/ghitgud"),
-    resolveRepos: vi.fn().mockResolvedValue(["airscripts/ghitgud"]),
+    resolveRepo: vi.fn().mockResolvedValue("airscripts/gitfleet"),
+    resolveRepoSync: vi.fn().mockReturnValue("airscripts/gitfleet"),
+    resolveRepos: vi.fn().mockResolvedValue(["airscripts/gitfleet"]),
   },
 }));
 
@@ -24,7 +24,9 @@ vi.mock("@/services/repos/index", () => ({
   default: {
     resolveTargets: vi
       .fn()
-      .mockResolvedValue([{ fullName: "airscripts/ghitgud", name: "ghitgud" }]),
+      .mockResolvedValue([
+        { fullName: "airscripts/gitfleet", name: "gitfleet" },
+      ]),
   },
 }));
 
@@ -43,7 +45,7 @@ describe("notifications command", () => {
     const program = new Command();
     notificationsCommand.register(program);
 
-    const notifications = program.commands.find(
+    const notifications = program.commands[0]?.commands.find(
       (c) => c.name() === "notifications",
     );
 
@@ -64,6 +66,7 @@ describe("notifications command", () => {
       program.parseAsync([
         "node",
         "test",
+        "inbox",
         "notifications",
         "list",
         "--limit",

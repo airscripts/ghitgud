@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 
 import orgService from "@/services/org";
-import orgOperations from "@/tui/operations/org";
+import orgOperations from "@/tui/operations/access-org";
 
 vi.mock("@/services/org", () => ({
   default: {

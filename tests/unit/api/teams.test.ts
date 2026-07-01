@@ -1,9 +1,9 @@
 import { describe, it, expect, vi, Mock } from "vitest";
 
 import teams from "@/api/teams";
-import client from "@/api/client";
+import client from "@/providers/github/client";
 
-vi.mock("@/api/client", () => ({
+vi.mock("@/providers/github/client", () => ({
   default: {
     get: vi.fn(),
     put: vi.fn(),

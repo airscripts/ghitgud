@@ -2,7 +2,7 @@ import api from "@/api/issues";
 import output from "@/core/output";
 import logger from "@/core/logger";
 import repoResolver from "@/core/repo";
-import { GhitgudError } from "@/core/errors";
+import { GitfleetError } from "@/core/errors";
 import { IssueSummary, SubIssueSummary } from "@/types";
 
 interface SubtaskOptions {
@@ -34,7 +34,7 @@ interface IssueType {
 function parseIssueNumber(value: string | number): number {
   const issueNumber = Number(value);
   if (!Number.isInteger(issueNumber) || issueNumber <= 0) {
-    throw new GhitgudError(`Invalid issue number: ${value}`);
+    throw new GitfleetError(`Invalid issue number: ${value}`);
   }
   return issueNumber;
 }
@@ -81,7 +81,9 @@ async function fetchIssue(repo: string, issueNumber: number) {
 
 function requireNodeId(issue: IssueSummary, issueNumber: number): string {
   if (!issue.node_id) {
-    throw new GhitgudError(`Issue #${issueNumber} does not include a node id.`);
+    throw new GitfleetError(
+      `Issue #${issueNumber} does not include a node id.`,
+    );
   }
 
   return issue.node_id;
@@ -89,7 +91,8 @@ function requireNodeId(issue: IssueSummary, issueNumber: number): string {
 
 async function readGraphQl(response: Response): Promise<GraphQlPayload> {
   const payload = (await response.json()) as GraphQlPayload;
-  if (payload.errors?.length) throw new GhitgudError(payload.errors[0].message);
+  if (payload.errors?.length)
+    throw new GitfleetError(payload.errors[0].message);
   return payload;
 }
 
@@ -105,7 +108,7 @@ async function resolveType(repo: string, requested?: string) {
   if (matches.length !== 1) {
     const available = types.map((type) => type.name).join(", ") || "none";
 
-    throw new GhitgudError(
+    throw new GitfleetError(
       `Issue type "${requested}" was not found. Available: ${available}.`,
     );
   }
@@ -149,7 +152,7 @@ const list = async (
   },
 ) => {
   if ((options.limit ?? 10) > 100) {
-    throw new GhitgudError("Issue list limit cannot exceed 100.");
+    throw new GitfleetError("Issue list limit cannot exceed 100.");
   }
 
   logger.start(`Loading issues from ${repo}.`);
@@ -201,7 +204,7 @@ const edit = async (
   const number = parseIssueNumber(value);
 
   if (options.body !== undefined && options.removeBody) {
-    throw new GhitgudError("Use either --body or --remove-body, not both.");
+    throw new GitfleetError("Use either --body or --remove-body, not both.");
   }
 
   if (
@@ -209,7 +212,7 @@ const edit = async (
     options.body === undefined &&
     !options.removeBody
   ) {
-    throw new GhitgudError("Provide --title, --body, or --remove-body.");
+    throw new GitfleetError("Provide --title, --body, or --remove-body.");
   }
 
   logger.start(`Editing issue #${number}.`);
@@ -308,7 +311,7 @@ const transfer = async (
 
   const repository = (await repositoryResponse.json()) as { node_id?: string };
   if (!repository.node_id) {
-    throw new GhitgudError(
+    throw new GitfleetError(
       `Repository ${targetRepo} does not include a node id.`,
     );
   }
@@ -319,7 +322,8 @@ const transfer = async (
   );
 
   const transferred = payload.data?.transferIssue?.issue;
-  if (!transferred) throw new GhitgudError("Transfer did not return an issue.");
+  if (!transferred)
+    throw new GitfleetError("Transfer did not return an issue.");
   logger.success(`Transferred issue to ${targetRepo}#${transferred.number}.`);
   return { success: true, issue: transferred };
 };
@@ -358,7 +362,7 @@ const status = async (repo?: string) => {
 async function linkSubIssue(repo: string, parent: number, child: number) {
   const childIssue = await fetchIssue(repo, child);
   if (!childIssue.id)
-    throw new GhitgudError(`Issue #${child} does not include an API id.`);
+    throw new GitfleetError(`Issue #${child} does not include an API id.`);
   await api.addSubIssue(parent, childIssue.id, repo);
   logger.success(`Linked issue #${child} under issue #${parent}.`);
   output.renderSummary("Sub-Issue Linked", [
@@ -375,10 +379,10 @@ const subtasks = async (
 ) => {
   const parent = parseIssueNumber(issue);
   if (options.create && options.link)
-    throw new GhitgudError("Use either --create or --link, not both.");
+    throw new GitfleetError("Use either --create or --link, not both.");
   if (options.create) {
     if (!options.title)
-      throw new GhitgudError("--title is required when using --create.");
+      throw new GitfleetError("--title is required when using --create.");
     logger.start(`Creating sub-issue for issue #${parent}.`);
     const response = await api.create(
       { body: options.body, title: options.title },
@@ -386,7 +390,7 @@ const subtasks = async (
     );
     const child = (await response.json()) as IssueSummary;
     if (!child.number)
-      throw new GhitgudError("Created issue did not include a number.");
+      throw new GitfleetError("Created issue did not include a number.");
     return linkSubIssue(repo, parent, child.number);
   }
   if (options.link) {
@@ -413,7 +417,7 @@ const parent = async (
   childValue: string,
   options: { parent?: string },
 ) => {
-  if (!options.parent) throw new GhitgudError("--parent is required.");
+  if (!options.parent) throw new GitfleetError("--parent is required.");
   const child = parseIssueNumber(childValue);
   const parentIssue = parseIssueNumber(options.parent);
   logger.start(`Linking issue #${child} under issue #${parentIssue}.`);

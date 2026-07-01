@@ -71,7 +71,7 @@ vi.mock("@/core/io", () => ({
 import git from "@/core/git";
 import api from "@/api/releases";
 import logger from "@/core/logger";
-import { GhitgudError } from "@/core/errors";
+import { GitfleetError } from "@/core/errors";
 import releaseService from "@/services/release";
 import { ERROR_NO_REPO } from "@/core/constants";
 
@@ -220,7 +220,7 @@ describe("release service", () => {
     });
 
     it("downloads, uploads, replaces, and deletes assets", async () => {
-      const dir = fs.mkdtempSync(path.join(os.tmpdir(), "ghg-release-"));
+      const dir = fs.mkdtempSync(path.join(os.tmpdir(), "gitfleet-release-"));
       const uploadFile = path.join(dir, "upload.zip");
       fs.writeFileSync(uploadFile, "upload");
       const assetRelease = {
@@ -374,13 +374,13 @@ describe("release service", () => {
       );
 
       await expect(releaseService.bump({ create: true })).rejects.toThrow(
-        GhitgudError,
+        GitfleetError,
       );
     });
 
     it("should throw domain error when push is used without create", async () => {
       await expect(releaseService.bump({ push: true })).rejects.toThrow(
-        GhitgudError,
+        GitfleetError,
       );
     });
   });
@@ -468,7 +468,7 @@ describe("release service", () => {
     });
 
     it("writes notes and falls back when templates are unavailable", async () => {
-      const target = path.join(os.tmpdir(), "ghg-release-notes.md");
+      const target = path.join(os.tmpdir(), "gitfleet-release-notes.md");
       const io = (await import("@/core/io")).default;
       vi.mocked(io.fileExists).mockReturnValue(false);
       const result = await releaseService.notes({

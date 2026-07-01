@@ -1,7 +1,7 @@
 import { Command } from "commander";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
-import insightsCommand from "@/commands/insights";
+import insightsCommand from "@/commands/analytics-repo";
 
 vi.mock("@/services/insights", () => ({
   default: {
@@ -37,7 +37,8 @@ describe("integration > insights commands", () => {
     await program.parseAsync([
       "node",
       "test",
-      "insights",
+      "analytics",
+      "repo",
       "traffic",
       "--repo",
       "owner/repo",
@@ -54,7 +55,8 @@ describe("integration > insights commands", () => {
     await program.parseAsync([
       "node",
       "test",
-      "insights",
+      "analytics",
+      "repo",
       "contributors",
       "--repo",
       "owner/repo",
@@ -71,7 +73,8 @@ describe("integration > insights commands", () => {
     await program.parseAsync([
       "node",
       "test",
-      "insights",
+      "analytics",
+      "repo",
       "commits",
       "--repo",
       "owner/repo",
@@ -88,7 +91,8 @@ describe("integration > insights commands", () => {
     await program.parseAsync([
       "node",
       "test",
-      "insights",
+      "analytics",
+      "repo",
       "frequency",
       "--repo",
       "owner/repo",
@@ -105,7 +109,8 @@ describe("integration > insights commands", () => {
     await program.parseAsync([
       "node",
       "test",
-      "insights",
+      "analytics",
+      "repo",
       "popularity",
       "--repo",
       "owner/repo",
@@ -122,7 +127,8 @@ describe("integration > insights commands", () => {
     await program.parseAsync([
       "node",
       "test",
-      "insights",
+      "analytics",
+      "repo",
       "participation",
       "--repo",
       "owner/repo",

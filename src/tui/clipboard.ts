@@ -1,5 +1,5 @@
 import { execFileSync } from "child_process";
-import { GhitgudError } from "@/core/errors";
+import { GitfleetError } from "@/core/errors";
 
 const copyToClipboard = (text: string): void => {
   const platform = process.platform;
@@ -60,7 +60,7 @@ const copyToClipboard = (text: string): void => {
     // Fall through.
   }
 
-  throw new GhitgudError(
+  throw new GitfleetError(
     "No clipboard tool found. Install xclip, xsel, or wl-copy.",
   );
 };
@@ -122,7 +122,7 @@ const pasteFromClipboard = (): string => {
     // Fall through.
   }
 
-  throw new GhitgudError(
+  throw new GitfleetError(
     "No clipboard tool found. Install xclip, xsel, or wl-copy.",
   );
 };

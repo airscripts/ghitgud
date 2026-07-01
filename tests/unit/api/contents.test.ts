@@ -1,9 +1,9 @@
-import client from "@/api/client";
+import client from "@/providers/github/client";
 import contents from "@/api/contents";
 import { NotFoundError } from "@/core/errors";
 import { describe, it, expect, vi, Mock } from "vitest";
 
-vi.mock("@/api/client", () => ({
+vi.mock("@/providers/github/client", () => ({
   default: {
     get: vi.fn(),
   },

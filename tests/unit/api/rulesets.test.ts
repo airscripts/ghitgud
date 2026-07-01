@@ -1,10 +1,10 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
-import client from "@/api/client";
+import client from "@/providers/github/client";
 import rulesets from "@/api/rulesets";
 import { jsonResponse } from "../helpers/response";
 
-vi.mock("@/api/client", () => ({
+vi.mock("@/providers/github/client", () => ({
   default: {
     get: vi.fn(),
     getTokenRequired: vi.fn(),
@@ -61,11 +61,11 @@ describe("rulesets api", () => {
     vi.mocked(client.getTokenRequired).mockResolvedValue(
       jsonResponse([{ id: 1, name: "Org" }]),
     );
-    await rulesets.listTarget({ org: "acme" });
-    await rulesets.getTarget({ org: "acme" }, 1);
-    await rulesets.createTarget({ org: "acme" }, ruleset);
-    await rulesets.updateTarget({ org: "acme" }, 1, ruleset);
-    await rulesets.deleteTarget({ org: "acme" }, 1);
+    await rulesets.listTarget({ namespace: "acme" });
+    await rulesets.getTarget({ namespace: "acme" }, 1);
+    await rulesets.createTarget({ namespace: "acme" }, ruleset);
+    await rulesets.updateTarget({ namespace: "acme" }, 1, ruleset);
+    await rulesets.deleteTarget({ namespace: "acme" }, 1);
     await rulesets.checkBranch("owner/repo", "release/v1");
     expect(client.getTokenRequired).toHaveBeenCalledWith(
       "/repos/owner/repo/rules/branches/release%2Fv1",

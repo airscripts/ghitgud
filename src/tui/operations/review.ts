@@ -16,12 +16,12 @@ const reviewOperations: TuiOperation[] = [
     workspace: "Review",
     id: "review.comment",
     title: "Review Comment",
-    command: "ghg review comment <pr>",
+    command: "gitfleet review comment <pr>",
     description: "Create a line review comment.",
 
     inputs: [
       repoInput,
-      { key: "pr", label: "PR number", type: "number", required: true },
+      { key: "pr", label: "Change number", type: "number", required: true },
       { key: "file", label: "File", type: "string", required: true },
       { key: "line", label: "Line", type: "number", required: true },
       { key: "body", label: "Body", type: "string", required: true },
@@ -43,12 +43,12 @@ const reviewOperations: TuiOperation[] = [
     workspace: "Review",
     id: "review.threads",
     title: "Review Threads",
-    command: "ghg review threads <pr>",
-    description: "List review threads for a PR.",
+    command: "gitfleet review threads <pr>",
+    description: "List review threads for a proposed change.",
 
     inputs: [
       repoInput,
-      { key: "pr", label: "PR number", type: "number", required: true },
+      { key: "pr", label: "Change number", type: "number", required: true },
     ],
 
     run: async ({ values }) =>
@@ -63,13 +63,13 @@ const reviewOperations: TuiOperation[] = [
     workspace: "Review",
     id: "review.resolve",
     title: "Resolve Review Thread",
-    command: "ghg review resolve <thread-id> <pr>",
+    command: "gitfleet review resolve <thread-id> <pr>",
     description: "Mark a review thread as resolved.",
 
     inputs: [
       repoInput,
       { key: "threadId", label: "Thread ID", type: "number", required: true },
-      { key: "pr", label: "PR number", type: "number", required: true },
+      { key: "pr", label: "Change number", type: "number", required: true },
     ],
 
     run: async ({ values }) =>
@@ -85,12 +85,12 @@ const reviewOperations: TuiOperation[] = [
     workspace: "Review",
     id: "review.suggest",
     title: "Review Suggestion",
-    command: "ghg review suggest <pr>",
+    command: "gitfleet review suggest <pr>",
     description: "Create a single-line suggestion.",
 
     inputs: [
       repoInput,
-      { key: "pr", label: "PR number", type: "number", required: true },
+      { key: "pr", label: "Change number", type: "number", required: true },
       { key: "file", label: "File", type: "string", required: true },
       { key: "line", label: "Line", type: "number", required: true },
       { key: "replace", label: "Replacement", type: "string", required: true },
@@ -111,12 +111,12 @@ const reviewOperations: TuiOperation[] = [
     id: "review.apply",
     workspace: "Review",
     title: "Apply Suggestions",
-    command: "ghg review apply <pr>",
+    command: "gitfleet review apply <pr>",
     description: "Apply review suggestions locally.",
 
     inputs: [
       repoInput,
-      { key: "pr", label: "PR number", type: "number", required: true },
+      { key: "pr", label: "Change number", type: "number", required: true },
       { key: "push", label: "Push", type: "boolean" },
     ],
 

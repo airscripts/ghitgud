@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
 import forkService from "@/services/fork";
-import forkOperations from "@/tui/operations/forks";
+import forkOperations from "@/tui/operations/repo-forks";
 
 vi.mock("@/services/fork", () => ({
   default: { sync: vi.fn(), compare: vi.fn(), list: vi.fn(), create: vi.fn() },

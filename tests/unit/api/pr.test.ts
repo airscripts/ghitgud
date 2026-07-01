@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 
 const mockRepo = "owner/repo";
 
-vi.mock("@/api/client", () => ({
+vi.mock("@/providers/github/client", () => ({
   default: {
     get: vi.fn(),
     getTokenRequired: vi.fn(),
@@ -14,7 +14,7 @@ vi.mock("@/api/client", () => ({
   },
 }));
 
-import client from "@/api/client";
+import client from "@/providers/github/client";
 import pr from "@/api/pr";
 
 describe("pr api", () => {

@@ -15,7 +15,7 @@ const releaseOperations: TuiOperation[] = [
     id: "release.list",
     workspace: "Release",
     title: "List Releases",
-    command: "ghg release list",
+    command: "gitfleet release list",
     description: "List repository releases.",
     inputs: [
       repoInput,
@@ -31,7 +31,7 @@ const releaseOperations: TuiOperation[] = [
     id: "release.view",
     workspace: "Release",
     title: "View Release",
-    command: "ghg release view <tag>",
+    command: "gitfleet release view <tag>",
     description: "View release details and assets.",
     inputs: [
       repoInput,
@@ -47,8 +47,8 @@ const releaseOperations: TuiOperation[] = [
     id: "release.create",
     workspace: "Release",
     title: "Create Release",
-    command: "ghg release create <tag>",
-    description: "Create a GitHub release.",
+    command: "gitfleet release create <tag>",
+    description: "Create a provider release.",
     mutates: true,
     inputs: [
       repoInput,
@@ -73,7 +73,7 @@ const releaseOperations: TuiOperation[] = [
     id: "release.edit",
     workspace: "Release",
     title: "Edit Release",
-    command: "ghg release edit <tag>",
+    command: "gitfleet release edit <tag>",
     description: "Edit release title or notes.",
     mutates: true,
     inputs: [
@@ -93,8 +93,8 @@ const releaseOperations: TuiOperation[] = [
     id: "release.delete",
     workspace: "Release",
     title: "Delete Release",
-    command: "ghg release delete <tag>",
-    description: "Delete a GitHub release.",
+    command: "gitfleet release delete <tag>",
+    description: "Delete a provider release.",
     mutates: true,
     inputs: [
       repoInput,
@@ -110,7 +110,7 @@ const releaseOperations: TuiOperation[] = [
     id: "release.download",
     workspace: "Release",
     title: "Download Release Assets",
-    command: "ghg release download <tag>",
+    command: "gitfleet release download <tag>",
     description: "Download matching release assets.",
     mutates: true,
     inputs: [
@@ -130,7 +130,7 @@ const releaseOperations: TuiOperation[] = [
     id: "release.upload",
     workspace: "Release",
     title: "Upload Release Assets",
-    command: "ghg release upload <tag> <files...>",
+    command: "gitfleet release upload <tag> <files...>",
     description: "Upload comma-separated files to a release.",
     mutates: true,
     inputs: [
@@ -160,7 +160,7 @@ const releaseOperations: TuiOperation[] = [
     id: "release.deleteAsset",
     workspace: "Release",
     title: "Delete Release Asset",
-    command: "ghg release delete-asset <tag> <asset-name>",
+    command: "gitfleet release delete-asset <tag> <asset-name>",
     description: "Delete an asset from a release.",
     mutates: true,
     inputs: [
@@ -179,7 +179,7 @@ const releaseOperations: TuiOperation[] = [
     workspace: "Release",
     id: "release.changelog",
     title: "Release Changelog",
-    command: "ghg release changelog",
+    command: "gitfleet release changelog",
     description: "Generate changelog from conventional commits.",
 
     inputs: [
@@ -199,7 +199,7 @@ const releaseOperations: TuiOperation[] = [
     id: "release.bump",
     workspace: "Release",
     title: "Bump Version",
-    command: "ghg release bump",
+    command: "gitfleet release bump",
     description: "Auto-detect or specify the next semver bump.",
 
     inputs: [
@@ -226,7 +226,7 @@ const releaseOperations: TuiOperation[] = [
     title: "Verify Tag",
     id: "release.verify",
     workspace: "Release",
-    command: "ghg release verify <tag>",
+    command: "gitfleet release verify <tag>",
     description: "Verify local tag/commit GPG signatures and release assets.",
 
     inputs: [
@@ -244,7 +244,7 @@ const releaseOperations: TuiOperation[] = [
     id: "release.notes",
     workspace: "Release",
     title: "Release Notes",
-    command: "ghg release notes",
+    command: "gitfleet release notes",
     description: "Generate release notes from a template.",
 
     inputs: [
@@ -271,8 +271,8 @@ const releaseOperations: TuiOperation[] = [
     id: "release.draft",
     workspace: "Release",
     title: "Draft Release",
-    command: "ghg release draft",
-    description: "Create a draft release on GitHub.",
+    command: "gitfleet release draft",
+    description: "Create a draft release on the provider.",
 
     inputs: [
       repoInput,

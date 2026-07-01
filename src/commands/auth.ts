@@ -4,7 +4,7 @@ import config from "@/core/config";
 import prompt from "@/core/prompt";
 import command from "@/core/command";
 import authService from "@/services/auth";
-import { GhitgudError, ConfigError } from "@/core/errors";
+import { GitfleetError, ConfigError } from "@/core/errors";
 
 import { ERROR_AUTH_NO_TOKEN } from "@/core/constants";
 
@@ -15,42 +15,41 @@ const register = (program: Command) => {
     "after",
     `
 Examples:
-  ghg auth login --token ghp_xxx
-  ghg auth login --token ghp_xxx --profile work
-  ghg auth logout
-  ghg auth status
-  ghg auth status --show-token
-  ghg auth token
-  ghg auth token --raw
-  ghg auth list
-  ghg auth switch work
-  ghg auth detect
-  ghg auth setup-git
+  gitfleet auth login --token ghp_xxx
+  gitfleet auth login --token ghp_xxx --profile work
+  gitfleet auth status
+  gitfleet auth switch work
 `,
   );
 
   auth
     .command("login")
-    .description("Authenticate with a GitHub token.")
-    .option("--token <token>", "GitHub personal access token")
+    .description("Authenticate with a provider token.")
+    .option("--token <token>", "Provider access token")
+    .option("--host <host>", "Provider host", "github.com")
     .option("--profile <name>", "Profile name (default: default)")
-    .action(async (options: { token?: string; profile?: string }) => {
-      let token = options.token;
-      if (!token) {
-        prompt.guardNonInteractive("Token is required.");
-        token = await prompt.text("Enter GitHub token:", {
-          placeholder: "ghp_...",
-        });
-      }
+    .action(
+      async (options: { token?: string; profile?: string; host?: string }) => {
+        let token = options.token;
+        if (!token) {
+          prompt.guardNonInteractive("Token is required.");
+          token = await prompt.text("Enter GitHub token:", {
+            placeholder: "ghp_...",
+          });
+        }
 
-      if (!token.trim()) {
-        throw new GhitgudError(ERROR_AUTH_NO_TOKEN);
-      }
+        if (!token.trim()) {
+          throw new GitfleetError(ERROR_AUTH_NO_TOKEN);
+        }
 
-      await command.run(() =>
-        authService.login(token, { profile: options.profile }),
-      );
-    });
+        await command.run(() =>
+          authService.login(token, {
+            host: options.host,
+            profile: options.profile,
+          }),
+        );
+      },
+    );
 
   auth
     .command("logout")
@@ -59,7 +58,7 @@ Examples:
     .action(async (options: { yes?: boolean }) => {
       const token = config.getTokenOptional();
       if (!token) {
-        throw new GhitgudError(ERROR_AUTH_NO_TOKEN);
+        throw new GitfleetError(ERROR_AUTH_NO_TOKEN);
       }
 
       if (!options.yes) {
@@ -104,7 +103,9 @@ Examples:
         const profiles = config.listProfiles();
 
         if (profiles.length === 0) {
-          throw new ConfigError("No profiles configured. Run: ghg auth login");
+          throw new ConfigError(
+            "No profiles configured. Run: gitfleet auth login",
+          );
         }
 
         profileName = await prompt.select(
@@ -128,7 +129,7 @@ Examples:
 
   auth
     .command("setup-git")
-    .description("Configure git to use ghg as credential helper.")
+    .description("Configure git to use gitfleet as credential helper.")
     .action(async () => {
       await command.run(() => authService.setupGit());
     });

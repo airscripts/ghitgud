@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
 import sshKeyService from "@/services/ssh-key";
-import sshKeyOperations from "@/tui/operations/ssh-keys";
+import sshKeyOperations from "@/tui/operations/identity-ssh";
 
 vi.mock("@/services/ssh-key", () => ({
   default: { list: vi.fn(), add: vi.fn(), delete: vi.fn() },

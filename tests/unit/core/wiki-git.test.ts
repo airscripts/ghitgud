@@ -17,7 +17,7 @@ describe("wiki git", () => {
 
   it("clones with ephemeral header authentication and cleans up", async () => {
     const result = await wikiGit.withClone("owner/repo", async (directory) => {
-      expect(directory).toContain("ghg-wiki-");
+      expect(directory).toContain("gitfleet-wiki-");
       return "done";
     });
 
@@ -28,7 +28,7 @@ describe("wiki git", () => {
     expect(call[1]).toEqual([
       "clone",
       "https://github.com/owner/repo.wiki.git",
-      expect.stringContaining("ghg-wiki-"),
+      expect.stringContaining("gitfleet-wiki-"),
     ]);
 
     expect(call[1]?.join(" ")).not.toContain("secret-token");

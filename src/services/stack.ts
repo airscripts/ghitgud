@@ -6,11 +6,11 @@ import git from "@/core/git";
 import output from "@/core/output";
 import logger from "@/core/logger";
 import type { PullRequest } from "@/types";
-import { GhitgudError } from "@/core/errors";
+import { GitfleetError } from "@/core/errors";
 
 const STACK_FILE = "stack.json";
 const CWD = process.cwd();
-const STACK_PATH = path.join(CWD, ".ghitgud", STACK_FILE);
+const STACK_PATH = path.join(CWD, ".gitfleet", STACK_FILE);
 
 interface StackEntry {
   parent: string;
@@ -117,7 +117,7 @@ function createStackEntry(branch: string, baseBranch: string): void {
 
 const create = async (options: { base?: string }) => {
   if (!git.isInsideRepo()) {
-    throw new GhitgudError(
+    throw new GitfleetError(
       "Not in a git repository. Run this command from inside a git repo.",
     );
   }
@@ -135,13 +135,13 @@ const create = async (options: { base?: string }) => {
 
     return { success: true };
   } else {
-    throw new GhitgudError("Could not determine current branch.");
+    throw new GitfleetError("Could not determine current branch.");
   }
 };
 
 const list = async (repo: string) => {
   if (!git.isInsideRepo()) {
-    throw new GhitgudError(
+    throw new GitfleetError(
       "Not in a git repository. Run this command from inside a git repo.",
     );
   }
@@ -185,7 +185,7 @@ const list = async (repo: string) => {
 
 const update = async (repo: string) => {
   if (!git.isInsideRepo()) {
-    throw new GhitgudError(
+    throw new GitfleetError(
       "Not in a git repository. Run this command from inside a git repo.",
     );
   }
@@ -195,7 +195,7 @@ const update = async (repo: string) => {
   const stack = data.stacks[branch];
 
   if (!stack) {
-    throw new GhitgudError("Current branch is not part of a tracked stack.");
+    throw new GitfleetError("Current branch is not part of a tracked stack.");
   }
 
   const response = await api.listOpen(repo);
@@ -240,7 +240,7 @@ const pushStack = async (
   options: { title?: string; draft: boolean },
 ) => {
   if (!git.isInsideRepo()) {
-    throw new GhitgudError(
+    throw new GitfleetError(
       "Not in a git repository. Run this command from inside a git repo.",
     );
   }
@@ -250,7 +250,7 @@ const pushStack = async (
   const stack = data.stacks[branch];
 
   if (!stack) {
-    throw new GhitgudError("Current branch is not part of a tracked stack.");
+    throw new GitfleetError("Current branch is not part of a tracked stack.");
   }
 
   const response = await api.listOpen(repo);
@@ -348,7 +348,7 @@ const pushStack = async (
 
 const next = async (options: { reverse?: boolean; list?: boolean }) => {
   if (!git.isInsideRepo()) {
-    throw new GhitgudError(
+    throw new GitfleetError(
       "Not in a git repository. Run this command from inside a git repo.",
     );
   }
@@ -358,7 +358,7 @@ const next = async (options: { reverse?: boolean; list?: boolean }) => {
   const stack = data.stacks[branch];
 
   if (!stack) {
-    throw new GhitgudError(
+    throw new GitfleetError(
       `Current branch "${branch}" is not part of a tracked stack.`,
     );
   }
@@ -376,13 +376,13 @@ const next = async (options: { reverse?: boolean; list?: boolean }) => {
   if (options.reverse) {
     const targetBranch = stack.parent;
     if (!targetBranch) {
-      throw new GhitgudError(
+      throw new GitfleetError(
         "No previous branch in the stack — you are at the beginning of the chain.",
       );
     }
 
     if (!git.branchExistsLocally(targetBranch)) {
-      throw new GhitgudError(
+      throw new GitfleetError(
         `Parent branch "${targetBranch}" does not exist locally. Run "git fetch" if it should be remote.`,
       );
     }
@@ -392,7 +392,7 @@ const next = async (options: { reverse?: boolean; list?: boolean }) => {
     return { success: true, branch: targetBranch };
   } else {
     if (stack.children.length === 0) {
-      throw new GhitgudError(
+      throw new GitfleetError(
         "No next branch in the stack — you are at the end of the chain.",
       );
     }
@@ -404,7 +404,7 @@ const next = async (options: { reverse?: boolean; list?: boolean }) => {
     }
     const targetBranch = stack.children[0];
     if (!git.branchExistsLocally(targetBranch)) {
-      throw new GhitgudError(
+      throw new GitfleetError(
         `Child branch "${targetBranch}" does not exist locally. Run "git fetch" if it should be remote.`,
       );
     }

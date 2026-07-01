@@ -3,7 +3,7 @@ import fs from "fs";
 import path from "path";
 import output from "@/core/output";
 import logger from "@/core/logger";
-import { GhitgudError } from "@/core/errors";
+import { GitfleetError } from "@/core/errors";
 
 const findGitRepos = (root: string): string[] => {
   const repos: string[] = [];
@@ -21,7 +21,7 @@ const findGitRepos = (root: string): string[] => {
 const syncall = (options: { root?: string } = {}) => {
   const root = options.root ?? process.cwd();
   if (!fs.existsSync(root))
-    throw new GhitgudError(`Directory not found: ${root}`);
+    throw new GitfleetError(`Directory not found: ${root}`);
   const repos = findGitRepos(root);
   if (!repos.length) {
     logger.success("No git repositories found.");
@@ -67,7 +67,7 @@ const syncall = (options: { root?: string } = {}) => {
 const statusall = (options: { root?: string } = {}) => {
   const root = options.root ?? process.cwd();
   if (!fs.existsSync(root))
-    throw new GhitgudError(`Directory not found: ${root}`);
+    throw new GitfleetError(`Directory not found: ${root}`);
   const repos = findGitRepos(root);
   if (!repos.length) {
     logger.success("No git repositories found.");

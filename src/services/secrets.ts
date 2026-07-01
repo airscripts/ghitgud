@@ -2,7 +2,7 @@ import output from "@/core/output";
 import logger from "@/core/logger";
 import reposApi from "@/api/repos";
 import secretsApi from "@/api/secrets";
-import { GhitgudError } from "@/core/errors";
+import { GitfleetError } from "@/core/errors";
 import { encryptSecret } from "@/core/secrets";
 
 import {
@@ -20,7 +20,7 @@ import {
 
 function extractOwnerRepo(repo: string): [string, string] {
   const parts = repo.split("/");
-  if (parts.length < 2) throw new GhitgudError("Invalid repository format.");
+  if (parts.length < 2) throw new GitfleetError("Invalid repository format.");
   return [parts[0], parts[1]];
 }
 
@@ -88,7 +88,7 @@ const list = async (options: {
     return { success: true, secrets };
   }
 
-  if (!options.repo) throw new GhitgudError(ERROR_NO_REPO);
+  if (!options.repo) throw new GitfleetError(ERROR_NO_REPO);
   const [owner, repo] = extractOwnerRepo(options.repo);
 
   if (options.env) {
@@ -142,8 +142,8 @@ const set = async (options: {
   visibility?: string;
   repos?: string;
 }): Promise<{ success: boolean }> => {
-  if (!options.name) throw new GhitgudError(ERROR_SECRET_NAME_REQUIRED);
-  if (!options.value) throw new GhitgudError(ERROR_SECRET_VALUE_REQUIRED);
+  if (!options.name) throw new GitfleetError(ERROR_SECRET_NAME_REQUIRED);
+  if (!options.value) throw new GitfleetError(ERROR_SECRET_VALUE_REQUIRED);
 
   let encryptedValue: string;
 
@@ -160,7 +160,7 @@ const set = async (options: {
     const hasSelectedRepos = selectedRepos && selectedRepos.length > 0;
 
     if (isSelected && !hasSelectedRepos) {
-      throw new GhitgudError(
+      throw new GitfleetError(
         "At least one valid repository is required when visibility is selected.",
       );
     }
@@ -178,7 +178,7 @@ const set = async (options: {
     return { success: true };
   }
 
-  if (!options.repo) throw new GhitgudError(ERROR_NO_REPO);
+  if (!options.repo) throw new GitfleetError(ERROR_NO_REPO);
   const [owner, repo] = extractOwnerRepo(options.repo);
 
   if (options.env) {
@@ -214,7 +214,7 @@ const remove = async (options: {
   env?: string;
   org?: string;
 }): Promise<{ success: boolean }> => {
-  if (!options.name) throw new GhitgudError(ERROR_SECRET_NAME_REQUIRED);
+  if (!options.name) throw new GitfleetError(ERROR_SECRET_NAME_REQUIRED);
 
   if (options.org) {
     logger.start(`Deleting organization secret ${options.name}.`);
@@ -223,7 +223,7 @@ const remove = async (options: {
     return { success: true };
   }
 
-  if (!options.repo) throw new GhitgudError(ERROR_NO_REPO);
+  if (!options.repo) throw new GitfleetError(ERROR_NO_REPO);
   const [owner, repo] = extractOwnerRepo(options.repo);
 
   if (options.env) {

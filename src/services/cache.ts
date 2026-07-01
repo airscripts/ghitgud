@@ -9,7 +9,7 @@ import repoResolver from "@/core/repo";
 import artifactsApi from "@/api/artifacts";
 import workflowsApi from "@/api/workflows";
 import { ActionsCacheEntry } from "@/types";
-import { GhitgudError } from "@/core/errors";
+import { GitfleetError } from "@/core/errors";
 import { DEFAULT_OUTPUT_DIR, INFO_CACHE_METADATA_ONLY } from "@/core/constants";
 
 interface CacheListResponse {
@@ -72,7 +72,7 @@ const list = async (options: {
 }) => {
   const limit = options.limit ?? 30;
   if (!Number.isInteger(limit) || limit < 1 || limit > 100) {
-    throw new GhitgudError("Cache limit must be between 1 and 100.");
+    throw new GitfleetError("Cache limit must be between 1 and 100.");
   }
 
   const targetRepo = await repoResolver.resolveRepo(options.repo);
@@ -116,11 +116,11 @@ const remove = async (
     : matches.filter((entry) => entry.key === key);
 
   if (!selected.length) {
-    throw new GhitgudError(`No cache found for key "${key}".`);
+    throw new GitfleetError(`No cache found for key "${key}".`);
   }
 
   if (!options.all && selected.length > 1) {
-    throw new GhitgudError(
+    throw new GitfleetError(
       `Multiple caches use key "${key}". Re-run with --all to delete every match.`,
     );
   }
@@ -147,7 +147,7 @@ const download = async (
   const entries = (cacheData.actions_caches ?? []).map(normalize);
 
   if (!entries.length) {
-    throw new GhitgudError("No cache entry found for the provided key.");
+    throw new GitfleetError("No cache entry found for the provided key.");
   }
 
   const outputDir = path.resolve(options.outputDir ?? DEFAULT_OUTPUT_DIR);

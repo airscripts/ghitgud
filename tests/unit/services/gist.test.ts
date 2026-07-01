@@ -6,7 +6,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import api from "@/api/gists";
 import git from "@/core/git";
 import service from "@/services/gist";
-import { GhitgudError } from "@/core/errors";
+import { GitfleetError } from "@/core/errors";
 import { emptyResponse, jsonResponse } from "../helpers/response";
 
 vi.mock("@/api/gists", () => ({
@@ -63,7 +63,7 @@ describe("gist service", () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "ghg-gist-"));
+    tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "gitfleet-gist-"));
   });
 
   afterEach(() => {
@@ -111,7 +111,7 @@ describe("gist service", () => {
       ),
     );
     await expect(service.view("abc", { raw: true })).rejects.toThrow(
-      GhitgudError,
+      GitfleetError,
     );
   });
 

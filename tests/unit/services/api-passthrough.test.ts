@@ -1,12 +1,12 @@
 import { execFileSync } from "child_process";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import client from "@/api/client";
+import client from "@/providers/github/client";
 import output from "@/core/output";
 import service from "@/services/api";
 import { jsonResponse } from "../helpers/response";
 
-vi.mock("@/api/client", () => ({
+vi.mock("@/providers/github/client", () => ({
   default: {
     requestTokenRequired: vi.fn(),
     requestUrlTokenRequired: vi.fn(),
@@ -57,7 +57,7 @@ describe("api passthrough service", () => {
 
   it("rejects unsafe endpoints and invalid option combinations", async () => {
     await expect(service.request("https://example.com", {})).rejects.toThrow(
-      "relative GitHub API path",
+      "relative provider API path",
     );
     await expect(
       service.request("items", { method: "POST", paginate: true }),
@@ -97,7 +97,7 @@ describe("api passthrough service", () => {
       method: "GET",
     });
     await expect(service.request("//example.com/user", {})).rejects.toThrow(
-      "relative GitHub API path",
+      "relative provider API path",
     );
   });
 

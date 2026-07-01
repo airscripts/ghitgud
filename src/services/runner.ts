@@ -3,7 +3,7 @@ import output from "@/core/output";
 import logger from "@/core/logger";
 import repoResolver from "@/core/repo";
 import prompt from "@/core/prompt";
-import { GhitgudError } from "@/core/errors";
+import { GitfleetError } from "@/core/errors";
 import type { RunnerTarget } from "@/api/runners";
 
 const resolveTarget = async (options: {
@@ -11,7 +11,7 @@ const resolveTarget = async (options: {
   org?: string;
 }): Promise<RunnerTarget> => {
   if (options.repo && options.org) {
-    throw new GhitgudError("Use either --repo or --org, not both.");
+    throw new GitfleetError("Use either --repo or --org, not both.");
   }
   if (options.org) return { org: options.org };
   return { repo: await repoResolver.resolveRepo(options.repo) };

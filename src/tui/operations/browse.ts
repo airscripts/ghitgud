@@ -7,7 +7,7 @@ const browseOperations: TuiOperation[] = [
     workspace: "Utility",
     id: "browse.repo",
     title: "Open Repository",
-    command: "ghg browse repo",
+    command: "gitfleet browse repo",
     description: "Open the repository in the browser.",
     inputs: [
       repoInput,
@@ -25,7 +25,7 @@ const browseOperations: TuiOperation[] = [
     workspace: "Utility",
     id: "browse.issues",
     title: "Open Issues",
-    command: "ghg browse issues",
+    command: "gitfleet browse issues",
     description: "Open the issues page in the browser.",
     inputs: [repoInput],
     run: async ({ values }) =>
@@ -37,7 +37,7 @@ const browseOperations: TuiOperation[] = [
     workspace: "Utility",
     id: "browse.pulls",
     title: "Open Pull Requests",
-    command: "ghg browse pulls",
+    command: "gitfleet browse pulls",
     description: "Open the pull requests page in the browser.",
     inputs: [repoInput],
     run: async ({ values }) =>
@@ -49,7 +49,7 @@ const browseOperations: TuiOperation[] = [
     workspace: "Utility",
     id: "browse.actions",
     title: "Open Actions",
-    command: "ghg browse actions",
+    command: "gitfleet browse actions",
     description: "Open the actions page in the browser.",
     inputs: [repoInput],
     run: async ({ values }) =>
@@ -61,7 +61,7 @@ const browseOperations: TuiOperation[] = [
     workspace: "Utility",
     id: "browse.releases",
     title: "Open Releases",
-    command: "ghg browse releases",
+    command: "gitfleet browse releases",
     description: "Open the releases page in the browser.",
     inputs: [repoInput],
     run: async ({ values }) =>

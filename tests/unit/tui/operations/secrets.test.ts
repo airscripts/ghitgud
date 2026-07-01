@@ -13,8 +13,8 @@ vi.mock("@/services/secrets", () => ({
 
 vi.mock("@/core/repo", () => ({
   default: {
-    resolveRepoSync: vi.fn(() => "airscripts/ghitgud"),
-    resolveRepo: vi.fn(() => Promise.resolve("airscripts/ghitgud")),
+    resolveRepoSync: vi.fn(() => "airscripts/gitfleet"),
+    resolveRepo: vi.fn(() => Promise.resolve("airscripts/gitfleet")),
   },
 }));
 
@@ -35,7 +35,7 @@ describe("tui secret operations", () => {
     expect(secretsService.list).toHaveBeenCalledWith({
       env: undefined,
       org: undefined,
-      repo: "airscripts/ghitgud",
+      repo: "airscripts/gitfleet",
     });
   });
 
@@ -58,7 +58,7 @@ describe("tui secret operations", () => {
       org: undefined,
       repos: undefined,
       visibility: "all",
-      repo: "airscripts/ghitgud",
+      repo: "airscripts/gitfleet",
     });
   });
 
@@ -71,7 +71,7 @@ describe("tui secret operations", () => {
       name: "FOO",
       env: undefined,
       org: undefined,
-      repo: "airscripts/ghitgud",
+      repo: "airscripts/gitfleet",
     });
   });
 });

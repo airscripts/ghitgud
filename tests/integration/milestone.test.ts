@@ -1,7 +1,7 @@
 import { Command } from "commander";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
-import milestoneCommand from "@/commands/milestone";
+import milestoneCommand from "@/commands/planning-milestone";
 
 vi.mock("@/services/milestone", () => ({
   default: {
@@ -33,6 +33,7 @@ describe("integration > milestone commands", () => {
     await program.parseAsync([
       "node",
       "test",
+      "planning",
       "milestone",
       "create",
       "--title",
@@ -55,6 +56,7 @@ describe("integration > milestone commands", () => {
     await program.parseAsync([
       "node",
       "test",
+      "planning",
       "milestone",
       "list",
       "--status",
@@ -71,7 +73,7 @@ describe("integration > milestone commands", () => {
     program.exitOverride();
     milestoneCommand.register(program);
 
-    await program.parseAsync(["node", "test", "milestone", "list"]);
+    await program.parseAsync(["node", "test", "planning", "milestone", "list"]);
     expect(milestoneService.list).toHaveBeenCalledWith("owner/repo", {
       status: "open",
     });
@@ -82,7 +84,14 @@ describe("integration > milestone commands", () => {
     program.exitOverride();
     milestoneCommand.register(program);
 
-    await program.parseAsync(["node", "test", "milestone", "close", "v2.10.0"]);
+    await program.parseAsync([
+      "node",
+      "test",
+      "planning",
+      "milestone",
+      "close",
+      "v2.10.0",
+    ]);
     expect(milestoneService.close).toHaveBeenCalledWith(
       "owner/repo",
       "v2.10.0",
@@ -97,6 +106,7 @@ describe("integration > milestone commands", () => {
     await program.parseAsync([
       "node",
       "test",
+      "planning",
       "milestone",
       "progress",
       "v2.10.0",

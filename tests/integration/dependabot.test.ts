@@ -1,7 +1,7 @@
 import { Command } from "commander";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
-import dependabotCommand from "@/commands/dependabot";
+import dependabotCommand from "@/commands/security-dependabot";
 
 vi.mock("@/services/dependabot", () => ({
   default: {
@@ -25,6 +25,7 @@ describe("integration > dependabot commands", () => {
     await program.parseAsync([
       "node",
       "test",
+      "security",
       "dependabot",
       "list",
       "--org",
@@ -53,11 +54,12 @@ describe("integration > dependabot commands", () => {
     await program.parseAsync([
       "node",
       "test",
+      "security",
       "dependabot",
       "dismiss",
       "42",
       "--repo",
-      "airscripts/ghitgud",
+      "airscripts/gitfleet",
       "--reason",
       "false_positive",
       "--comment",
@@ -69,7 +71,7 @@ describe("integration > dependabot commands", () => {
       yes: true,
       reason: "false_positive",
       comment: "Not applicable",
-      repo: "airscripts/ghitgud",
+      repo: "airscripts/gitfleet",
     });
   });
 });

@@ -1,14 +1,14 @@
 import { Command } from "commander";
 import { describe, it, expect } from "vitest";
 
-import dependabotCommand from "@/commands/dependabot";
+import dependabotCommand from "@/commands/security-dependabot";
 
 describe("dependabot command", () => {
   it("registers dependabot subcommands", () => {
     const program = new Command();
     dependabotCommand.register(program);
 
-    const dependabot = program.commands.find(
+    const dependabot = program.commands[0].commands.find(
       (command) => command.name() === "dependabot",
     );
 

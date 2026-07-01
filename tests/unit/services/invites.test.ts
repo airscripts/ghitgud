@@ -35,7 +35,7 @@ describe("invites service", () => {
     (api.inviteCollaborator as Mock).mockResolvedValue({ status: 201 });
     const result = await invitesService.invite(
       "airscripts",
-      "ghitgud",
+      "gitfleet",
       "octocat",
       "push",
     );
@@ -44,7 +44,7 @@ describe("invites service", () => {
       success: true,
 
       metadata: {
-        repo: "ghitgud",
+        repo: "gitfleet",
         owner: "airscripts",
         username: "octocat",
         permission: "push",
@@ -56,7 +56,7 @@ describe("invites service", () => {
     (api.grantTeamAccess as Mock).mockResolvedValue({ status: 201 });
     const result = await invitesService.grant(
       "airscripts",
-      "ghitgud",
+      "gitfleet",
       "ops",
       "admin",
     );
@@ -65,7 +65,7 @@ describe("invites service", () => {
       success: true,
 
       metadata: {
-        repo: "ghitgud",
+        repo: "gitfleet",
         teamSlug: "ops",
         owner: "airscripts",
         permission: "admin",

@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
 import repoService from "@/services/repos";
-import { GhitgudError } from "@/core/errors";
+import { GitfleetError } from "@/core/errors";
 import dependabotApi from "@/api/dependabot";
 import dependabotService from "@/services/dependabot";
 
@@ -120,7 +120,7 @@ describe("dependabot service", () => {
         yes: true,
         reason: "tolerable_risk",
       }),
-    ).rejects.toThrow(GhitgudError);
+    ).rejects.toThrow(GitfleetError);
   });
 
   it("requires a dismissal reason", async () => {
@@ -128,7 +128,7 @@ describe("dependabot service", () => {
       dependabotService.dismiss(1, {
         yes: true,
       }),
-    ).rejects.toThrow(GhitgudError);
+    ).rejects.toThrow(GitfleetError);
   });
 
   it("rejects an invalid dismissal reason", async () => {
@@ -137,7 +137,7 @@ describe("dependabot service", () => {
         reason: "invalid_reason",
         yes: true,
       }),
-    ).rejects.toThrow(GhitgudError);
+    ).rejects.toThrow(GitfleetError);
   });
 
   it("requires --yes for dismissal", async () => {
@@ -145,7 +145,7 @@ describe("dependabot service", () => {
       dependabotService.dismiss(1, {
         reason: "tolerable_risk",
       }),
-    ).rejects.toThrow(GhitgudError);
+    ).rejects.toThrow(GitfleetError);
   });
 
   it("dismisses alerts with a valid reason", async () => {

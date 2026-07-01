@@ -1,12 +1,14 @@
 import { Command } from "commander";
 import { describe, expect, it } from "vitest";
-import branchCommand from "@/commands/branch";
+import branchCommand from "@/commands/policy-branch";
 
 describe("branch command", () => {
   it("registers branch subcommands", () => {
     const program = new Command();
     branchCommand.register(program);
-    const branch = program.commands.find((cmd) => cmd.name() === "branch");
+    const branch = program.commands[0].commands.find(
+      (cmd) => cmd.name() === "branch",
+    );
     expect(branch).toBeDefined();
     const names = branch!.commands.map((cmd) => cmd.name());
     expect(names).toContain("protect");

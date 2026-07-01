@@ -1,7 +1,7 @@
 import { text, select, confirm, isCancel, multiselect } from "@clack/prompts";
 
 import output from "./output";
-import { GhitgudError } from "./errors";
+import { GitfleetError } from "./errors";
 import outputState from "./output-state";
 
 const isNonInteractive = (): boolean => {
@@ -11,7 +11,7 @@ const isNonInteractive = (): boolean => {
 const handleCancel = <T>(result: T | symbol): T => {
   if (isCancel(result)) {
     if (isNonInteractive()) {
-      throw new GhitgudError("Operation cancelled (non-interactive mode).");
+      throw new GitfleetError("Operation cancelled (non-interactive mode).");
     }
 
     output.log("");
@@ -24,7 +24,7 @@ const handleCancel = <T>(result: T | symbol): T => {
 
 const guardNonInteractive = (message: string): void => {
   if (isNonInteractive()) {
-    throw new GhitgudError(message);
+    throw new GitfleetError(message);
   }
 };
 

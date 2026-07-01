@@ -1,13 +1,13 @@
 import api from "@/api/milestones";
 import output from "@/core/output";
 import logger from "@/core/logger";
-import { GhitgudError } from "@/core/errors";
+import { GitfleetError } from "@/core/errors";
 import { Milestone, MilestoneProgress, MilestoneState } from "@/types";
 
 function parseDueDate(value: string): string {
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) {
-    throw new GhitgudError(`Invalid due date: ${value}`);
+    throw new GitfleetError(`Invalid due date: ${value}`);
   }
 
   return date.toISOString();
@@ -47,11 +47,11 @@ async function findByTitle(repo: string, title: string): Promise<Milestone> {
   ].filter((milestone) => milestone.title === title);
 
   if (milestones.length === 0) {
-    throw new GhitgudError(`Milestone "${title}" was not found.`);
+    throw new GitfleetError(`Milestone "${title}" was not found.`);
   }
 
   if (milestones.length > 1) {
-    throw new GhitgudError(`Milestone "${title}" is ambiguous.`);
+    throw new GitfleetError(`Milestone "${title}" is ambiguous.`);
   }
 
   return milestones[0];

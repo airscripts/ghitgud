@@ -31,9 +31,9 @@ import queueService from "@/services/queue";
 import statusService from "@/services/status";
 import rulesetService from "@/services/ruleset";
 import apiOperations from "@/tui/operations/api";
-import queueOperations from "@/tui/operations/queue";
-import statusOperations from "@/tui/operations/status";
-import rulesetOperations from "@/tui/operations/rulesets";
+import queueOperations from "@/tui/operations/change-queue";
+import statusOperations from "@/tui/operations/inbox-status";
+import rulesetOperations from "@/tui/operations/policies";
 
 describe("roadmap TUI operations", () => {
   it("runs status and API operations", async () => {

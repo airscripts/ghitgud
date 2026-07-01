@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 
 import auditApi from "@/api/audit";
 import auditService from "@/services/audit";
-import { GhitgudError } from "@/core/errors";
+import { GitfleetError } from "@/core/errors";
 
 vi.mock("@/api/audit", () => ({
   default: {
@@ -30,13 +30,13 @@ describe("audit service", () => {
   });
 
   it("requires an org or enterprise target", async () => {
-    await expect(auditService.list({})).rejects.toThrow(GhitgudError);
+    await expect(auditService.list({})).rejects.toThrow(GitfleetError);
   });
 
   it("rejects an invalid limit", async () => {
     await expect(
       auditService.list({ org: "owner", limit: "abc" }),
-    ).rejects.toThrow(GhitgudError);
+    ).rejects.toThrow(GitfleetError);
   });
 
   it("normalizes audit events with numeric timestamps", async () => {

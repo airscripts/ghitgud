@@ -9,7 +9,7 @@ import checksApi from "@/api/checks";
 import repoResolver from "@/core/repo";
 import artifactsApi from "@/api/artifacts";
 import workflowsApi from "@/api/workflows";
-import { GhitgudError } from "@/core/errors";
+import { GitfleetError } from "@/core/errors";
 
 import { RunDebugResult } from "@/types";
 
@@ -120,13 +120,13 @@ const watch = async (
       workflow_runs: Array<{ id: number }>;
     };
     if (!data.workflow_runs?.length) {
-      throw new GhitgudError("No in-progress workflow runs found.");
+      throw new GitfleetError("No in-progress workflow runs found.");
     }
     currentRunId = data.workflow_runs[0].id;
   }
 
   if (!currentRunId) {
-    throw new GhitgudError("Run ID is required without --follow.");
+    throw new GitfleetError("Run ID is required without --follow.");
   }
 
   const filterRegex = options.filter ? new RegExp(options.filter, "i") : null;

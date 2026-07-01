@@ -3,7 +3,7 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import git from "@/core/git";
 import api from "@/api/review";
 import service from "@/services/review";
-import { GhitgudError } from "@/core/errors";
+import { GitfleetError } from "@/core/errors";
 
 vi.mock("@/api/review", () => ({
   default: {
@@ -77,7 +77,7 @@ describe("review service", () => {
         file: "src/main.ts",
         side: "MIDDLE" as "RIGHT",
       }),
-    ).rejects.toThrow(GhitgudError);
+    ).rejects.toThrow(GitfleetError);
 
     await expect(
       service.comment({

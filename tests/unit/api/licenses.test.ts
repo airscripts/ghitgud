@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
-vi.mock("@/api/client", () => ({
+vi.mock("@/providers/github/client", () => ({
   default: {
     get: vi.fn(),
     getTokenRequired: vi.fn(),
@@ -8,7 +8,7 @@ vi.mock("@/api/client", () => ({
 }));
 
 import licensesApi from "@/api/licenses";
-import client from "@/api/client";
+import client from "@/providers/github/client";
 
 describe("licenses api", () => {
   beforeEach(() => {

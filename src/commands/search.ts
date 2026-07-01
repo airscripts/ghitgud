@@ -5,7 +5,9 @@ import command from "@/core/command";
 import searchService from "@/services/search";
 
 const register = (program: Command) => {
-  const search = program.command("search").description("Search GitHub.");
+  const search = program
+    .command("search")
+    .description("Search resources on the active provider.");
 
   search
     .command("issues <query>")
@@ -48,10 +50,10 @@ const register = (program: Command) => {
 
   search
     .command("prs <query>")
-    .description("Search pull requests.")
+    .description("Search proposed changes.")
     .option("--repo <repo>", "Scope to repository (owner/repo)")
     .addOption(
-      new Option("--state <state>", "PR state")
+      new Option("--state <state>", "Change state")
         .choices(["open", "closed", "merged", "all"])
         .default("all"),
     )

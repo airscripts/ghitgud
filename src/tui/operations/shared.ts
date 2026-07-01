@@ -1,5 +1,5 @@
 import repoResolver from "@/core/repo";
-import { GhitgudError } from "@/core/errors";
+import { GitfleetError } from "@/core/errors";
 import type { TuiInput, TuiInputValues } from "../types";
 
 const orgInput: TuiInput = {
@@ -50,13 +50,13 @@ const text = (values: TuiInputValues, key: string): string | undefined => {
 
 const requiredText = (values: TuiInputValues, key: string): string => {
   const value = text(values, key);
-  if (!value) throw new GhitgudError(`Missing required input: ${key}.`);
+  if (!value) throw new GitfleetError(`Missing required input: ${key}.`);
   return value;
 };
 
 const numberValue = (values: TuiInputValues, key: string): number => {
   const value = Number(values[key]);
-  if (Number.isNaN(value)) throw new GhitgudError(`Invalid number: ${key}.`);
+  if (Number.isNaN(value)) throw new GitfleetError(`Invalid number: ${key}.`);
   return value;
 };
 

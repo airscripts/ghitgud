@@ -21,7 +21,7 @@ const wikiOperations: TuiOperation[] = [
     id: "wiki.list",
     workspace: "Wiki",
     title: "List Wiki Pages",
-    command: "ghg wiki list",
+    command: "gitfleet wiki list",
     description: "List repository wiki pages.",
     inputs: [repoInput],
 
@@ -34,7 +34,7 @@ const wikiOperations: TuiOperation[] = [
     id: "wiki.view",
     workspace: "Wiki",
     title: "View Wiki Page",
-    command: "ghg wiki view <page>",
+    command: "gitfleet wiki view <page>",
     description: "View a wiki page's source.",
     inputs: [repoInput, pageInput],
 
@@ -48,7 +48,7 @@ const wikiOperations: TuiOperation[] = [
     id: "wiki.edit",
     workspace: "Wiki",
     title: "Edit Wiki Page",
-    command: "ghg wiki edit <page> --file <path>",
+    command: "gitfleet wiki edit <page> --file <path>",
     description: "Replace an existing wiki page from a file.",
     inputs: [repoInput, pageInput, wikiFileInput],
 
@@ -67,7 +67,7 @@ const wikiOperations: TuiOperation[] = [
     id: "wiki.create",
     workspace: "Wiki",
     title: "Create Wiki Page",
-    command: "ghg wiki create <page> --file <path>",
+    command: "gitfleet wiki create <page> --file <path>",
     description: "Create and publish a wiki page from a file.",
     inputs: [repoInput, pageInput, wikiFileInput],
 
@@ -86,7 +86,7 @@ const wikiOperations: TuiOperation[] = [
     id: "wiki.delete",
     workspace: "Wiki",
     title: "Delete Wiki Page",
-    command: "ghg wiki delete <page>",
+    command: "gitfleet wiki delete <page>",
     description: "Delete a wiki page.",
     inputs: [repoInput, pageInput],
 

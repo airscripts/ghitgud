@@ -6,11 +6,11 @@ import templateService from "@/services/template";
 const register = (program: Command) => {
   const template = program
     .command("template")
-    .description("Manage issue and PR templates.");
+    .description("Manage issue and change templates.");
 
   template
     .command("list")
-    .description("List available issue and PR templates.")
+    .description("List available issue and change templates.")
     .option("--repo <repo>", "Repository (owner/repo)")
     .action(async (options) => {
       await command.run(() => templateService.list({ repo: options.repo }));

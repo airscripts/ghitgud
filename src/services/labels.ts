@@ -4,11 +4,10 @@ import api from "@/api/labels";
 import output from "@/core/output";
 import logger from "@/core/logger";
 import { Label, normalizeLabel } from "@/types";
-import { GhitgudError, NotFoundError } from "@/core/errors";
+import { GitfleetError, NotFoundError } from "@/core/errors";
 
 import {
-  PING_RESPONSE,
-  GHITGUD_FOLDER,
+  GITFLEET_FOLDER,
   ERROR_NO_METADATA,
   METADATA_FILE_PATH,
 } from "@/core/constants";
@@ -37,7 +36,7 @@ const loadLabelsFromTemplate = (templateName: string, templatesDir: string) => {
   const templatePath = getTemplatePath(templateName, templatesDir);
 
   if (!io.fileExists(templatePath)) {
-    throw new GhitgudError(
+    throw new GitfleetError(
       `Template "${templateName}" not found at ${templatePath}.`,
     );
   }
@@ -46,13 +45,8 @@ const loadLabelsFromTemplate = (templateName: string, templatesDir: string) => {
 };
 
 const loadLabelsFromMetadata = (metadataPath = METADATA_FILE_PATH) => {
-  if (!io.fileExists(metadataPath)) throw new GhitgudError(ERROR_NO_METADATA);
+  if (!io.fileExists(metadataPath)) throw new GitfleetError(ERROR_NO_METADATA);
   return loadLabelsFromPath(metadataPath);
-};
-
-const ping = () => {
-  logger.success(PING_RESPONSE + ".");
-  return { success: true, message: PING_RESPONSE };
 };
 
 const list = async (repo: string) => {
@@ -75,7 +69,7 @@ const pull = async (repo: string) => {
   const data = await response.json();
   const labels = data.map((label: Label) => normalizeLabel(label));
 
-  io.ensureDir(GHITGUD_FOLDER);
+  io.ensureDir(GITFLEET_FOLDER);
   io.writeJsonFile(METADATA_FILE_PATH, labels);
 
   logger.success(`Saved ${labels.length} label(s) to local metadata.`);
@@ -85,7 +79,7 @@ const pull = async (repo: string) => {
 const pullTemplate = async (templateName: string, templatesDir: string) => {
   logger.start(`Loading labels from the "${templateName}" template.`);
   const labels = loadLabelsFromTemplate(templateName, templatesDir);
-  io.ensureDir(GHITGUD_FOLDER);
+  io.ensureDir(GITFLEET_FOLDER);
   io.writeJsonFile(METADATA_FILE_PATH, labels);
 
   formatLabels(labels);
@@ -243,7 +237,7 @@ const update = async (
   repo: string,
 ) => {
   if (!options.newName && !options.color && !options.description) {
-    throw new GhitgudError(
+    throw new GitfleetError(
       "At least one of --new-name, --color, or --description is required.",
     );
   }
@@ -279,7 +273,7 @@ const deleteLabel = async (
   options: { yes?: boolean } = {},
 ) => {
   if (!options.yes) {
-    throw new GhitgudError(
+    throw new GitfleetError(
       "This operation deletes a label. Re-run with --yes to apply.",
     );
   }
@@ -333,7 +327,7 @@ const prune = async (
   }
 
   if (!options.yes) {
-    throw new GhitgudError(
+    throw new GitfleetError(
       "This operation deletes labels. Re-run with --yes to apply.",
     );
   }
@@ -386,7 +380,6 @@ const sync = async (sourceRepo: string, targetRepo: string) => {
 
 export default {
   get,
-  ping,
   list,
   pull,
   push,

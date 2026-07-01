@@ -15,8 +15,8 @@ vi.mock("@/services/environments", () => ({
 
 vi.mock("@/core/repo", () => ({
   default: {
-    resolveRepoSync: vi.fn(() => "airscripts/ghitgud"),
-    resolveRepo: vi.fn(() => Promise.resolve("airscripts/ghitgud")),
+    resolveRepoSync: vi.fn(() => "airscripts/gitfleet"),
+    resolveRepo: vi.fn(() => Promise.resolve("airscripts/gitfleet")),
   },
 }));
 
@@ -33,7 +33,9 @@ describe("tui environment operations", () => {
 
     const op = environmentOperations.find((o) => o.id === "environment.list")!;
     await op.run({ values: {} });
-    expect(environmentsService.list).toHaveBeenCalledWith("airscripts/ghitgud");
+    expect(environmentsService.list).toHaveBeenCalledWith(
+      "airscripts/gitfleet",
+    );
   });
 
   it("runs environment.create", async () => {
@@ -45,7 +47,7 @@ describe("tui environment operations", () => {
 
     await op.run({ values: { name: "staging", waitTimer: 30 } });
     expect(environmentsService.create).toHaveBeenCalledWith(
-      "airscripts/ghitgud",
+      "airscripts/gitfleet",
       {
         waitTimer: 30,
         name: "staging",
@@ -65,7 +67,7 @@ describe("tui environment operations", () => {
 
     await op.run({ values: { env: "prod" } });
     expect(environmentsService.listProtectionRules).toHaveBeenCalledWith(
-      "airscripts/ghitgud",
+      "airscripts/gitfleet",
       "prod",
     );
   });
@@ -88,7 +90,7 @@ describe("tui environment operations", () => {
     });
 
     expect(environmentsService.addProtectionRule).toHaveBeenCalledWith(
-      "airscripts/ghitgud",
+      "airscripts/gitfleet",
       {
         env: "prod",
         type: "wait_timer",
@@ -108,7 +110,7 @@ describe("tui environment operations", () => {
 
     await op.run({ values: { env: "prod", ruleId: 1 } });
     expect(environmentsService.removeProtectionRule).toHaveBeenCalledWith(
-      "airscripts/ghitgud",
+      "airscripts/gitfleet",
       {
         ruleId: 1,
         env: "prod",

@@ -7,12 +7,13 @@ import repoResolver from "@/core/repo";
 import releaseService from "@/services/release";
 import type { BumpLevel } from "@/core/conventional";
 import { RELEASE_DEFAULT_GENERATED } from "@/core/constants";
+import { GitfleetError } from "@/core/errors";
 
 const VALID_BUMP_LEVELS = new Set(["major", "minor", "patch"]);
 
 const validateBumpLevel = (value: string): string => {
   if (!VALID_BUMP_LEVELS.has(value)) {
-    throw new Error(
+    throw new GitfleetError(
       `Invalid level: ${value}. Expected: ${Array.from(VALID_BUMP_LEVELS).join(", ")}.`,
     );
   }
@@ -29,13 +30,13 @@ const register = (program: Command) => {
     "after",
     `
 Examples:
-  ghg release changelog
-  ghg release bump --create --push
-  ghg release verify 2.10.0
-  ghg release notes --template templates/custom.md
-  ghg release draft --level minor
-  ghg release list --limit 10
-  ghg release view 2.15.0
+  gitfleet release changelog
+  gitfleet release bump --create --push
+  gitfleet release verify 2.10.0
+  gitfleet release notes --template templates/custom.md
+  gitfleet release draft --level minor
+  gitfleet release list --limit 10
+  gitfleet release view 2.15.0
 `,
   );
 
@@ -210,7 +211,7 @@ Examples:
 
   release
     .command("draft")
-    .description("Create a draft release on GitHub.")
+    .description("Create a draft release on the provider.")
     .option("--repo <repo>", "Repository (owner/repo)")
     .option("--level <level>", "major, minor, or patch", "patch")
     .option("--title <title>", "Release title")

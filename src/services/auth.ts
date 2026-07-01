@@ -4,7 +4,7 @@ import config from "@/core/config";
 import output from "@/core/output";
 import logger from "@/core/logger";
 import outputState from "@/core/output-state";
-import { GhitgudError, ConfigError } from "@/core/errors";
+import { GitfleetError, ConfigError } from "@/core/errors";
 
 import {
   ERROR_AUTH_FAILED,
@@ -22,35 +22,43 @@ function maskToken(token: string): string {
   return `${token.substring(0, 4)}...`;
 }
 
-const login = async (token?: string, options?: { profile?: string }) => {
+const login = async (
+  token?: string,
+  options?: { profile?: string; host?: string },
+) => {
   const profileName = options?.profile ?? DEFAULT_PROFILE_NAME;
+  const host = options?.host ?? "github.com";
   const profiles = config.listProfiles();
   const hasExistingProfiles = profiles.length > 0;
 
   if (!token) {
-    throw new GhitgudError(ERROR_AUTH_NO_TOKEN);
+    throw new GitfleetError(ERROR_AUTH_NO_TOKEN);
   }
 
   logger.start("Validating token.");
 
   let authStatus;
   try {
-    authStatus = await authApi.fetchAuthenticatedUser(token);
+    authStatus = await authApi.fetchAuthenticatedUser(token, host);
   } catch {
-    throw new GhitgudError(ERROR_AUTH_FAILED);
+    throw new GitfleetError(ERROR_AUTH_FAILED);
   }
 
   const { user, scopes } = authStatus;
 
   if (!hasExistingProfiles) {
-    config.addProfile(profileName, { token });
+    config.addProfile(profileName, { token, host, provider: "github" });
   } else {
     const profile = config.getProfile(profileName);
 
     if (profile) {
-      config.write("token", token);
+      config.addProfile(profileName, {
+        token,
+        host,
+        provider: "github",
+      });
     } else {
-      config.addProfile(profileName, { token });
+      config.addProfile(profileName, { token, host, provider: "github" });
     }
   }
 
@@ -71,6 +79,8 @@ const login = async (token?: string, options?: { profile?: string }) => {
     user,
     scopes,
     success: true,
+    host,
+    provider: "github" as const,
     profile: profileName,
   };
 };
@@ -78,7 +88,7 @@ const login = async (token?: string, options?: { profile?: string }) => {
 const logout = () => {
   const token = config.getTokenOptional();
   if (!token) {
-    throw new GhitgudError(ERROR_AUTH_NO_TOKEN);
+    throw new GitfleetError(ERROR_AUTH_NO_TOKEN);
   }
 
   logger.start("Removing stored token.");
@@ -90,7 +100,7 @@ const logout = () => {
 const status = async (showToken = false) => {
   const token = config.getTokenOptional();
   if (!token) {
-    throw new GhitgudError(ERROR_AUTH_NO_TOKEN);
+    throw new GitfleetError(ERROR_AUTH_NO_TOKEN);
   }
 
   logger.start("Checking authentication status.");
@@ -99,7 +109,7 @@ const status = async (showToken = false) => {
   try {
     authStatus = await authApi.fetchAuthenticatedUser();
   } catch {
-    throw new GhitgudError(ERROR_AUTH_FAILED);
+    throw new GitfleetError(ERROR_AUTH_FAILED);
   }
 
   const { user, scopes } = authStatus;
@@ -125,13 +135,13 @@ const status = async (showToken = false) => {
 const token = (raw: boolean) => {
   const currentToken = config.getTokenOptional();
   if (!currentToken) {
-    throw new GhitgudError(ERROR_AUTH_NO_TOKEN);
+    throw new GitfleetError(ERROR_AUTH_NO_TOKEN);
   }
 
   const displayed = raw ? currentToken : maskToken(currentToken);
 
   if (outputState.isHumanOutput()) {
-    console.log(displayed);
+    output.writeValue(displayed);
   }
 
   return { success: true, token: currentToken, masked: displayed };
@@ -168,7 +178,10 @@ const switchProfile = async (name: string) => {
   }
 
   logger.start(`Validating token for profile "${name}".`);
-  await authApi.fetchAuthenticatedUser(profile.token);
+  await authApi.fetchAuthenticatedUser(
+    profile.token,
+    profile.host ?? "github.com",
+  );
   config.setActiveProfile(name);
   logger.success(`Active profile switched to "${name}".`);
   return { success: true, profile: name };
@@ -211,17 +224,17 @@ const setupGit = () => {
   logger.start("Configuring git credential helper.");
 
   try {
-    const ghgPath = process.argv[1] || "ghg";
-    const credentialHelper = `!${ghgPath} auth token`;
+    const gitfleetPath = process.argv[1] || "gitfleet";
+    const credentialHelper = `!${gitfleetPath} auth token --raw`;
 
     execSync(`git config --global credential.helper "${credentialHelper}"`, {
       encoding: "utf8",
     });
 
     logger.success("Git credential helper configured.");
-    logger.info("Git will now use ghg for HTTPS authentication.");
+    logger.info("Git will now use Gitfleet for HTTPS authentication.");
   } catch {
-    throw new GhitgudError(
+    throw new GitfleetError(
       "Failed to configure git credential helper. Ensure git is installed.",
     );
   }

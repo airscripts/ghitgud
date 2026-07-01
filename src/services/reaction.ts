@@ -2,7 +2,7 @@ import api, { VALID_EMOJIS } from "@/api/reactions";
 import output from "@/core/output";
 import logger from "@/core/logger";
 import repoResolver from "@/core/repo";
-import { GhitgudError } from "@/core/errors";
+import { GitfleetError } from "@/core/errors";
 
 interface ReactionEntry {
   id: number;
@@ -36,7 +36,7 @@ const list = async (options: {
   } else if (options.issue) {
     response = await api.listForIssue(repo, options.issue);
   } else {
-    throw new GhitgudError(
+    throw new GitfleetError(
       "Provide --issue, --comment, or --review-comment to specify the target.",
     );
   }
@@ -64,7 +64,7 @@ const add = async (options: {
   emoji: string;
 }) => {
   if (!VALID_EMOJIS.includes(options.emoji)) {
-    throw new GhitgudError(
+    throw new GitfleetError(
       `Invalid emoji "${options.emoji}". Valid: ${VALID_EMOJIS.join(", ")}.`,
     );
   }
@@ -82,7 +82,7 @@ const add = async (options: {
   } else if (options.issue) {
     response = await api.createForIssue(repo, options.issue, options.emoji);
   } else {
-    throw new GhitgudError(
+    throw new GitfleetError(
       "Provide --issue, --comment, or --review-comment to specify the target.",
     );
   }
@@ -111,7 +111,7 @@ const remove = async (options: {
   } else if (options.issue) {
     await api.deleteForIssue(repo, options.issue, options.reactionId);
   } else {
-    throw new GhitgudError(
+    throw new GitfleetError(
       "Provide --issue, --comment, or --review-comment to specify the target.",
     );
   }

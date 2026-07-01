@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
 import leaksService from "@/services/leaks";
-import leaksOperations from "@/tui/operations/leaks";
+import leaksOperations from "@/tui/operations/security-leaks";
 
 vi.mock("@/services/leaks", () => ({
   default: {

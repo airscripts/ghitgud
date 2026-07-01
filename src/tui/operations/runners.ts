@@ -13,7 +13,7 @@ const runnerOperations: TuiOperation[] = [
     workspace: "Runners",
     id: "runner.list",
     title: "List Runners",
-    command: "ghg runner list",
+    command: "gitfleet runner list",
     description: "List self-hosted runners.",
     inputs: [
       repoInput,
@@ -31,7 +31,7 @@ const runnerOperations: TuiOperation[] = [
     workspace: "Runners",
     id: "runner.view",
     title: "View Runner",
-    command: "ghg runner view <id>",
+    command: "gitfleet runner view <id>",
     description: "View runner details.",
     inputs: [
       { key: "id", label: "Runner ID", type: "number", required: true },
@@ -48,7 +48,7 @@ const runnerOperations: TuiOperation[] = [
     workspace: "Runners",
     id: "runner.status",
     title: "Runner Status",
-    command: "ghg runner status <id>",
+    command: "gitfleet runner status <id>",
     description: "Show runner health and busy status.",
     inputs: [
       { key: "id", label: "Runner ID", type: "number", required: true },
@@ -66,7 +66,7 @@ const runnerOperations: TuiOperation[] = [
     workspace: "Runners",
     id: "runner.remove",
     title: "Remove Runner",
-    command: "ghg runner remove <id> --yes",
+    command: "gitfleet runner remove <id> --yes",
     description: "Remove a self-hosted runner.",
     inputs: [
       { key: "id", label: "Runner ID", type: "number", required: true },
@@ -84,7 +84,7 @@ const runnerOperations: TuiOperation[] = [
     workspace: "Runners",
     id: "runner.labels",
     title: "List Runner Labels",
-    command: "ghg runner labels <id>",
+    command: "gitfleet runner labels <id>",
     description: "List labels for a runner.",
     inputs: [
       { key: "id", label: "Runner ID", type: "number", required: true },

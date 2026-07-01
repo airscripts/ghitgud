@@ -1,8 +1,8 @@
 import advisories from "@/api/advisories";
-import client from "@/api/client";
+import client from "@/providers/github/client";
 import { describe, expect, it, vi } from "vitest";
 
-vi.mock("@/api/client", () => ({
+vi.mock("@/providers/github/client", () => ({
   default: {
     getTokenRequired: vi.fn(),
     postTokenRequired: vi.fn(),

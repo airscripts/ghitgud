@@ -16,7 +16,7 @@ function ensureBinary(): void {
   }
 }
 
-export function createTempDir(prefix = "ghg-e2e-"): string {
+export function createTempDir(prefix = "gitfleet-e2e-"): string {
   return fs.mkdtempSync(path.join(os.tmpdir(), prefix));
 }
 

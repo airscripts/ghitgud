@@ -1,7 +1,7 @@
 import { Command } from "commander";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
-import leaksCommand from "@/commands/leaks";
+import leaksCommand from "@/commands/security-leaks";
 
 vi.mock("@/services/leaks", () => ({
   default: {
@@ -25,6 +25,7 @@ describe("integration > leaks commands", () => {
     await program.parseAsync([
       "node",
       "test",
+      "security",
       "leaks",
       "scan",
       "--limit",
@@ -42,6 +43,7 @@ describe("integration > leaks commands", () => {
     await program.parseAsync([
       "node",
       "test",
+      "security",
       "leaks",
       "alerts",
       "--org",

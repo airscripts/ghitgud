@@ -112,12 +112,13 @@ interface RulesetInput {
 
 interface Profile {
   token?: string;
+  host?: string;
+  provider?: "github";
 }
 
 interface CredentialsFile {
-  token?: string;
-  activeProfile?: string;
-  profiles?: Record<string, Profile>;
+  activeProfile: string;
+  profiles: Record<string, Profile>;
 }
 
 interface ProfileRcFile {

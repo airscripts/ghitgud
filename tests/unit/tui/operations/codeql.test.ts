@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
 import codeqlService from "@/services/codeql";
-import codeqlOperations from "@/tui/operations/codeql";
+import codeqlOperations from "@/tui/operations/security-code";
 
 vi.mock("@/services/codeql", () => ({
   default: { list: vi.fn(), view: vi.fn(), dismiss: vi.fn() },

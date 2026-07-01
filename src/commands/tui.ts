@@ -2,7 +2,7 @@ import { Command } from "commander";
 
 import tui from "@/tui";
 import command from "@/core/command";
-import { GhitgudError } from "@/core/errors";
+import { GitfleetError } from "@/core/errors";
 
 const register = (program: Command) => {
   program
@@ -10,7 +10,7 @@ const register = (program: Command) => {
     .description("Launch the full-screen terminal UI.")
     .action(async () => {
       if (!process.stdin.isTTY) {
-        throw new GhitgudError("TUI requires an interactive terminal.");
+        throw new GitfleetError("TUI requires an interactive terminal.");
       }
 
       await command.run(() => tui.start());

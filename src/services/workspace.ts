@@ -1,16 +1,33 @@
 import workspaceConfig from "@/core/workspace";
 import output from "@/core/output";
 import logger from "@/core/logger";
-import { GhitgudError } from "@/core/errors";
-import { execSync } from "child_process";
+import { GitfleetError } from "@/core/errors";
+import { runBulk } from "@/application/bulk";
+import { formatRepositoryPath, formatRepositoryRef } from "@/domain/provider";
+
+type WorkspaceExecutor = (args: string[], repo: string) => Promise<void>;
+
+function parseCommand(value: string): string[] {
+  const args = value.trim().split(/\s+/).filter(Boolean);
+  if (!args.length) throw new GitfleetError("Workspace command is required.");
+  if (args.includes("--repo")) {
+    throw new GitfleetError(
+      "Workspace commands cannot include --repo; Gitfleet supplies it.",
+    );
+  }
+  if (args[0] === "workspace" && args[1] === "run") {
+    throw new GitfleetError("Workspace run cannot invoke itself.");
+  }
+  return args;
+}
 
 const define = (name: string, repos: string[]) => {
-  if (!name) throw new GhitgudError("Workspace name is required.");
+  if (!name) throw new GitfleetError("Workspace name is required.");
   if (!repos.length)
-    throw new GhitgudError("At least one repository is required.");
+    throw new GitfleetError("At least one repository is required.");
   const workspace = workspaceConfig.define(name, repos);
   logger.success(
-    `Defined workspace "${name}" with ${repos.length} repositor(ies).`,
+    `Defined workspace "${name}" with ${workspace.repositories.length} repositor(ies).`,
   );
   return { success: true, workspace };
 };
@@ -24,8 +41,8 @@ const list = () => {
   output.renderTable(
     workspaces.map((w) => ({
       name: w.name,
-      repos: w.repos.join(", "),
-      count: w.repos.length,
+      repositories: w.repositories.map(formatRepositoryRef).join(", "),
+      count: w.repositories.length,
     })),
     { emptyMessage: "No workspaces defined." },
   );
@@ -33,24 +50,29 @@ const list = () => {
   return { success: true, workspaces };
 };
 
-const run = async (name: string, command: string) => {
+const run = async (
+  name: string,
+  command: string,
+  execute: WorkspaceExecutor,
+) => {
   const workspace = workspaceConfig.get(name);
+  const args = parseCommand(command);
   logger.start(
-    `Running "${command}" across ${workspace.repos.length} repositor(ies).`,
+    `Running "${command}" across ${workspace.repositories.length} repositor(ies).`,
   );
-  const results: Array<{ repo: string; success: boolean; output: string }> = [];
-  for (const repo of workspace.repos) {
-    try {
-      const result = execSync(`ghg ${command} --repo ${repo}`, {
-        encoding: "utf8",
-        timeout: 60000,
-      });
-      results.push({ repo, success: true, output: result.trim() });
-    } catch (error) {
-      const message = error instanceof Error ? error.message : "Unknown error";
-      results.push({ repo, success: false, output: message.slice(0, 200) });
-    }
-  }
+  const bulkResults = await runBulk(
+    workspace.repositories,
+    async (repository) => {
+      const repo = formatRepositoryPath(repository);
+      await execute([...args, "--repo", repo], repo);
+    },
+    1,
+  );
+  const results = bulkResults.map((result) => ({
+    repo: formatRepositoryRef(result.item),
+    success: result.success,
+    output: result.error ?? "Completed",
+  }));
   output.renderTable(
     results.map((r) => ({
       repo: r.repo,

@@ -1,7 +1,7 @@
 import { Command } from "commander";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
-import orgCommand from "@/commands/org";
+import orgCommand from "@/commands/access-org";
 
 vi.mock("@/services/org", () => ({
   default: {
@@ -26,6 +26,7 @@ describe("integration > org commands", () => {
     await program.parseAsync([
       "node",
       "test",
+      "access",
       "org",
       "members",
       "--org",
@@ -44,6 +45,7 @@ describe("integration > org commands", () => {
     await program.parseAsync([
       "node",
       "test",
+      "access",
       "org",
       "invite",
       "--org",
@@ -69,6 +71,7 @@ describe("integration > org commands", () => {
     await program.parseAsync([
       "node",
       "test",
+      "access",
       "org",
       "invite",
       "--org",
@@ -92,6 +95,7 @@ describe("integration > org commands", () => {
     await program.parseAsync([
       "node",
       "test",
+      "access",
       "org",
       "remove",
       "--org",
@@ -111,6 +115,7 @@ describe("integration > org commands", () => {
     await program.parseAsync([
       "node",
       "test",
+      "access",
       "org",
       "members",
       "--org",
@@ -133,6 +138,7 @@ describe("integration > org commands", () => {
     await program.parseAsync([
       "node",
       "test",
+      "access",
       "org",
       "members",
       "--org",

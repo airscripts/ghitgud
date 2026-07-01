@@ -2,7 +2,7 @@
 set -euo pipefail
 source "$(dirname "$0")/env.sh"
 
-WEBHOOK_URL="https://example.com/ghg-test-webhook"
+WEBHOOK_URL="https://example.com/gitfleet-test-webhook"
 WEBHOOK_ID=""
 
 setup() {
@@ -11,7 +11,7 @@ setup() {
 
 teardown() {
   if [ -n "$WEBHOOK_ID" ]; then
-    ghg webhook delete "$WEBHOOK_ID" --repo "$REPO" --yes >/dev/null 2>&1 || true
+    gitfleet webhook delete "$WEBHOOK_ID" --repo "$REPO" --yes >/dev/null 2>&1 || true
   fi
   print_summary
 }
@@ -20,10 +20,10 @@ trap teardown EXIT
 setup
 
 step "List Webhooks"
-expect_exit_0 "webhook list succeeds" ghg webhook list --repo "$REPO"
+expect_exit_0 "webhook list succeeds" gitfleet webhook list --repo "$REPO"
 
 step "Create Webhook"
-CREATE_JSON=$(ghg webhook create --url "$WEBHOOK_URL" --events push --repo "$REPO" --json)
+CREATE_JSON=$(gitfleet webhook create --url "$WEBHOOK_URL" --events push --repo "$REPO" --json)
 WEBHOOK_ID=$(echo "$CREATE_JSON" | python3 -c 'import json,sys; d=json.load(sys.stdin); print(d.get("webhook",{}).get("id",""))')
 if [ -n "$WEBHOOK_ID" ]; then
   pass "webhook create succeeds"
@@ -32,17 +32,17 @@ else
 fi
 
 step "List Webhooks After Create"
-expect_exit_0 "webhook list shows webhook" ghg webhook list --repo "$REPO"
+expect_exit_0 "webhook list shows webhook" gitfleet webhook list --repo "$REPO"
 
 step "Test Webhook Ping"
-expect_exit_0 "webhook test ping succeeds" ghg webhook test "$WEBHOOK_ID" --repo "$REPO"
+expect_exit_0 "webhook test ping succeeds" gitfleet webhook test "$WEBHOOK_ID" --repo "$REPO"
 
 step "List Deliveries"
-expect_exit_0 "webhook delivery list succeeds" ghg webhook delivery list "$WEBHOOK_ID" --repo "$REPO"
+expect_exit_0 "webhook delivery list succeeds" gitfleet webhook delivery list "$WEBHOOK_ID" --repo "$REPO"
 
 step "Delete Webhook"
-expect_exit_0 "webhook delete succeeds" ghg webhook delete "$WEBHOOK_ID" --repo "$REPO" --yes
+expect_exit_0 "webhook delete succeeds" gitfleet webhook delete "$WEBHOOK_ID" --repo "$REPO" --yes
 WEBHOOK_ID=""
 
 step "Delete Missing Webhook"
-expect_exit_non0 "webhook delete rejects missing webhook" ghg webhook delete 999999 --repo "$REPO" --yes
+expect_exit_non0 "webhook delete rejects missing webhook" gitfleet webhook delete 999999 --repo "$REPO" --yes

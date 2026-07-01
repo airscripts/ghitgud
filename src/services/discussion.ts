@@ -2,7 +2,7 @@ import client from "@/api/client";
 import output from "@/core/output";
 import logger from "@/core/logger";
 import api from "@/api/discussions";
-import { GhitgudError } from "@/core/errors";
+import { GitfleetError } from "@/core/errors";
 import { Discussion, DiscussionCategory, DiscussionComment } from "@/types";
 
 interface ListOptions {
@@ -130,7 +130,7 @@ function getRepoParts(repo: string): {
 
 function handleGraphQlErrors(payload: GraphQlErrorResponse): void {
   if (payload.errors?.length) {
-    throw new GhitgudError(payload.errors[0].message);
+    throw new GitfleetError(payload.errors[0].message);
   }
 }
 
@@ -164,7 +164,7 @@ async function fetchDiscussion(
 
   const raw = payload.data?.repository?.discussion;
   if (!raw) {
-    throw new GhitgudError(`Discussion #${number} not found.`);
+    throw new GitfleetError(`Discussion #${number} not found.`);
   }
 
   const discussion: Discussion = {
@@ -210,7 +210,7 @@ async function resolveCategoryId(
 
   if (!match) {
     const available = categories.map((c) => c.name).join(", ");
-    throw new GhitgudError(
+    throw new GitfleetError(
       `Category "${categoryName}" not found. Available: ${available}`,
     );
   }
@@ -254,7 +254,7 @@ const list = async (repo: string, options: ListOptions = {}) => {
 
 const view = async (repo: string, number: number) => {
   if (!Number.isInteger(number) || number <= 0) {
-    throw new GhitgudError(`Invalid discussion number: ${number}`);
+    throw new GitfleetError(`Invalid discussion number: ${number}`);
   }
 
   const { owner, name } = getRepoParts(repo);
@@ -326,11 +326,11 @@ const create = async (
   },
 ) => {
   if (!options.title) {
-    throw new GhitgudError("--title is required.");
+    throw new GitfleetError("--title is required.");
   }
 
   if (!options.category) {
-    throw new GhitgudError("--category is required.");
+    throw new GitfleetError("--category is required.");
   }
 
   const { owner, name } = api.parseRepo(repo);
@@ -356,7 +356,7 @@ const create = async (
   const repositoryId = repoIdPayload.data?.repository?.id;
 
   if (!repositoryId) {
-    throw new GhitgudError(`Could not resolve repository id for ${repo}.`);
+    throw new GitfleetError(`Could not resolve repository id for ${repo}.`);
   }
 
   const response = await api.create(
@@ -371,7 +371,7 @@ const create = async (
 
   const discussion = payload.data?.createDiscussion?.discussion;
   if (!discussion) {
-    throw new GhitgudError("Discussion creation failed.");
+    throw new GitfleetError("Discussion creation failed.");
   }
 
   logger.success(`Created discussion #${discussion.number}.`);
@@ -394,12 +394,12 @@ const create = async (
 
 const comment = async (repo: string, numberValue: string, body: string) => {
   if (!body) {
-    throw new GhitgudError("--body is required.");
+    throw new GitfleetError("--body is required.");
   }
 
   const number = Number(numberValue);
   if (!Number.isInteger(number) || number <= 0) {
-    throw new GhitgudError(`Invalid discussion number: ${numberValue}`);
+    throw new GitfleetError(`Invalid discussion number: ${numberValue}`);
   }
 
   const { owner, name } = getRepoParts(repo);
@@ -412,7 +412,7 @@ const comment = async (repo: string, numberValue: string, body: string) => {
 
   const commentData = payload.data?.addDiscussionComment?.comment;
   if (!commentData) {
-    throw new GhitgudError("Comment creation failed.");
+    throw new GitfleetError("Comment creation failed.");
   }
 
   logger.success(`Comment added to discussion #${number}.`);
@@ -431,7 +431,7 @@ const comment = async (repo: string, numberValue: string, body: string) => {
 const close = async (repo: string, numberValue: string) => {
   const number = Number(numberValue);
   if (!Number.isInteger(number) || number <= 0) {
-    throw new GhitgudError(`Invalid discussion number: ${numberValue}`);
+    throw new GitfleetError(`Invalid discussion number: ${numberValue}`);
   }
 
   const { owner, name } = getRepoParts(repo);
@@ -444,7 +444,7 @@ const close = async (repo: string, numberValue: string) => {
 
   const result = payload.data?.closeDiscussion?.discussion;
   if (!result) {
-    throw new GhitgudError("Close discussion failed.");
+    throw new GitfleetError("Close discussion failed.");
   }
 
   logger.success(`Closed discussion #${result.number}.`);

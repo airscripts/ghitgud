@@ -7,7 +7,7 @@ import api from "@/api/releases";
 import output from "@/core/output";
 import logger from "@/core/logger";
 import template from "@/core/template";
-import { GhitgudError, NotFoundError } from "@/core/errors";
+import { GitfleetError, NotFoundError } from "@/core/errors";
 
 import {
   TEMPLATES_DIR,
@@ -136,7 +136,7 @@ const create = async (tag: string, options: CreateOptions) => {
 
 const edit = async (tag: string, options: EditOptions) => {
   if (options.title === undefined && options.notes === undefined) {
-    throw new GhitgudError("Provide --title or --notes to edit a release.");
+    throw new GitfleetError("Provide --title or --notes to edit a release.");
   }
   const current = await api.fetchByTag(options.repo, tag);
   const release = await api.update(options.repo, current.id, {
@@ -165,7 +165,7 @@ const download = async (tag: string, options: DownloadOptions) => {
   for (const asset of assets) {
     const target = path.join(outputDir, path.basename(asset.name));
     if (fs.existsSync(target)) {
-      throw new GhitgudError(`File already exists: ${target}`);
+      throw new GitfleetError(`File already exists: ${target}`);
     }
     const response = await api.downloadAsset(asset.browser_download_url);
     fs.writeFileSync(target, Buffer.from(await response.arrayBuffer()));
@@ -180,12 +180,12 @@ const upload = async (tag: string, files: string[], options: UploadOptions) => {
   const uploaded: unknown[] = [];
   for (const file of files) {
     if (!fs.existsSync(file) || !fs.statSync(file).isFile()) {
-      throw new GhitgudError(`File not found: ${file}`);
+      throw new GitfleetError(`File not found: ${file}`);
     }
     const name = path.basename(file);
     const existing = release.assets.find((asset) => asset.name === name);
     if (existing && !options.clobber) {
-      throw new GhitgudError(
+      throw new GitfleetError(
         `Asset already exists: ${name}. Use --clobber to replace it.`,
       );
     }
@@ -262,7 +262,7 @@ function bumpVersion(current: string, level: BumpLevel): string {
       return `${v.major}.${v.minor}.${v.patch + 1}`;
 
     default:
-      throw new GhitgudError(`Invalid bump level: ${level}.`);
+      throw new GitfleetError(`Invalid bump level: ${level}.`);
   }
 }
 
@@ -304,13 +304,13 @@ const changelog = async (options: ChangelogOptions) => {
 
 const bump = async (options: BumpOptions) => {
   if (options.create && !git.isInsideRepo()) {
-    throw new GhitgudError(
+    throw new GitfleetError(
       "Cannot create tag outside of a git repository. Use --repo with a local clone.",
     );
   }
 
   if (options.push && !options.create) {
-    throw new GhitgudError("--push requires --create.");
+    throw new GitfleetError("--push requires --create.");
   }
 
   const latestTag = getLatestTag();
@@ -378,7 +378,7 @@ const verify = async (tag: string, options: VerifyOptions) => {
         valid: assets.every((a) => a.size > 0),
       };
     } catch {
-      logger.warn("Release metadata not found on GitHub.");
+      logger.warn("Release metadata not found on the provider.");
     }
   }
 
@@ -462,7 +462,7 @@ const draft = async (options: DraftOptions) => {
   const repo = options.repo;
 
   if (!repo) {
-    throw new GhitgudError(ERROR_NO_REPO);
+    throw new GitfleetError(ERROR_NO_REPO);
   }
 
   const latestTag = getLatestTag();

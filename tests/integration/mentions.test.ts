@@ -1,12 +1,12 @@
 import { Command } from "commander";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
-import mentionsCommand from "@/commands/mentions";
+import mentionsCommand from "@/commands/inbox-mentions";
 
 vi.mock("@/core/repo", () => ({
   default: {
     resolveRepo: vi.fn((repo?: string) =>
-      Promise.resolve(repo ?? "airscripts/ghitgud"),
+      Promise.resolve(repo ?? "airscripts/gitfleet"),
     ),
   },
 }));
@@ -30,7 +30,7 @@ describe("integration > mentions command", () => {
     program.exitOverride();
     mentionsCommand.register(program);
 
-    await program.parseAsync(["node", "test", "mentions"]);
+    await program.parseAsync(["node", "test", "inbox", "mentions"]);
     expect(repoResolver.resolveRepo).not.toHaveBeenCalled();
     expect(service.mentions).toHaveBeenCalledWith(undefined);
   });
@@ -43,6 +43,7 @@ describe("integration > mentions command", () => {
     await program.parseAsync([
       "node",
       "test",
+      "inbox",
       "mentions",
       "--repo",
       "owner/repo",

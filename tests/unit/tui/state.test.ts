@@ -58,7 +58,7 @@ describe("tui state", () => {
       const result = initialValues({
         id: "test",
         title: "Test",
-        command: "ghg test",
+        command: "gitfleet test",
         workspace: "Utility",
         description: "test",
         inputs: [{ key: "flag", label: "Flag", type: "boolean" }],
@@ -72,7 +72,7 @@ describe("tui state", () => {
       const result = initialValues({
         id: "test",
         title: "Test",
-        command: "ghg test",
+        command: "gitfleet test",
         description: "test",
         workspace: "Utility",
 
@@ -89,7 +89,7 @@ describe("tui state", () => {
       const result = initialValues({
         id: "test",
         title: "Test",
-        command: "ghg test",
+        command: "gitfleet test",
         description: "test",
         workspace: "Utility",
         inputs: [{ key: "name", label: "Name", type: "string" }],
@@ -103,7 +103,7 @@ describe("tui state", () => {
       const result = initialValues({
         id: "test",
         title: "Test",
-        command: "ghg test",
+        command: "gitfleet test",
         description: "test",
         workspace: "Utility",
         run: () => null,
@@ -119,7 +119,7 @@ describe("tui state", () => {
         {
           id: "test",
           title: "Test",
-          command: "ghg test",
+          command: "gitfleet test",
           description: "test",
           workspace: "Utility",
           run: () => null,
@@ -139,7 +139,7 @@ describe("tui state", () => {
         {
           id: "test",
           title: "Test",
-          command: "ghg test",
+          command: "gitfleet test",
           description: "test",
           workspace: "Utility",
           run: () => null,
@@ -159,7 +159,7 @@ describe("tui state", () => {
         {
           id: "test",
           title: "Test",
-          command: "ghg test",
+          command: "gitfleet test",
           description: "test",
           workspace: "Utility",
           run: () => null,
@@ -179,7 +179,7 @@ describe("tui state", () => {
         {
           id: "test",
           title: "Test",
-          command: "ghg test",
+          command: "gitfleet test",
           description: "test",
           workspace: "Utility",
           run: () => null,
@@ -272,7 +272,7 @@ describe("tui state", () => {
         {
           id: "test",
           title: "Test",
-          command: "ghg test",
+          command: "gitfleet test",
           description: "desc",
           workspace: "Utility",
           run: () => null,
@@ -288,7 +288,7 @@ describe("tui state", () => {
 
       expect(lines).toContain("> Name: alice");
       expect(lines).toContain("Test");
-      expect(lines).toContain("ghg test");
+      expect(lines).toContain("gitfleet test");
       expect(lines).toContain("desc");
       expect(lines).toContain("Result");
       expect(lines).toContain("ok");
@@ -299,7 +299,7 @@ describe("tui state", () => {
         {
           id: "test",
           title: "Test",
-          command: "ghg test",
+          command: "gitfleet test",
           description: "desc",
           workspace: "Utility",
           run: () => null,
@@ -323,7 +323,7 @@ describe("tui state", () => {
           inputs: [],
           title: "Test",
           mutates: true,
-          command: "ghg test",
+          command: "gitfleet test",
           description: "desc",
           workspace: "Utility",
           run: () => null,
@@ -344,7 +344,7 @@ describe("tui state", () => {
         {
           id: "test",
           title: "Test",
-          command: "ghg test",
+          command: "gitfleet test",
           description: "desc",
           workspace: "Utility",
           run: () => null,
@@ -374,7 +374,7 @@ describe("tui state", () => {
         {
           id: "test",
           title: "Test",
-          command: "ghg test",
+          command: "gitfleet test",
           description: "desc",
           workspace: "Utility",
           run: () => null,
@@ -400,7 +400,7 @@ describe("tui state", () => {
           id: "test",
           inputs: [],
           title: "Test",
-          command: "ghg test",
+          command: "gitfleet test",
           description: "desc",
           workspace: "Utility",
           run: () => null,

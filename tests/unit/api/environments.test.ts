@@ -1,9 +1,9 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
-import client from "@/api/client";
+import client from "@/providers/github/client";
 import environments from "@/api/environments";
 
-vi.mock("@/api/client", () => ({
+vi.mock("@/providers/github/client", () => ({
   default: {
     get: vi.fn(),
     putTokenRequired: vi.fn(),

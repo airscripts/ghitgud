@@ -1,39 +1,39 @@
-export class GhitgudError extends Error {
+export class GitfleetError extends Error {
   constructor(message: string) {
     super(message);
-    this.name = "GhitgudError";
+    this.name = "GitfleetError";
   }
 }
 
-export class AuthError extends GhitgudError {
+export class AuthError extends GitfleetError {
   constructor(message: string) {
     super(message);
     this.name = "AuthError";
   }
 }
 
-export class ConfigError extends GhitgudError {
+export class ConfigError extends GitfleetError {
   constructor(message: string) {
     super(message);
     this.name = "ConfigError";
   }
 }
 
-export class NotFoundError extends GhitgudError {
+export class NotFoundError extends GitfleetError {
   constructor(message: string) {
     super(message);
     this.name = "NotFoundError";
   }
 }
 
-export class UnprocessableError extends GhitgudError {
+export class UnprocessableError extends GitfleetError {
   constructor(message: string) {
     super(message);
     this.name = "UnprocessableError";
   }
 }
 
-export class RateLimitError extends GhitgudError {
+export class RateLimitError extends GitfleetError {
   resetAt: Date;
   remaining: number;
   limit: number;
@@ -52,7 +52,7 @@ export class RateLimitError extends GhitgudError {
   }
 }
 
-export class TokenRequiredError extends GhitgudError {
+export class TokenRequiredError extends GitfleetError {
   scopes: string[];
 
   constructor(message: string, scopes: string[] = []) {
@@ -62,7 +62,7 @@ export class TokenRequiredError extends GhitgudError {
   }
 }
 
-export class SecretEncryptionError extends GhitgudError {
+export class SecretEncryptionError extends GitfleetError {
   constructor(message: string) {
     super(message);
     this.name = "SecretEncryptionError";

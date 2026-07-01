@@ -1,6 +1,6 @@
 # Contributing
 
-When contributing to this repository, please first discuss the change you wish to make via issue, email, or any other method with the owners of this repository, ensuring you follow the [Code of Conduct](https://github.com/airscripts/ghitgud/blob/main/CODE_OF_CONDUCT.md).
+When contributing to this repository, please first discuss the change you wish to make via issue, email, or any other method with the owners of this repository, ensuring you follow the [Code of Conduct](https://github.com/airscripts/gitfleet/blob/main/CODE_OF_CONDUCT.md).
 
 ## Development Setup
 
@@ -12,9 +12,10 @@ pnpm test               # Run tests (watch mode).
 pnpm test -- --run      # Single test run.
 pnpm test:coverage      # Run tests with coverage report.
 pnpm typecheck          # Type check without emitting.
-pnpm lint               # Type check (alias for typecheck).
+pnpm lint               # Run ESLint across source and tests.
+pnpm format:check       # Verify Prettier formatting.
 pnpm clean              # Remove dist/ and coverage/.
-bash scripts/clean.sh   # Remove local config directory (~/.config/ghitgud).
+bash scripts/clean.sh   # Remove local config directory (~/.config/gitfleet).
 ```
 
 ## Commit Convention

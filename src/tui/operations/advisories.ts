@@ -7,7 +7,7 @@ const advisoryOperations: TuiOperation[] = [
     workspace: "Advisories",
     id: "advisory.list",
     title: "List Advisories",
-    command: "ghg advisory list",
+    command: "gitfleet advisory list",
     description: "List security advisories from the GitHub Advisory Database.",
     inputs: [
       repoInput,
@@ -27,7 +27,7 @@ const advisoryOperations: TuiOperation[] = [
     workspace: "Advisories",
     id: "advisory.view",
     title: "View Advisory",
-    command: "ghg advisory view <ghsa-id>",
+    command: "gitfleet advisory view <ghsa-id>",
     description: "View a specific security advisory.",
     inputs: [
       { key: "ghsaId", label: "GHSA ID", type: "string", required: true },
@@ -43,7 +43,7 @@ const advisoryOperations: TuiOperation[] = [
     workspace: "Advisories",
     id: "advisory.create",
     title: "Create Advisory",
-    command: "ghg advisory create --repo <repo> --summary <text>",
+    command: "gitfleet advisory create --repo <repo> --summary <text>",
     description: "Create a repository security advisory.",
     inputs: [
       { key: "repo", label: "Repository", type: "string", required: true },
@@ -76,7 +76,7 @@ const advisoryOperations: TuiOperation[] = [
     workspace: "Advisories",
     id: "advisory.publish",
     title: "Publish Advisory",
-    command: "ghg advisory publish <ghsa-id>",
+    command: "gitfleet advisory publish <ghsa-id>",
     description: "Publish a draft security advisory.",
     inputs: [
       { key: "ghsaId", label: "GHSA ID", type: "string", required: true },
@@ -92,7 +92,7 @@ const advisoryOperations: TuiOperation[] = [
     workspace: "Advisories",
     id: "advisory.close",
     title: "Close Advisory",
-    command: "ghg advisory close <ghsa-id>",
+    command: "gitfleet advisory close <ghsa-id>",
     description: "Close a security advisory.",
     inputs: [
       { key: "ghsaId", label: "GHSA ID", type: "string", required: true },
@@ -108,7 +108,7 @@ const advisoryOperations: TuiOperation[] = [
     workspace: "Advisories",
     id: "advisory.cve-request",
     title: "Request CVE",
-    command: "ghg advisory cve-request <ghsa-id>",
+    command: "gitfleet advisory cve-request <ghsa-id>",
     description: "Request a CVE for a published advisory.",
     inputs: [
       { key: "ghsaId", label: "GHSA ID", type: "string", required: true },

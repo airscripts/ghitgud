@@ -1,16 +1,16 @@
 import { Command } from "commander";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
-import notificationsCommand from "@/commands/notifications";
+import notificationsCommand from "@/commands/inbox-notifications";
 
 vi.mock("@/core/repo", () => ({
   default: {
     resolveRepo: vi.fn((repo?: string) =>
-      Promise.resolve(repo ?? "airscripts/ghitgud"),
+      Promise.resolve(repo ?? "airscripts/gitfleet"),
     ),
 
-    resolveRepoSync: vi.fn(() => "airscripts/ghitgud"),
-    resolveRepos: vi.fn(() => Promise.resolve(["airscripts/ghitgud"])),
+    resolveRepoSync: vi.fn(() => "airscripts/gitfleet"),
+    resolveRepos: vi.fn(() => Promise.resolve(["airscripts/gitfleet"])),
   },
 }));
 
@@ -25,7 +25,7 @@ vi.mock("@/services/notifications", () => ({
 vi.mock("@/services/repos/index", () => ({
   default: {
     resolveTargets: vi.fn(() =>
-      Promise.resolve([{ fullName: "airscripts/ghitgud", name: "ghitgud" }]),
+      Promise.resolve([{ fullName: "airscripts/gitfleet", name: "gitfleet" }]),
     ),
   },
 }));
@@ -46,22 +46,25 @@ describe("integration > notifications commands", () => {
     await program.parseAsync([
       "node",
       "test",
+      "inbox",
       "notifications",
       "list",
       "-a",
       "-p",
       "-r",
-      "airscripts/ghitgud",
+      "airscripts/gitfleet",
       "-l",
       "50",
     ]);
 
-    expect(repoResolver.resolveRepo).toHaveBeenCalledWith("airscripts/ghitgud");
+    expect(repoResolver.resolveRepo).toHaveBeenCalledWith(
+      "airscripts/gitfleet",
+    );
     expect(service.list).toHaveBeenCalledWith({
       all: true,
       limit: 50,
       participating: true,
-      repo: "airscripts/ghitgud",
+      repo: "airscripts/gitfleet",
     });
   });
 
@@ -70,7 +73,13 @@ describe("integration > notifications commands", () => {
     program.exitOverride();
     notificationsCommand.register(program);
 
-    await program.parseAsync(["node", "test", "notifications", "list"]);
+    await program.parseAsync([
+      "node",
+      "test",
+      "inbox",
+      "notifications",
+      "list",
+    ]);
 
     expect(repoResolver.resolveRepo).not.toHaveBeenCalled();
     expect(service.list).toHaveBeenCalledWith({
@@ -89,6 +98,7 @@ describe("integration > notifications commands", () => {
     await program.parseAsync([
       "node",
       "test",
+      "inbox",
       "notifications",
       "read",
       "12345",
@@ -105,6 +115,7 @@ describe("integration > notifications commands", () => {
     await program.parseAsync([
       "node",
       "test",
+      "inbox",
       "notifications",
       "done",
       "12345",

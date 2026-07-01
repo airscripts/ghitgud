@@ -38,7 +38,9 @@ const register = (program: Command) => {
     .requiredOption("--command <cmd>", "Command to run")
     .action(async (options: { name: string; command: string }) => {
       await command.run(() =>
-        workspaceService.run(options.name, options.command),
+        workspaceService.run(options.name, options.command, async (args) => {
+          await program.parseAsync(args, { from: "user" });
+        }),
       );
     });
 };

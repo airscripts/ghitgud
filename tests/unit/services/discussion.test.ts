@@ -1,6 +1,6 @@
 import { describe, expect, it, Mock, vi, beforeEach } from "vitest";
 
-import client from "@/api/client";
+import client from "@/providers/github/client";
 import api from "@/api/discussions";
 import discussionService from "@/services/discussion";
 
@@ -16,7 +16,7 @@ vi.mock("@/api/discussions", () => ({
   },
 }));
 
-vi.mock("@/api/client", () => ({
+vi.mock("@/providers/github/client", () => ({
   default: {
     graphqlTokenRequired: vi.fn(),
     getRepo: vi.fn(() => "owner/repo"),

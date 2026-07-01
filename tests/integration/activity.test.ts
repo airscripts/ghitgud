@@ -1,12 +1,12 @@
 import { Command } from "commander";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
-import activityCommand from "@/commands/activity";
+import activityCommand from "@/commands/inbox-activity";
 
 vi.mock("@/core/repo", () => ({
   default: {
     resolveRepo: vi.fn((repo?: string) =>
-      Promise.resolve(repo ?? "airscripts/ghitgud"),
+      Promise.resolve(repo ?? "airscripts/gitfleet"),
     ),
   },
 }));
@@ -30,7 +30,7 @@ describe("integration > activity command", () => {
     program.exitOverride();
     activityCommand.register(program);
 
-    await program.parseAsync(["node", "test", "activity"]);
+    await program.parseAsync(["node", "test", "inbox", "activity"]);
     expect(repoResolver.resolveRepo).not.toHaveBeenCalled();
     expect(service.activity).toHaveBeenCalledWith(undefined);
   });
@@ -43,6 +43,7 @@ describe("integration > activity command", () => {
     await program.parseAsync([
       "node",
       "test",
+      "inbox",
       "activity",
       "--repo",
       "owner/repo",

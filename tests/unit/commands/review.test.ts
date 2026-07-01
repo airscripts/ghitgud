@@ -16,9 +16,9 @@ vi.mock("@/services/review", () => ({
 
 vi.mock("@/core/repo", () => ({
   default: {
-    resolveRepo: vi.fn().mockResolvedValue("airscripts/ghitgud"),
-    resolveRepoSync: vi.fn().mockReturnValue("airscripts/ghitgud"),
-    resolveRepos: vi.fn().mockResolvedValue(["airscripts/ghitgud"]),
+    resolveRepo: vi.fn().mockResolvedValue("airscripts/gitfleet"),
+    resolveRepoSync: vi.fn().mockReturnValue("airscripts/gitfleet"),
+    resolveRepos: vi.fn().mockResolvedValue(["airscripts/gitfleet"]),
   },
 }));
 
@@ -77,7 +77,7 @@ describe("review command", () => {
 
     await expect(
       program.parseAsync(["node", "test", "review", "threads", "12abc"]),
-    ).rejects.toThrow("Invalid PR: 12abc.");
+    ).rejects.toThrow("Invalid change: 12abc.");
 
     expect(reviewService.threads).not.toHaveBeenCalled();
   });
@@ -114,7 +114,7 @@ describe("review command", () => {
     await program.parseAsync(["node", "test", "review", "threads", "42"]);
     expect(reviewService.threads).toHaveBeenCalledWith(
       42,
-      "airscripts/ghitgud",
+      "airscripts/gitfleet",
     );
   });
 
@@ -135,7 +135,7 @@ describe("review command", () => {
 
     expect(reviewService.threads).toHaveBeenCalledWith(
       42,
-      "airscripts/ghitgud",
+      "airscripts/gitfleet",
     );
   });
 
@@ -155,7 +155,7 @@ describe("review command", () => {
 
     expect(reviewService.resolve).toHaveBeenCalledWith(
       123456,
-      "airscripts/ghitgud",
+      "airscripts/gitfleet",
       42,
     );
   });
@@ -184,7 +184,7 @@ describe("review command", () => {
       line: 10,
       file: "src/main.ts",
       replace: "const x = 1;",
-      repo: "airscripts/ghitgud",
+      repo: "airscripts/gitfleet",
     });
   });
 
@@ -206,7 +206,7 @@ describe("review command", () => {
 
     expect(reviewService.apply).toHaveBeenCalledWith(
       42,
-      "airscripts/ghitgud",
+      "airscripts/gitfleet",
       true,
     );
   });
@@ -218,7 +218,7 @@ describe("review command", () => {
 
     await expect(
       program.parseAsync(["node", "test", "review", "threads"]),
-    ).rejects.toThrow("PR number is required.");
+    ).rejects.toThrow("Change number is required.");
 
     expect(reviewService.threads).not.toHaveBeenCalled();
   });
@@ -284,7 +284,7 @@ describe("review command", () => {
       side: "LEFT",
       file: "src/main.ts",
       body: "Looks good.",
-      repo: "airscripts/ghitgud",
+      repo: "airscripts/gitfleet",
     });
   });
 });

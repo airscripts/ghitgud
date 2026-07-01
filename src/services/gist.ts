@@ -7,7 +7,7 @@ import git from "@/core/git";
 import output from "@/core/output";
 import logger from "@/core/logger";
 import outputState from "@/core/output-state";
-import { GhitgudError } from "@/core/errors";
+import { GitfleetError } from "@/core/errors";
 import { GistFile, GistSummary } from "@/types";
 
 interface GistApiFile {
@@ -60,17 +60,17 @@ const readFiles = (files: string[]): Record<string, { content: string }> => {
   for (const file of files) {
     const absolutePath = path.resolve(file);
     if (!fs.existsSync(absolutePath) || !fs.statSync(absolutePath).isFile()) {
-      throw new GhitgudError(`Gist file not found: ${file}.`);
+      throw new GitfleetError(`Gist file not found: ${file}.`);
     }
 
     const name = path.basename(file);
     if (name in result) {
-      throw new GhitgudError(`Duplicate gist filename: ${name}.`);
+      throw new GitfleetError(`Duplicate gist filename: ${name}.`);
     }
 
     const content = fs.readFileSync(absolutePath, "utf8");
     if (content.includes("\uFFFD")) {
-      throw new GhitgudError(`Gist file must contain valid UTF-8: ${file}.`);
+      throw new GitfleetError(`Gist file must contain valid UTF-8: ${file}.`);
     }
     result[name] = { content };
   }
@@ -81,7 +81,7 @@ const readFiles = (files: string[]): Record<string, { content: string }> => {
 const list = async (options: { public?: boolean; limit?: number } = {}) => {
   const limit = options.limit ?? 30;
   if (!Number.isInteger(limit) || limit < 1 || limit > 100) {
-    throw new GhitgudError("Gist limit must be between 1 and 100.");
+    throw new GitfleetError("Gist limit must be between 1 and 100.");
   }
 
   const response = await api.list(options.public ?? false, limit);
@@ -110,13 +110,13 @@ const view = async (
   options: { raw?: boolean; file?: string } = {},
 ) => {
   if (options.raw && outputState.isJsonOutput()) {
-    throw new GhitgudError("--raw cannot be combined with --json.");
+    throw new GitfleetError("--raw cannot be combined with --json.");
   }
 
   const gist = await getGist(id);
   if (options.raw) {
     if (gist.files.length !== 1 && !options.file) {
-      throw new GhitgudError(
+      throw new GitfleetError(
         `Multiple files found. Use --file with one of: ${gist.files.map((file) => file.filename).join(", ")}.`,
       );
     }
@@ -124,11 +124,11 @@ const view = async (
     const file = options.file
       ? gist.files.find((candidate) => candidate.filename === options.file)
       : gist.files[0];
-    if (!file) throw new GhitgudError(`Gist file not found: ${options.file}.`);
+    if (!file) throw new GitfleetError(`Gist file not found: ${options.file}.`);
 
     let content = file.content;
     if (file.truncated || content === undefined) {
-      if (!file.rawUrl) throw new GhitgudError("Gist raw URL is unavailable.");
+      if (!file.rawUrl) throw new GitfleetError("Gist raw URL is unavailable.");
       const response = await client.getUrlTokenRequiredWithAccept(
         file.rawUrl,
         "text/plain",
@@ -179,13 +179,13 @@ const edit = async (
   const additions = readFiles(options.add ?? []);
   const removals = options.remove ?? [];
   if (!Object.keys(additions).length && !removals.length) {
-    throw new GhitgudError("At least one gist file change is required.");
+    throw new GitfleetError("At least one gist file change is required.");
   }
 
   const files: GistInput["files"] = { ...additions };
   for (const name of removals) {
     if (name in files) {
-      throw new GhitgudError(`Cannot add and remove gist file: ${name}.`);
+      throw new GitfleetError(`Cannot add and remove gist file: ${name}.`);
     }
     files[name] = null;
   }
@@ -206,7 +206,9 @@ const clone = async (id: string, directory?: string) => {
   const gist = await getGist(id);
   const destination = path.resolve(directory ?? id);
   if (fs.existsSync(destination)) {
-    throw new GhitgudError(`Clone destination already exists: ${destination}.`);
+    throw new GitfleetError(
+      `Clone destination already exists: ${destination}.`,
+    );
   }
   git.cloneRepository(gist.gitPullUrl, { directory: destination });
   logger.success(`Cloned gist ${id} to ${destination}.`);
@@ -236,7 +238,7 @@ const unstar = async (id: string) => {
 };
 
 const comment = async (id: string, body: string) => {
-  if (!body) throw new GhitgudError("Comment body is required.");
+  if (!body) throw new GitfleetError("Comment body is required.");
   logger.start(`Commenting on gist ${id}.`);
   const response = await api.createComment(id, body);
   const result = (await response.json()) as {

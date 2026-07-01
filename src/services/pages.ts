@@ -1,7 +1,7 @@
 import output from "@/core/output";
 import logger from "@/core/logger";
 import pagesApi from "@/api/pages";
-import { GhitgudError, NotFoundError } from "@/core/errors";
+import { GitfleetError, NotFoundError } from "@/core/errors";
 
 import type {
   PagesSite,
@@ -20,16 +20,16 @@ function validateSource(
   buildType?: string,
 ): PagesSource & { buildType: PagesBuildType } {
   if (!source.trim()) {
-    throw new GhitgudError("Pages source branch is required.");
+    throw new GitfleetError("Pages source branch is required.");
   }
 
   if (path !== "/" && path !== "/docs") {
-    throw new GhitgudError('Pages path must be "/" or "/docs".');
+    throw new GitfleetError('Pages path must be "/" or "/docs".');
   }
 
   const resolved = buildType ?? "legacy";
   if (!VALID_BUILD_TYPES.includes(resolved as PagesBuildType)) {
-    throw new GhitgudError(`Pages build type must be "legacy" or "workflow".`);
+    throw new GitfleetError(`Pages build type must be "legacy" or "workflow".`);
   }
 
   return {
@@ -56,12 +56,12 @@ const status = async (
   site: PagesSite | null;
   build: PagesBuild | null;
 }> => {
-  logger.start(`Loading GitHub Pages status for ${repo}.`);
+  logger.start(`Loading static site status for ${repo}.`);
   const site = await getSite(repo);
 
   if (!site) {
-    output.log("GitHub Pages is not configured for this repository.");
-    logger.success("GitHub Pages status loaded.");
+    output.log("static site is not configured for this repository.");
+    logger.success("static site status loaded.");
     return { success: true, configured: false, site: null, build: null };
   }
 
@@ -72,7 +72,7 @@ const status = async (
     if (!(error instanceof NotFoundError)) throw error;
   }
 
-  output.renderSummary("GitHub Pages", [
+  output.renderSummary("static site", [
     ["URL", site.htmlUrl],
     ["Status", site.status],
     ["Build type", site.buildType],
@@ -84,7 +84,7 @@ const status = async (
     ["Updated", build?.updatedAt ?? "-"],
   ]);
 
-  logger.success("GitHub Pages status loaded.");
+  logger.success("static site status loaded.");
   return { success: true, configured: true, site, build };
 };
 
@@ -103,7 +103,7 @@ const deploy = async (
     options.buildType,
   );
   const { buildType, ...source } = validated;
-  logger.start(`Configuring GitHub Pages for ${repo}.`);
+  logger.start(`Configuring static site for ${repo}.`);
   const existing = await getSite(repo);
 
   if (existing) {
@@ -114,28 +114,28 @@ const deploy = async (
 
   const build = await pagesApi.requestBuild(repo);
   logger.success(
-    `GitHub Pages ${existing ? "updated" : "configured"}; build ${build.status}.`,
+    `static site ${existing ? "updated" : "configured"}; build ${build.status}.`,
   );
 
   return { success: true, created: !existing, source, build };
 };
 
 const unpublish = async (repo: string): Promise<{ success: boolean }> => {
-  logger.start(`Unpublishing GitHub Pages for ${repo}.`);
+  logger.start(`Unpublishing static site for ${repo}.`);
 
   try {
     await pagesApi.remove(repo);
   } catch (error) {
     if (error instanceof NotFoundError) {
-      throw new GhitgudError(
-        "GitHub Pages is not configured for this repository.",
+      throw new GitfleetError(
+        "static site is not configured for this repository.",
       );
     }
 
     throw error;
   }
 
-  logger.success(`Unpublished GitHub Pages for ${repo}.`);
+  logger.success(`Unpublished static site for ${repo}.`);
   return { success: true };
 };
 

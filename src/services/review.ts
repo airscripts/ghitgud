@@ -16,7 +16,7 @@ import {
 
 import {
   ERROR_REVIEW_NO_THREADS,
-  ERROR_REVIEW_PR_REQUIRED,
+  ERROR_CHANGE_NUMBER_REQUIRED,
   ERROR_REVIEW_FILE_REQUIRED,
   ERROR_REVIEW_LINE_REQUIRED,
   ERROR_REVIEW_BODY_REQUIRED,
@@ -25,14 +25,14 @@ import {
   ERROR_REVIEW_COMMIT_SHA_REQUIRED,
 } from "@/core/constants";
 
-import { GhitgudError } from "@/core/errors";
+import { GitfleetError } from "@/core/errors";
 
 async function getPrHeadSha(repo: string, pr: number): Promise<string> {
   const response = await api.getPrDetails(repo, pr);
   const data = (await response.json()) as { head?: { sha?: string } };
   const sha = data.head?.sha;
 
-  if (!sha) throw new GhitgudError(ERROR_REVIEW_COMMIT_SHA_REQUIRED);
+  if (!sha) throw new GitfleetError(ERROR_REVIEW_COMMIT_SHA_REQUIRED);
   return sha;
 }
 
@@ -54,7 +54,7 @@ function normalizeComment(comment: GitHubReviewComment): ReviewComment {
 function normalizeSide(side: string | undefined): "LEFT" | "RIGHT" {
   const value = side ?? "RIGHT";
   if (value === "LEFT" || value === "RIGHT") return value;
-  throw new GhitgudError(`Invalid review side: ${value}.`);
+  throw new GitfleetError(`Invalid review side: ${value}.`);
 }
 
 function parseSuggestionBody(body: string): string | null {
@@ -197,10 +197,10 @@ interface CommentOptions {
 }
 
 const comment = async (options: CommentOptions) => {
-  if (!options.pr) throw new GhitgudError(ERROR_REVIEW_PR_REQUIRED);
-  if (!options.file) throw new GhitgudError(ERROR_REVIEW_FILE_REQUIRED);
-  if (!options.line) throw new GhitgudError(ERROR_REVIEW_LINE_REQUIRED);
-  if (!options.body) throw new GhitgudError(ERROR_REVIEW_BODY_REQUIRED);
+  if (!options.pr) throw new GitfleetError(ERROR_CHANGE_NUMBER_REQUIRED);
+  if (!options.file) throw new GitfleetError(ERROR_REVIEW_FILE_REQUIRED);
+  if (!options.line) throw new GitfleetError(ERROR_REVIEW_LINE_REQUIRED);
+  if (!options.body) throw new GitfleetError(ERROR_REVIEW_BODY_REQUIRED);
 
   const side = normalizeSide(options.side);
   const repo = await repoResolver.resolveRepo(options.repo);
@@ -222,7 +222,7 @@ const comment = async (options: CommentOptions) => {
 };
 
 const threads = async (pr: number, repo?: string) => {
-  if (!pr) throw new GhitgudError(ERROR_REVIEW_PR_REQUIRED);
+  if (!pr) throw new GitfleetError(ERROR_CHANGE_NUMBER_REQUIRED);
 
   const targetRepo = await repoResolver.resolveRepo(repo);
   logger.start(`Fetching review threads for PR #${pr}.`);
@@ -233,7 +233,7 @@ const threads = async (pr: number, repo?: string) => {
   );
 
   if (!comments.length) {
-    throw new GhitgudError(ERROR_REVIEW_NO_THREADS);
+    throw new GitfleetError(ERROR_REVIEW_NO_THREADS);
   }
 
   const threadList = groupCommentsIntoThreads(comments);
@@ -266,13 +266,13 @@ const threads = async (pr: number, repo?: string) => {
 };
 
 const resolve = async (threadId: number, repo?: string, pr?: number) => {
-  if (!threadId) throw new GhitgudError(ERROR_REVIEW_THREAD_NOT_FOUND);
+  if (!threadId) throw new GitfleetError(ERROR_REVIEW_THREAD_NOT_FOUND);
 
   const targetRepo = await repoResolver.resolveRepo(repo);
   logger.start(`Resolving review thread ${threadId}.`);
 
   if (!pr) {
-    throw new GhitgudError(ERROR_REVIEW_PR_REQUIRED);
+    throw new GitfleetError(ERROR_CHANGE_NUMBER_REQUIRED);
   }
 
   const response = await api.listComments(targetRepo, pr);
@@ -281,7 +281,7 @@ const resolve = async (threadId: number, repo?: string, pr?: number) => {
   );
 
   const target = comments.find((c) => c.id === threadId);
-  if (!target) throw new GhitgudError(ERROR_REVIEW_THREAD_NOT_FOUND);
+  if (!target) throw new GitfleetError(ERROR_REVIEW_THREAD_NOT_FOUND);
 
   let resolvedBody: string;
   if (target.body.includes("[resolved]")) {
@@ -305,10 +305,10 @@ interface SuggestOptions {
 }
 
 const suggest = async (options: SuggestOptions) => {
-  if (!options.pr) throw new GhitgudError(ERROR_REVIEW_PR_REQUIRED);
-  if (!options.file) throw new GhitgudError(ERROR_REVIEW_FILE_REQUIRED);
-  if (!options.line) throw new GhitgudError(ERROR_REVIEW_LINE_REQUIRED);
-  if (!options.replace) throw new GhitgudError(ERROR_REVIEW_BODY_REQUIRED);
+  if (!options.pr) throw new GitfleetError(ERROR_CHANGE_NUMBER_REQUIRED);
+  if (!options.file) throw new GitfleetError(ERROR_REVIEW_FILE_REQUIRED);
+  if (!options.line) throw new GitfleetError(ERROR_REVIEW_LINE_REQUIRED);
+  if (!options.replace) throw new GitfleetError(ERROR_REVIEW_BODY_REQUIRED);
 
   const repo = await repoResolver.resolveRepo(options.repo);
   logger.start(`Creating suggestion on PR #${options.pr}.`);
@@ -331,7 +331,7 @@ const suggest = async (options: SuggestOptions) => {
 };
 
 const apply = async (pr: number, repo?: string, pushFlag = false) => {
-  if (!pr) throw new GhitgudError(ERROR_REVIEW_PR_REQUIRED);
+  if (!pr) throw new GitfleetError(ERROR_CHANGE_NUMBER_REQUIRED);
 
   const targetRepo = await repoResolver.resolveRepo(repo);
   logger.start(`Fetching suggestions for PR #${pr}.`);
@@ -362,7 +362,7 @@ const apply = async (pr: number, repo?: string, pushFlag = false) => {
   }
 
   if (!suggestions.length) {
-    throw new GhitgudError(ERROR_REVIEW_NO_SUGGESTIONS);
+    throw new GitfleetError(ERROR_REVIEW_NO_SUGGESTIONS);
   }
 
   logger.start(`Applying ${suggestions.length} suggestion(s).`);

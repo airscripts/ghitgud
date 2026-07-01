@@ -1,7 +1,7 @@
 import logger from "@/core/logger";
 import rulesets from "@/api/rulesets";
 import { readDefinition } from "@/services/ruleset";
-import { GhitgudError } from "@/core/errors";
+import { GitfleetError } from "@/core/errors";
 import { ERROR_RULESET_REQUIRED } from "@/core/constants";
 import { RepoTargetOptions } from "@/types";
 
@@ -27,7 +27,7 @@ const govern = async (options: GovernOptions) => {
   );
 
   if (!options.ruleset) {
-    throw new GhitgudError(ERROR_RULESET_REQUIRED);
+    throw new GitfleetError(ERROR_RULESET_REQUIRED);
   }
 
   service.requireMutationConfirmation(options.dryRun, options.yes);

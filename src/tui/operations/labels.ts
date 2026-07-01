@@ -7,7 +7,7 @@ const labelOperations: TuiOperation[] = [
     id: "labels.list",
     workspace: "Labels",
     title: "List Labels",
-    command: "ghg labels list",
+    command: "gitfleet labels list",
     description: "List repository labels.",
     inputs: [repoInput],
 
@@ -22,7 +22,7 @@ const labelOperations: TuiOperation[] = [
     id: "labels.add",
     title: "Add Label",
     workspace: "Labels",
-    command: "ghg labels add <name>",
+    command: "gitfleet labels add <name>",
     description: "Create a new label.",
 
     inputs: [
@@ -56,7 +56,7 @@ const labelOperations: TuiOperation[] = [
     id: "labels.get",
     workspace: "Labels",
     title: "Get Label",
-    command: "ghg labels get <name>",
+    command: "gitfleet labels get <name>",
     description: "View details for a label.",
 
     inputs: [
@@ -74,7 +74,7 @@ const labelOperations: TuiOperation[] = [
     id: "labels.edit",
     workspace: "Labels",
     title: "Edit Label",
-    command: "ghg labels edit <name>",
+    command: "gitfleet labels edit <name>",
     description: "Update a label.",
     mutates: true,
 
@@ -106,7 +106,7 @@ const labelOperations: TuiOperation[] = [
     id: "labels.remove",
     workspace: "Labels",
     title: "Remove Label",
-    command: "ghg labels remove <name>",
+    command: "gitfleet labels remove <name>",
     description: "Delete a label.",
 
     inputs: [
@@ -127,7 +127,7 @@ const labelOperations: TuiOperation[] = [
     id: "labels.pull",
     workspace: "Labels",
     title: "Pull Labels",
-    command: "ghg labels pull",
+    command: "gitfleet labels pull",
     description: "Save repository labels to local metadata.",
     inputs: [repoInput, { key: "template", label: "Template", type: "string" }],
 
@@ -146,7 +146,7 @@ const labelOperations: TuiOperation[] = [
     id: "labels.push",
     workspace: "Labels",
     title: "Push Labels",
-    command: "ghg labels push",
+    command: "gitfleet labels push",
     description: "Sync local or template labels to the repository.",
     inputs: [repoInput, { key: "template", label: "Template", type: "string" }],
 
@@ -165,7 +165,7 @@ const labelOperations: TuiOperation[] = [
     id: "labels.clone",
     workspace: "Labels",
     title: "Clone Labels",
-    command: "ghg labels clone --source <repo>",
+    command: "gitfleet labels clone --source <repo>",
     description: "Clone labels from one repository to another.",
 
     inputs: [
@@ -190,7 +190,7 @@ const labelOperations: TuiOperation[] = [
     id: "labels.prune",
     workspace: "Labels",
     title: "Prune Labels",
-    command: "ghg labels prune",
+    command: "gitfleet labels prune",
     description: "Delete labels listed in local metadata.",
     inputs: [repoInput],
 
@@ -205,7 +205,7 @@ const labelOperations: TuiOperation[] = [
     id: "labels.bulk",
     workspace: "Labels",
     title: "Bulk Create Labels",
-    command: "ghg labels bulk --file <path>",
+    command: "gitfleet labels bulk --file <path>",
     description: "Create labels from a JSON file.",
     inputs: [
       { key: "file", label: "File path", type: "string", required: true },
@@ -223,7 +223,7 @@ const labelOperations: TuiOperation[] = [
     id: "labels.sync",
     workspace: "Labels",
     title: "Sync Labels from Repo",
-    command: "ghg labels sync --source <repo>",
+    command: "gitfleet labels sync --source <repo>",
     description: "Sync labels from another repository.",
     inputs: [
       {

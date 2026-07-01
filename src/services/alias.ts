@@ -4,11 +4,11 @@ import path from "path";
 
 import output from "@/core/output";
 import logger from "@/core/logger";
-import { GhitgudError } from "@/core/errors";
+import { GitfleetError } from "@/core/errors";
 import io from "@/core/io";
 
 import {
-  GHITGUD_FOLDER,
+  GITFLEET_FOLDER,
   ERROR_ALIAS_NOT_FOUND,
   ERROR_ALIAS_EXISTS,
   ERROR_ALIAS_NAME_REQUIRED,
@@ -18,7 +18,7 @@ import {
 import type { AliasEntry } from "@/types";
 
 function getAliasesPath(): string {
-  return path.join(GHITGUD_FOLDER, `${ALIAS_CONFIG_KEY}.json`);
+  return path.join(GITFLEET_FOLDER, `${ALIAS_CONFIG_KEY}.json`);
 }
 function readAliases(): Record<string, string> {
   const aliasesPath = getAliasesPath();
@@ -34,23 +34,23 @@ function readAliases(): Record<string, string> {
 }
 
 function writeAliases(aliases: Record<string, string>): void {
-  io.ensureDir(GHITGUD_FOLDER);
+  io.ensureDir(GITFLEET_FOLDER);
   io.writeJsonFile(getAliasesPath(), aliases);
 }
 
 const set = (name: string, expansion: string, force = false) => {
   if (!name) {
-    throw new GhitgudError(ERROR_ALIAS_NAME_REQUIRED);
+    throw new GitfleetError(ERROR_ALIAS_NAME_REQUIRED);
   }
 
   if (!expansion) {
-    throw new GhitgudError(ERROR_ALIAS_EXPANSION_REQUIRED);
+    throw new GitfleetError(ERROR_ALIAS_EXPANSION_REQUIRED);
   }
 
   const aliases = readAliases();
 
   if (aliases[name] && !force) {
-    throw new GhitgudError(ERROR_ALIAS_EXISTS);
+    throw new GitfleetError(ERROR_ALIAS_EXISTS);
   }
 
   aliases[name] = expansion;
@@ -84,13 +84,13 @@ const list = () => {
 
 const deleteAlias = (name: string) => {
   if (!name) {
-    throw new GhitgudError(ERROR_ALIAS_NAME_REQUIRED);
+    throw new GitfleetError(ERROR_ALIAS_NAME_REQUIRED);
   }
 
   const aliases = readAliases();
 
   if (!aliases[name]) {
-    throw new GhitgudError(ERROR_ALIAS_NOT_FOUND);
+    throw new GitfleetError(ERROR_ALIAS_NOT_FOUND);
   }
 
   delete aliases[name];
@@ -109,7 +109,7 @@ const importAliases = (filePath?: string) => {
   } else {
     content = process.stdin.read() as string;
     if (!content) {
-      throw new GhitgudError(
+      throw new GitfleetError(
         "No input provided. Pass a file path or pipe data to stdin.",
       );
     }

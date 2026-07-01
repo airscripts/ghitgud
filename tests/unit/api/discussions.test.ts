@@ -1,9 +1,9 @@
 import { describe, expect, it, vi } from "vitest";
 
-import client from "@/api/client";
+import client from "@/providers/github/client";
 import discussions from "@/api/discussions";
 
-vi.mock("@/api/client", () => ({
+vi.mock("@/providers/github/client", () => ({
   default: {
     graphqlTokenRequired: vi.fn(),
     getRepo: vi.fn(() => "owner/repo"),

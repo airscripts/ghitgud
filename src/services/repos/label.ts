@@ -1,7 +1,7 @@
 import service from "./index";
 import logger from "@/core/logger";
 import { RepoTargetOptions } from "@/types";
-import { GhitgudError } from "@/core/errors";
+import { GitfleetError } from "@/core/errors";
 import labelsService from "@/services/labels";
 import { ERROR_LABEL_SOURCE_REQUIRED, TEMPLATES_DIR } from "@/core/constants";
 
@@ -37,7 +37,7 @@ const label = async (options: LabelOptions) => {
   } else if (options.metadata) {
     labels = labelsService.loadLabelsFromMetadata(options.metadata);
   } else {
-    throw new GhitgudError(ERROR_LABEL_SOURCE_REQUIRED);
+    throw new GitfleetError(ERROR_LABEL_SOURCE_REQUIRED);
   }
 
   const repos = await service.resolveTargets(options);

@@ -1,7 +1,7 @@
 import { Command } from "commander";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
-import complianceCommand from "@/commands/compliance";
+import complianceCommand from "@/commands/security-compliance";
 
 vi.mock("@/services/compliance", () => ({
   default: {
@@ -24,6 +24,7 @@ describe("integration > compliance commands", () => {
     await program.parseAsync([
       "node",
       "test",
+      "security",
       "compliance",
       "check",
       "--org",

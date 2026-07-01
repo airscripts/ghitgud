@@ -23,7 +23,7 @@ import {
   WorkflowSummary,
 } from "@/types";
 
-import { GhitgudError } from "@/core/errors";
+import { GitfleetError } from "@/core/errors";
 
 interface WorkflowApiEntry {
   id: number;
@@ -72,11 +72,11 @@ const resolveWorkflow = async (
   );
 
   if (!matches.length) {
-    throw new GhitgudError(`Workflow not found: ${value}.`);
+    throw new GitfleetError(`Workflow not found: ${value}.`);
   }
 
   if (matches.length > 1) {
-    throw new GhitgudError(
+    throw new GitfleetError(
       `Multiple workflows are named "${value}". Use a workflow ID or filename.`,
     );
   }
@@ -93,7 +93,7 @@ function getWorkflowFiles(targetPath?: string): string[] {
       : path.join(repoRoot, targetPath);
 
     if (!fs.existsSync(absolutePath)) {
-      throw new GhitgudError(ERROR_WORKFLOW_NOT_FOUND);
+      throw new GitfleetError(ERROR_WORKFLOW_NOT_FOUND);
     }
 
     return [absolutePath];
@@ -101,7 +101,7 @@ function getWorkflowFiles(targetPath?: string): string[] {
 
   const workflowDir = path.join(repoRoot, WORKFLOW_DEFAULT_DIR);
   if (!fs.existsSync(workflowDir)) {
-    throw new GhitgudError(ERROR_WORKFLOW_NOT_FOUND);
+    throw new GitfleetError(ERROR_WORKFLOW_NOT_FOUND);
   }
 
   const files = fs
@@ -112,7 +112,7 @@ function getWorkflowFiles(targetPath?: string): string[] {
     .map((file) => path.join(workflowDir, file));
 
   if (!files.length) {
-    throw new GhitgudError(ERROR_WORKFLOW_NOT_FOUND);
+    throw new GitfleetError(ERROR_WORKFLOW_NOT_FOUND);
   }
 
   return files;
@@ -342,7 +342,7 @@ const validate = async (targetPath?: string) => {
   }
 
   if (errorCount > 0) {
-    throw new GhitgudError("Workflow validation failed.");
+    throw new GitfleetError("Workflow validation failed.");
   }
 
   logger.success("Workflow validation passed.");
@@ -435,24 +435,24 @@ const run = async (
   const workflow = await resolveWorkflow(options.repo, value);
   const repository = options.ref ? null : await reposApi.get(options.repo);
   const ref = options.ref ?? repository?.default_branch;
-  if (!ref) throw new GhitgudError("Workflow ref is required.");
+  if (!ref) throw new GitfleetError("Workflow ref is required.");
 
   const inputs: Record<string, string> = {};
   for (const field of options.fields ?? []) {
     const separator = field.indexOf("=");
     if (separator <= 0) {
-      throw new GhitgudError(`Invalid workflow field: ${field}.`);
+      throw new GitfleetError(`Invalid workflow field: ${field}.`);
     }
 
     const key = field.slice(0, separator).trim();
     if (!key || key in inputs) {
-      throw new GhitgudError(`Duplicate or empty workflow field: ${key}.`);
+      throw new GitfleetError(`Duplicate or empty workflow field: ${key}.`);
     }
     inputs[key] = field.slice(separator + 1);
   }
 
   if (Object.keys(inputs).length > 25) {
-    throw new GhitgudError("Workflow dispatch accepts at most 25 fields.");
+    throw new GitfleetError("Workflow dispatch accepts at most 25 fields.");
   }
 
   const response = await workflowsApi.dispatchWorkflow(

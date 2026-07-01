@@ -1,5 +1,5 @@
 import logger from "@/core/logger";
-import { GhitgudError } from "@/core/errors";
+import { GitfleetError } from "@/core/errors";
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 
 vi.mock("@/core/logger", () => ({
@@ -15,7 +15,6 @@ vi.mock("@/core/logger", () => ({
 vi.mock("@/services/labels", () => ({
   default: {
     get: vi.fn(),
-    ping: vi.fn(),
     list: vi.fn(),
     pull: vi.fn(),
     push: vi.fn(),
@@ -40,13 +39,13 @@ describe("cli index", () => {
     vi.restoreAllMocks();
   });
 
-  it("should catch GhitgudError and log to stderr", () => {
-    const error = new GhitgudError("test error");
+  it("should catch GitfleetError and log to stderr", () => {
+    const error = new GitfleetError("test error");
     logger.error(error.message);
     expect(logger.error).toHaveBeenCalledWith("test error");
   });
 
-  it("should format GhitgudError message consistently", () => {
+  it("should format GitfleetError message consistently", () => {
     const messages = ["Unauthorized.", "Config error.", "Not found."];
     messages.forEach((msg) => {
       logger.error(msg);

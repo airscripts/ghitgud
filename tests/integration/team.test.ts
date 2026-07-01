@@ -1,7 +1,7 @@
 import { Command } from "commander";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
-import teamCommand from "@/commands/team";
+import teamCommand from "@/commands/access-team";
 
 vi.mock("@/services/team", () => ({
   default: {
@@ -28,6 +28,7 @@ describe("integration > team commands", () => {
     await program.parseAsync([
       "node",
       "test",
+      "access",
       "team",
       "list",
       "--org",
@@ -45,6 +46,7 @@ describe("integration > team commands", () => {
     await program.parseAsync([
       "node",
       "test",
+      "access",
       "team",
       "create",
       "--org",
@@ -73,6 +75,7 @@ describe("integration > team commands", () => {
     await program.parseAsync([
       "node",
       "test",
+      "access",
       "team",
       "create",
       "--org",
@@ -99,6 +102,7 @@ describe("integration > team commands", () => {
     await program.parseAsync([
       "node",
       "test",
+      "access",
       "team",
       "add",
       "--org",
@@ -127,6 +131,7 @@ describe("integration > team commands", () => {
     await program.parseAsync([
       "node",
       "test",
+      "access",
       "team",
       "add",
       "--org",
@@ -153,6 +158,7 @@ describe("integration > team commands", () => {
     await program.parseAsync([
       "node",
       "test",
+      "access",
       "team",
       "remove",
       "--org",
@@ -183,6 +189,7 @@ describe("integration > team commands", () => {
     await program.parseAsync([
       "node",
       "test",
+      "access",
       "team",
       "list",
       "--org",
