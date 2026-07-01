@@ -108,4 +108,91 @@ describe("search api", () => {
     expect(endpoint).toContain("order=asc");
     expect(endpoint).toContain("per_page=10");
   });
+
+  it("searches issues with state=all (no qualifier added)", async () => {
+    vi.mocked(client.getSearchPaginated).mockResolvedValue({
+      items: [],
+      totalCount: 0,
+      incompleteResults: false,
+    });
+
+    await search.issues("bug", { state: "all" });
+    const endpoint = vi.mocked(client.getSearchPaginated).mock.calls[0][0];
+    expect(endpoint).not.toContain("state");
+  });
+
+  it("searches issues with language and author", async () => {
+    vi.mocked(client.getSearchPaginated).mockResolvedValue({
+      items: [],
+      totalCount: 0,
+      incompleteResults: false,
+    });
+
+    await search.issues("bug", { language: "typescript", author: "octocat" });
+    const endpoint = vi.mocked(client.getSearchPaginated).mock.calls[0][0];
+    expect(endpoint).toContain("language%3Atypescript");
+    expect(endpoint).toContain("author%3Aoctocat");
+  });
+
+  it("searches prs with non-merged state", async () => {
+    vi.mocked(client.getSearchPaginated).mockResolvedValue({
+      items: [],
+      totalCount: 0,
+      incompleteResults: false,
+    });
+
+    await search.prs("fix", { state: "open" });
+    const endpoint = vi.mocked(client.getSearchPaginated).mock.calls[0][0];
+    expect(endpoint).toContain("state%3Aopen");
+    expect(endpoint).not.toContain("is%3Amerged");
+  });
+
+  it("searches repos without language", async () => {
+    vi.mocked(client.getSearchPaginated).mockResolvedValue({
+      items: [],
+      totalCount: 0,
+      incompleteResults: false,
+    });
+
+    await search.repos("framework");
+    const endpoint = vi.mocked(client.getSearchPaginated).mock.calls[0][0];
+    expect(endpoint).not.toContain("language");
+  });
+
+  it("searches code with language", async () => {
+    vi.mocked(client.getSearchPaginated).mockResolvedValue({
+      items: [],
+      totalCount: 0,
+      incompleteResults: false,
+    });
+
+    await search.code("TODO", { language: "python" });
+    const endpoint = vi.mocked(client.getSearchPaginated).mock.calls[0][0];
+    expect(endpoint).toContain("language%3Apython");
+  });
+
+  it("searches commits with sort and order", async () => {
+    vi.mocked(client.getSearchPaginated).mockResolvedValue({
+      items: [],
+      totalCount: 0,
+      incompleteResults: false,
+    });
+
+    await search.commits("fix", { sort: "author-date", order: "asc" });
+    const endpoint = vi.mocked(client.getSearchPaginated).mock.calls[0][0];
+    expect(endpoint).toContain("sort=author-date");
+    expect(endpoint).toContain("order=asc");
+  });
+
+  it("uses default order when not specified for issues", async () => {
+    vi.mocked(client.getSearchPaginated).mockResolvedValue({
+      items: [],
+      totalCount: 0,
+      incompleteResults: false,
+    });
+
+    await search.issues("bug");
+    const endpoint = vi.mocked(client.getSearchPaginated).mock.calls[0][0];
+    expect(endpoint).toContain("order=desc");
+  });
 });

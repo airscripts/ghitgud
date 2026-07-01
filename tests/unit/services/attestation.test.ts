@@ -63,4 +63,43 @@ describe("attestation service", () => {
     });
     expect(result.success).toBe(true);
   });
+
+  it("verifies with no attestations", async () => {
+    (api.verify as Mock).mockResolvedValue({
+      json: () => Promise.resolve({ attestations: [] }),
+    });
+    const result = await attestationService.verify("sha256:abc123", {
+      repo: "owner/repo",
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it("lists attestations with nullish defaults", async () => {
+    (api.list as Mock).mockResolvedValue({
+      json: () =>
+        Promise.resolve({
+          attestations: [
+            {
+              bundle_type: null,
+              predicate_type: null,
+              subject_digest: { sha256: "abc123" },
+              repository_id: 1,
+              created_at: null,
+            },
+          ],
+        }),
+    });
+    const result = await attestationService.list("sha256:abc123", {
+      repo: "owner/repo",
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it("uses repo resolver when repo not provided", async () => {
+    (api.list as Mock).mockResolvedValue({
+      json: () => Promise.resolve({ attestations: [] }),
+    });
+    const result = await attestationService.list("sha256:abc123");
+    expect(result.success).toBe(true);
+  });
 });

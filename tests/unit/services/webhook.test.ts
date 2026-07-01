@@ -79,6 +79,57 @@ describe("webhook service", () => {
     expect(api.create).toHaveBeenCalled();
   });
 
+  it("creates a webhook with secret", async () => {
+    (api.create as Mock).mockResolvedValue({
+      json: () => Promise.resolve(webhook({ id: 43 })),
+    });
+    const result = await webhookService.create({
+      repo: "owner/repo",
+      url: "https://example.com",
+      events: ["push"],
+      secret: "mysecret",
+      contentType: "json",
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it("creates a webhook for org", async () => {
+    (api.createOrg as Mock).mockResolvedValue({
+      json: () => Promise.resolve(webhook({ id: 44 })),
+    });
+    const result = await webhookService.create({
+      org: "myorg",
+      url: "https://example.com",
+      events: ["push"],
+    });
+    expect(result.success).toBe(true);
+    expect(api.createOrg).toHaveBeenCalled();
+  });
+
+  it("creates a webhook with nullish defaults", async () => {
+    (api.create as Mock).mockResolvedValue({
+      json: () =>
+        Promise.resolve({
+          id: 45,
+          name: undefined,
+          url: undefined,
+          active: undefined,
+          events: undefined,
+          created_at: undefined,
+          updated_at: undefined,
+          config: undefined,
+        }),
+    });
+    const result = await webhookService.create({
+      repo: "owner/repo",
+      url: "https://example.com",
+      events: ["push"],
+    });
+    expect(result.success).toBe(true);
+    expect(result.webhook.name).toBe("web");
+    expect(result.webhook.active).toBe(true);
+  });
+
   it("edits a webhook", async () => {
     (api.update as Mock).mockResolvedValue({
       json: () => Promise.resolve(webhook()),
