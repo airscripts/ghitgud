@@ -739,6 +739,28 @@ export default {
   reopen: (repo: string, value: string | number) =>
     setState(repo, value, "open"),
 
+  closeWithComment: async (
+    repo: string,
+    value: string | number,
+    commentBody?: string,
+  ) => {
+    if (commentBody) {
+      await comment(repo, value, commentBody);
+    }
+    return setState(repo, value, "closed");
+  },
+
+  reopenWithComment: async (
+    repo: string,
+    value: string | number,
+    commentBody?: string,
+  ) => {
+    if (commentBody) {
+      await comment(repo, value, commentBody);
+    }
+    return setState(repo, value, "open");
+  },
+
   lock: (repo: string, value: string | number) => setLocked(repo, value, true),
 
   unlock: (repo: string, value: string | number) =>

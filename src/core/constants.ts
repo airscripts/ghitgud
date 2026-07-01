@@ -124,7 +124,14 @@ export const DEPENDABOT_DISMISS_REASONS = [
   "tolerable_risk",
 ] as const;
 
-export const SUPPORTED_CONFIG_KEYS = [] as const;
+export const SUPPORTED_CONFIG_KEYS = [
+  "editor",
+  "pager",
+  "prefer_editor",
+  "prompt",
+  "git_protocol",
+  "browser",
+] as const;
 export type SupportedKey = (typeof SUPPORTED_CONFIG_KEYS)[number];
 
 export const ERROR_REVIEW_PR_REQUIRED = "PR number is required.";
@@ -150,4 +157,13 @@ export const SEARCH_DEFAULT_LIMIT = 30;
 export const SEARCH_MAX_PER_PAGE = 100;
 export const ERROR_SEARCH_QUERY_REQUIRED = "Search query is required.";
 
+export const ALIAS_CONFIG_KEY = "aliases";
+export const COPILOT_CLI_BINARY = "github-copilot-cli";
+export const SKILLS_DIR = path.join(GHITGUD_FOLDER, "skills");
 export const EXTENSIONS_DIR = path.join(GHITGUD_FOLDER, "extensions");
+
+export const ERROR_ALIAS_NOT_FOUND = "Alias not found.";
+export const ERROR_ALIAS_EXISTS =
+  "Alias already exists. Use --force to overwrite.";
+export const ERROR_ALIAS_NAME_REQUIRED = "Alias name is required.";
+export const ERROR_ALIAS_EXPANSION_REQUIRED = "Alias expansion is required.";

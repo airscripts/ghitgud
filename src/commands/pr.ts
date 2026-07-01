@@ -87,8 +87,6 @@ Examples:
     });
 
   for (const [name, description] of [
-    ["close", "Close a pull request."],
-    ["reopen", "Reopen a pull request."],
     ["checkout", "Check out a pull request locally."],
     ["diff", "Show a pull request diff."],
     ["checks", "Show pull request checks."],
@@ -108,6 +106,36 @@ Examples:
         );
       });
   }
+
+  pr.command("close")
+    .description("Close a pull request.")
+    .argument("<number>", "Pull request number")
+    .option("--repo <repo>", "Repository (owner/repo)")
+    .option("--comment <body>", "Add a comment when closing")
+    .action(
+      async (number: string, options: { repo?: string; comment?: string }) => {
+        const repo = await repoResolver.resolveRepo(options.repo);
+
+        await command.run(() =>
+          prService.closeWithComment(repo, number, options.comment),
+        );
+      },
+    );
+
+  pr.command("reopen")
+    .description("Reopen a pull request.")
+    .argument("<number>", "Pull request number")
+    .option("--repo <repo>", "Repository (owner/repo)")
+    .option("--comment <body>", "Add a comment when reopening")
+    .action(
+      async (number: string, options: { repo?: string; comment?: string }) => {
+        const repo = await repoResolver.resolveRepo(options.repo);
+
+        await command.run(() =>
+          prService.reopenWithComment(repo, number, options.comment),
+        );
+      },
+    );
 
   pr.command("merge")
     .description("Merge a pull request.")

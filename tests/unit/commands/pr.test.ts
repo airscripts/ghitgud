@@ -12,6 +12,8 @@ vi.mock("@/services/pr", () => ({
     edit: vi.fn(),
     close: vi.fn(),
     reopen: vi.fn(),
+    closeWithComment: vi.fn(),
+    reopenWithComment: vi.fn(),
     merge: vi.fn(),
     checkout: vi.fn(),
     diff: vi.fn(),
@@ -89,5 +91,29 @@ describe("pr command", () => {
     ).rejects.toThrow("Use only one of --merge, --squash, or --rebase.");
 
     expect(prService.merge).not.toHaveBeenCalled();
+  });
+
+  it("close subcommand has --comment option", () => {
+    const program = new Command();
+    prCommand.register(program);
+
+    const pr = program.commands.find((c) => c.name() === "pr");
+    const close = pr!.commands.find((c) => c.name() === "close");
+
+    expect(close).toBeDefined();
+    const optionFlags = close!.options.map((o) => o.long);
+    expect(optionFlags).toContain("--comment");
+  });
+
+  it("reopen subcommand has --comment option", () => {
+    const program = new Command();
+    prCommand.register(program);
+
+    const pr = program.commands.find((c) => c.name() === "pr");
+    const reopen = pr!.commands.find((c) => c.name() === "reopen");
+
+    expect(reopen).toBeDefined();
+    const optionFlags = reopen!.options.map((o) => o.long);
+    expect(optionFlags).toContain("--comment");
   });
 });

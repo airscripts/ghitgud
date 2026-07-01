@@ -5,6 +5,7 @@ import command from "@/core/command";
 import repoResolver from "@/core/repo";
 import inviteService from "@/services/invites";
 import repositoryService from "@/services/repository";
+import licensesService from "@/services/licenses";
 import { ConfigError, GhitgudError } from "@/core/errors";
 
 const VALID_REPO_ROLES = new Set([
@@ -307,6 +308,27 @@ Examples:
     .action(async (options: { root?: string }) => {
       const { default: syncService } = await import("@/services/sync");
       await command.run(() => syncService.statusall({ root: options.root }));
+    });
+
+  const license = repo
+    .command("license")
+    .description("View repository license information.");
+
+  license
+    .command("list")
+    .description("List license for a repository.")
+    .option("--repo <repo>", "Repository (owner/repo)")
+    .action(async (options) => {
+      const repo = resolveRepo(options.repo);
+      await command.run(() => licensesService.repoList(repo));
+    });
+
+  license
+    .command("view")
+    .description("View a license template.")
+    .arguments("<key>")
+    .action(async (key: string) => {
+      await command.run(() => licensesService.view(key));
     });
 };
 

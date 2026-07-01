@@ -19,11 +19,13 @@ Examples:
   ghg auth login --token ghp_xxx --profile work
   ghg auth logout
   ghg auth status
+  ghg auth status --show-token
   ghg auth token
   ghg auth token --raw
   ghg auth list
   ghg auth switch work
   ghg auth detect
+  ghg auth setup-git
 `,
   );
 
@@ -71,8 +73,9 @@ Examples:
   auth
     .command("status")
     .description("Show authentication status.")
-    .action(async () => {
-      await command.run(() => authService.status());
+    .option("--show-token", "Display the full token in the status output")
+    .action(async (options: { showToken?: boolean }) => {
+      await command.run(() => authService.status(options.showToken ?? false));
     });
 
   auth
@@ -121,6 +124,13 @@ Examples:
     .description("Detect the profile for the current repository.")
     .action(async () => {
       await command.run(() => authService.detect());
+    });
+
+  auth
+    .command("setup-git")
+    .description("Configure git to use ghg as credential helper.")
+    .action(async () => {
+      await command.run(() => authService.setupGit());
     });
 };
 

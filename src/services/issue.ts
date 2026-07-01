@@ -457,6 +457,28 @@ export default {
   reopen: (repo: string, issue: string | number) =>
     setState(repo, issue, "open"),
 
+  closeWithComment: async (
+    repo: string,
+    issue: string | number,
+    commentBody?: string,
+  ) => {
+    if (commentBody) {
+      await comment(repo, issue, commentBody);
+    }
+    return setState(repo, issue, "closed");
+  },
+
+  reopenWithComment: async (
+    repo: string,
+    issue: string | number,
+    commentBody?: string,
+  ) => {
+    if (commentBody) {
+      await comment(repo, issue, commentBody);
+    }
+    return setState(repo, issue, "open");
+  },
+
   delete: (repo: string, issue: string | number) =>
     nodeMutation(repo, issue, "delete"),
 

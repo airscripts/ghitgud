@@ -9,6 +9,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Command aliases: `ghg alias set`, `list`, `delete`, `import` for persistent command shortcuts portable across shells
+- Shell completion: `ghg completion generate --shell <bash|zsh|fish|powershell>` and `ghg completion list` for shell completion scripts
+- Preview utilities: `ghg preview prompter [type]` for interactive prompt type previews
+- License discovery: `ghg licenses list`, `ghg licenses view <key>`, `ghg repo license list --repo <repo>` for license catalog inspection
+- Copilot CLI integration: `ghg copilot [args...]` to detect and run GitHub Copilot CLI
+- Agent task management: `ghg agent-task create [description]`, `list`, `view <session-or-pr>` for creating and monitoring GitHub agent tasks
+- Agent skill management: `ghg skill install <repository> [skill]`, `list`, `preview <repository> [skill]`, `publish [path]`, `search [query]`, `update [skill]` for managing agent capabilities
+- Auth status `--show-token` flag to display the full token inline
+- Auth setup-git command to configure git credential helper for HTTPS authentication
+- Issue close and reopen `--comment` flag for adding a comment when changing issue state
+- PR close and reopen `--comment` flag for adding a comment when changing pull request state
+- Config keys are now functional with supported keys: editor, pager, prefer_editor, prompt, git_protocol, browser
 - Code search and navigation: `ghg code search`, `definitions`, `references`, `file`, `blame` for symbol navigation and enhanced blame with PR context
 - Template discovery: `ghg template list`, `show` for issue and PR template inspection
 - Label bulk and sync: `ghg label bulk --file <path>` for creating labels from JSON/YAML, `ghg label sync --source <repo>` for syncing labels from another repository

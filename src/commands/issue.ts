@@ -103,8 +103,6 @@ const register = (program: Command) => {
     });
 
   for (const [name, description] of [
-    ["close", "Close an issue."],
-    ["reopen", "Reopen an issue."],
     ["lock", "Lock an issue conversation."],
     ["unlock", "Unlock an issue conversation."],
     ["pin", "Pin an issue."],
@@ -123,6 +121,38 @@ const register = (program: Command) => {
         );
       });
   }
+
+  issue
+    .command("close")
+    .description("Close an issue.")
+    .argument("<number>", "Issue number")
+    .option("--repo <repo>", "Repository (owner/repo)")
+    .option("--comment <body>", "Add a comment when closing")
+    .action(
+      async (number: string, options: { repo?: string; comment?: string }) => {
+        const repo = await resolve(options.repo);
+
+        await command.run(() =>
+          issueService.closeWithComment(repo, number, options.comment),
+        );
+      },
+    );
+
+  issue
+    .command("reopen")
+    .description("Reopen an issue.")
+    .argument("<number>", "Issue number")
+    .option("--repo <repo>", "Repository (owner/repo)")
+    .option("--comment <body>", "Add a comment when reopening")
+    .action(
+      async (number: string, options: { repo?: string; comment?: string }) => {
+        const repo = await resolve(options.repo);
+
+        await command.run(() =>
+          issueService.reopenWithComment(repo, number, options.comment),
+        );
+      },
+    );
 
   issue
     .command("comment")

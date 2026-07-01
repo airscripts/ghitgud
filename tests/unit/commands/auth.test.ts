@@ -12,6 +12,7 @@ vi.mock("@/services/auth", () => ({
     status: vi.fn(),
     switch: vi.fn(),
     detect: vi.fn(),
+    setupGit: vi.fn(),
   },
 }));
 
@@ -61,6 +62,29 @@ describe("auth command", () => {
     expect(subcommands).toContain("list");
     expect(subcommands).toContain("switch");
     expect(subcommands).toContain("detect");
+    expect(subcommands).toContain("setup-git");
+  });
+
+  it("should register setup-git subcommand", () => {
+    const program = new Command();
+    authCommand.register(program);
+
+    const auth = program.commands.find((c) => c.name() === "auth");
+    const setupGit = auth!.commands.find((c) => c.name() === "setup-git");
+
+    expect(setupGit).toBeDefined();
+  });
+
+  it("status subcommand should have --show-token option", () => {
+    const program = new Command();
+    authCommand.register(program);
+
+    const auth = program.commands.find((c) => c.name() === "auth");
+    const status = auth!.commands.find((c) => c.name() === "status");
+
+    expect(status).toBeDefined();
+    const optionFlags = status!.options.map((o) => o.long);
+    expect(optionFlags).toContain("--show-token");
   });
 
   it("should reject login without token in non-interactive mode", async () => {

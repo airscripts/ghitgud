@@ -18,12 +18,12 @@ describe("issue command", () => {
       "list",
       "view",
       "edit",
-      "close",
-      "reopen",
       "lock",
       "unlock",
       "pin",
       "unpin",
+      "close",
+      "reopen",
       "comment",
       "delete",
       "transfer",
@@ -32,5 +32,29 @@ describe("issue command", () => {
       "parent",
       "type",
     ]);
+  });
+
+  it("close subcommand has --comment option", () => {
+    const program = new Command();
+    issueCommand.register(program);
+
+    const issue = program.commands.find((c) => c.name() === "issue");
+    const close = issue!.commands.find((c) => c.name() === "close");
+
+    expect(close).toBeDefined();
+    const optionFlags = close!.options.map((o) => o.long);
+    expect(optionFlags).toContain("--comment");
+  });
+
+  it("reopen subcommand has --comment option", () => {
+    const program = new Command();
+    issueCommand.register(program);
+
+    const issue = program.commands.find((c) => c.name() === "issue");
+    const reopen = issue!.commands.find((c) => c.name() === "reopen");
+
+    expect(reopen).toBeDefined();
+    const optionFlags = reopen!.options.map((o) => o.long);
+    expect(optionFlags).toContain("--comment");
   });
 });

@@ -510,4 +510,68 @@ describe("pr service", () => {
       expect(api.ready).not.toHaveBeenCalled();
     });
   });
+
+  describe("closeWithComment", () => {
+    it("closes a PR with a comment", async () => {
+      (api.comment as Mock).mockResolvedValue({
+        json: () => Promise.resolve({ id: 1, body: "Closing" }),
+      });
+      (api.updatePr as Mock).mockResolvedValue({
+        json: () => Promise.resolve({ number: 1, state: "closed" }),
+      });
+
+      const result = await prService.closeWithComment(
+        "owner/repo",
+        "1",
+        "Closing",
+      );
+      expect(result.success).toBe(true);
+      expect(api.comment).toHaveBeenCalledWith("owner/repo", 1, "Closing");
+      expect(api.updatePr).toHaveBeenCalledWith("owner/repo", 1, {
+        state: "closed",
+      });
+    });
+
+    it("closes a PR without a comment", async () => {
+      (api.updatePr as Mock).mockResolvedValue({
+        json: () => Promise.resolve({ number: 1, state: "closed" }),
+      });
+
+      const result = await prService.closeWithComment("owner/repo", "1");
+      expect(result.success).toBe(true);
+      expect(api.comment).not.toHaveBeenCalled();
+    });
+  });
+
+  describe("reopenWithComment", () => {
+    it("reopens a PR with a comment", async () => {
+      (api.comment as Mock).mockResolvedValue({
+        json: () => Promise.resolve({ id: 2, body: "Reopening" }),
+      });
+      (api.updatePr as Mock).mockResolvedValue({
+        json: () => Promise.resolve({ number: 1, state: "open" }),
+      });
+
+      const result = await prService.reopenWithComment(
+        "owner/repo",
+        "1",
+        "Reopening",
+      );
+      expect(result.success).toBe(true);
+      expect(api.comment).toHaveBeenCalledWith("owner/repo", 1, "Reopening");
+      expect(api.updatePr).toHaveBeenCalledWith("owner/repo", 1, {
+        state: "open",
+      });
+    });
+
+    it("reopens a PR without a comment", async () => {
+      (api.updatePr as Mock).mockResolvedValue({
+        json: () => Promise.resolve({ number: 1, state: "open" }),
+      });
+
+      const result = await prService.reopenWithComment("owner/repo", "1");
+      expect(result.success).toBe(true);
+      expect(api.comment).not.toHaveBeenCalled();
+    });
+  });
 });

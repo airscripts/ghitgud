@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 
+import { execSync } from "child_process";
 import git from "@/core/git";
 import authApi from "@/api/auth";
 import config from "@/core/config";
@@ -68,6 +69,10 @@ vi.mock("@/core/git", () => ({
     getRemoteUrl: vi.fn(),
     parseRepoFromRemoteUrl: vi.fn(),
   },
+}));
+
+vi.mock("child_process", () => ({
+  execSync: vi.fn(),
 }));
 
 describe("auth service", () => {
@@ -370,6 +375,30 @@ describe("auth service", () => {
 
       expect(logger.warn).toHaveBeenCalledWith(
         "No git remote found. Using default profile.",
+      );
+    });
+  });
+
+  describe("setupGit", () => {
+    it("configures git credential helper", () => {
+      (execSync as ReturnType<typeof vi.fn>).mockReturnValue("");
+
+      const result = authService.setupGit();
+
+      expect(result.success).toBe(true);
+      expect(execSync).toHaveBeenCalled();
+      expect(logger.success).toHaveBeenCalledWith(
+        "Git credential helper configured.",
+      );
+    });
+
+    it("throws when git config fails", () => {
+      (execSync as ReturnType<typeof vi.fn>).mockImplementation(() => {
+        throw new Error("git not found");
+      });
+
+      expect(() => authService.setupGit()).toThrow(
+        "Failed to configure git credential helper.",
       );
     });
   });

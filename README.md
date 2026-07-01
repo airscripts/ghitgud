@@ -121,6 +121,13 @@ Every command reads from `src/core/config.ts`, which resolves values in this ord
 - **Artifact Attestations** — list and verify SLSA/Sigstore provenance for artifacts
 - **SSH Key Management** — list, add, and delete user SSH keys
 - **GPG Key Management** — list, add, and delete user GPG keys
+- **Command Aliases** — create, list, delete, and import persistent command shortcuts
+- **Shell Completion** — generate completion scripts for bash, zsh, fish, and PowerShell
+- **Preview Utilities** — preview interactive prompt types from the terminal
+- **License Discovery** — list available open-source licenses and view license templates
+- **Copilot CLI Integration** — detect and run GitHub Copilot CLI from ghg
+- **Agent Task Management** — create, list, and view GitHub agent tasks
+- **Agent Skill Management** — install, list, preview, publish, search, and update agent skills
 
 ---
 
@@ -1241,8 +1248,15 @@ src/
       codespace.ts         # ghg codespace <list|view|create|start|stop|delete>.
       browse.ts            # ghg browse <repo|issues|pulls|actions|settings|releases|pr>.
       attestation.ts       # ghg attestation <list|verify>.
-      ssh-key.ts           # ghg ssh-key <list|add|delete>.
-      gpg-key.ts           # ghg gpg-key <list|add|delete>.
+       ssh-key.ts           # ghg ssh-key <list|add|delete>.
+       gpg-key.ts           # ghg gpg-key <list|add|delete>.
+       alias.ts             # ghg alias <set|list|delete|import>.
+       completion.ts        # ghg completion <generate|list>.
+       preview.ts           # ghg preview prompter.
+       licenses.ts          # ghg licenses <list|view>.
+       copilot.ts           # ghg copilot [args...].
+       agent-task.ts        # ghg agent-task <create|list|view>.
+       skill.ts             # ghg skill <install|list|preview|publish|search|update>.
    services/
     labels.ts           # Label business logic.
     config.ts           # Config business logic.
@@ -1257,7 +1271,14 @@ src/
     review.ts           # Code review business logic.
     cache.ts            # Cache management and inspection business logic.
     gist.ts             # Gist lifecycle and clone business logic.
-    issue.ts            # Issue lifecycle, status, subtask, and parent business logic.
+     issue.ts            # Issue lifecycle, status, subtask, and parent business logic.
+     alias.ts            # Command alias CRUD and resolution business logic.
+     completion.ts       # Shell completion generation business logic.
+     preview.ts          # Interactive prompt preview business logic.
+     licenses.ts         # License catalog discovery business logic.
+     copilot.ts          # Copilot CLI detection and delegation business logic.
+     agent-task.ts       # Agent task management business logic.
+     skill.ts            # Agent skill install, list, search, and update business logic.
     milestone.ts        # Milestone business logic.
     notifications.ts    # Notifications business logic.
      run.ts              # Workflow run debugging and log streaming business logic.
@@ -1336,7 +1357,10 @@ src/
        codespaces.ts       # Codespaces API.
        attestations.ts      # Artifact attestation API.
        ssh-keys.ts          # SSH key management API.
-       gpg-keys.ts          # GPG key management API.
+        gpg-keys.ts          # GPG key management API.
+        licenses.ts          # License catalog discovery API.
+        agent-task.ts        # Agent task management API.
+        skill.ts             # Agent skill search and publish API.
 
   core/
      command.ts          # Shared command runner.

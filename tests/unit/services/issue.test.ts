@@ -300,6 +300,61 @@ describe("issue service", () => {
     expect(api.update).toHaveBeenCalledWith(3, { state: "open" }, "owner/repo");
   });
 
+  it("closes an issue with a comment", async () => {
+    (api.comment as Mock).mockResolvedValue({
+      json: () => Promise.resolve({ id: "C1", body: "Closing" }),
+    });
+    (api.update as Mock).mockResolvedValue({
+      json: () => Promise.resolve({ number: 3, state: "closed" }),
+    });
+
+    const result = await issueService.closeWithComment(
+      "owner/repo",
+      "3",
+      "Closing",
+    );
+    expect(result.success).toBe(true);
+    expect(api.comment).toHaveBeenCalledWith(3, "Closing", "owner/repo");
+    expect(api.update).toHaveBeenCalledWith(
+      3,
+      { state: "closed" },
+      "owner/repo",
+    );
+  });
+
+  it("closes an issue without a comment", async () => {
+    (api.update as Mock).mockResolvedValue({
+      json: () => Promise.resolve({ number: 3, state: "closed" }),
+    });
+
+    const result = await issueService.closeWithComment("owner/repo", "3");
+    expect(result.success).toBe(true);
+    expect(api.comment).not.toHaveBeenCalled();
+    expect(api.update).toHaveBeenCalledWith(
+      3,
+      { state: "closed" },
+      "owner/repo",
+    );
+  });
+
+  it("reopens an issue with a comment", async () => {
+    (api.comment as Mock).mockResolvedValue({
+      json: () => Promise.resolve({ id: "C2", body: "Reopening" }),
+    });
+    (api.update as Mock).mockResolvedValue({
+      json: () => Promise.resolve({ number: 3, state: "open" }),
+    });
+
+    const result = await issueService.reopenWithComment(
+      "owner/repo",
+      "3",
+      "Reopening",
+    );
+    expect(result.success).toBe(true);
+    expect(api.comment).toHaveBeenCalledWith(3, "Reopening", "owner/repo");
+    expect(api.update).toHaveBeenCalledWith(3, { state: "open" }, "owner/repo");
+  });
+
   it("comments on an issue", async () => {
     (api.comment as Mock).mockResolvedValue({
       json: () => Promise.resolve({ id: "C1", body: "Nice" }),

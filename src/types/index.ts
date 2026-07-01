@@ -617,6 +617,67 @@ interface GpgKeySummary {
   createdAt: string;
 }
 
+interface AliasEntry {
+  name: string;
+  expansion: string;
+}
+
+interface LicenseSummary {
+  key: string;
+  name: string;
+  spdxId: string;
+  url: string;
+}
+
+interface LicenseDetail {
+  key: string;
+  name: string;
+  spdxId: string;
+  url: string;
+  description: string;
+  implementation: string;
+  permissions: string[];
+  conditions: string[];
+  limitations: string[];
+  body: string;
+}
+
+interface AgentTask {
+  id: string;
+  status: string;
+  description: string;
+  createdAt: string;
+  updatedAt: string;
+  url: string;
+  logs?: string;
+}
+
+type AgentTaskStatus = "queued" | "in_progress" | "completed" | "failed";
+
+interface SkillManifest {
+  name: string;
+  version: string;
+  description: string;
+  command: string;
+  repository?: string;
+}
+
+interface SkillSummary {
+  name: string;
+  version: string;
+  description: string;
+  repository: string;
+  installed: boolean;
+  path: string;
+}
+
+interface SkillSearchResult {
+  name: string;
+  description: string;
+  repository: string;
+  url: string;
+}
+
 const normalizeLabel = (label: Label) => ({
   name: label.name,
   color: label.color,
@@ -669,6 +730,14 @@ export type { CodespaceSummary };
 export type { AttestationSummary };
 export type { SshKeySummary };
 export type { GpgKeySummary };
+export type { AliasEntry };
+export type { LicenseSummary };
+export type { LicenseDetail };
+export type { AgentTask };
+export type { AgentTaskStatus };
+export type { SkillManifest };
+export type { SkillSummary };
+export type { SkillSearchResult };
 export type { WebhookSummary };
 export type { WebhookDelivery };
 export type { WorkflowDryRunResult };

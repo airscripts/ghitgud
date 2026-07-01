@@ -18,6 +18,9 @@ import forkCommand from "@/commands/fork";
 import wikiCommand from "@/commands/wiki";
 import webhookCommand from "@/commands/webhook";
 import issueCommand from "@/commands/issue";
+import aliasCommand from "@/commands/alias";
+import completionCommand from "@/commands/completion";
+import previewCommand from "@/commands/preview";
 import proxyCommand from "@/commands/proxy";
 import reposCommand from "@/commands/repos";
 import cacheCommand from "@/commands/cache";
@@ -30,7 +33,9 @@ import auditCommand from "@/commands/audit";
 import leaksCommand from "@/commands/leaks";
 import pagesCommand from "@/commands/pages";
 import labelsCommand from "@/commands/labels";
+import licensesCommand from "@/commands/licenses";
 import searchCommand from "@/commands/search";
+import skillCommand from "@/commands/skill";
 import outputState from "@/core/output-state";
 import configCommand from "@/commands/config";
 import secretCommand from "@/commands/secret";
@@ -41,6 +46,7 @@ import insightsCommand from "@/commands/insights";
 import mentionsCommand from "@/commands/mentions";
 import workflowCommand from "@/commands/workflow";
 import activityCommand from "@/commands/activity";
+import agentTaskCommand from "@/commands/agent-task";
 import { ERROR_NO_TOKEN } from "@/core/constants";
 import variableCommand from "@/commands/variable";
 import milestoneCommand from "@/commands/milestone";
@@ -63,12 +69,15 @@ import packageCommand from "@/commands/package";
 import runnerCommand from "@/commands/runner";
 import extensionCommand from "@/commands/extension";
 import codespaceCommand from "@/commands/codespace";
+import copilotCommand from "@/commands/copilot";
 import browseCommand from "@/commands/browse";
 import attestationCommand from "@/commands/attestation";
 import sshKeyCommand from "@/commands/ssh-key";
 import gpgKeyCommand from "@/commands/gpg-key";
 import { setTheme, initializeTheme } from "@/core/theme";
 import notificationsCommand from "@/commands/notifications";
+
+import aliasService from "@/services/alias";
 
 import {
   GhitgudError,
@@ -114,14 +123,19 @@ if (!proxyCommand.runProxyFromArgv()) {
       .showSuggestionAfterError();
 
     proxyCommand.register(program);
+    aliasCommand.register(program);
+    completionCommand.register(program);
+    previewCommand.register(program);
     authCommand.register(program);
     notificationsCommand.register(program);
     activityCommand.register(program);
+    agentTaskCommand.register(program);
     mentionsCommand.register(program);
     reposCommand.register(program);
     insightsCommand.register(program);
     pingCommand.register(program);
     labelsCommand.register(program);
+    licensesCommand.register(program);
     pagesCommand.register(program);
     wikiCommand.register(program);
     webhookCommand.register(program);
@@ -142,6 +156,7 @@ if (!proxyCommand.runProxyFromArgv()) {
     runCommand.register(program);
     releaseCommand.register(program);
     searchCommand.register(program);
+    skillCommand.register(program);
     auditCommand.register(program);
     leaksCommand.register(program);
     dependabotCommand.register(program);
@@ -169,6 +184,7 @@ if (!proxyCommand.runProxyFromArgv()) {
     runnerCommand.register(program);
     extensionCommand.register(program);
     codespaceCommand.register(program);
+    copilotCommand.register(program);
     browseCommand.register(program);
     attestationCommand.register(program);
     sshKeyCommand.register(program);
@@ -244,6 +260,18 @@ Examples:
   ghg search commits "feat: add search" --repo owner/repo
 `,
     );
+
+    program.hook("preAction", () => {
+      const args = process.argv.slice(2);
+      const expanded = aliasService.resolve(args);
+      if (expanded) {
+        const isAliasCommand = args[0] === "alias";
+
+        if (!isAliasCommand) {
+          process.argv = [process.argv[0], process.argv[1], ...expanded];
+        }
+      }
+    });
 
     program.exitOverride();
 

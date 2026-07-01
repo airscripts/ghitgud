@@ -15,6 +15,8 @@ import {
   ERROR_PROFILE_NOT_FOUND,
 } from "@/core/constants";
 
+import { execSync } from "child_process";
+
 function maskToken(token: string): string {
   if (token.length <= 4) return "****";
   return `${token.substring(0, 4)}...`;
@@ -85,7 +87,7 @@ const logout = () => {
   return { success: true };
 };
 
-const status = async () => {
+const status = async (showToken = false) => {
   const token = config.getTokenOptional();
   if (!token) {
     throw new GhitgudError(ERROR_AUTH_NO_TOKEN);
@@ -104,12 +106,18 @@ const status = async () => {
   const profiles = config.listProfiles();
   const activeProfile = profiles.find((p) => p.active)?.name ?? null;
 
-  output.renderSummary("Authentication", [
+  const entries: [string, string][] = [
     ["User", user.login],
     ["Name", user.name ?? "(not set)"],
     ["Profile", activeProfile ?? DEFAULT_PROFILE_NAME],
     ["Scopes", scopes.length > 0 ? scopes.join(", ") : "(not available)"],
-  ]);
+  ];
+
+  if (showToken) {
+    entries.push(["Token", token]);
+  }
+
+  output.renderSummary("Authentication", entries);
 
   return { success: true, user, scopes, profile: activeProfile };
 };
@@ -199,6 +207,28 @@ const detect = () => {
   };
 };
 
+const setupGit = () => {
+  logger.start("Configuring git credential helper.");
+
+  try {
+    const ghgPath = process.argv[1] || "ghg";
+    const credentialHelper = `!${ghgPath} auth token`;
+
+    execSync(`git config --global credential.helper "${credentialHelper}"`, {
+      encoding: "utf8",
+    });
+
+    logger.success("Git credential helper configured.");
+    logger.info("Git will now use ghg for HTTPS authentication.");
+  } catch {
+    throw new GhitgudError(
+      "Failed to configure git credential helper. Ensure git is installed.",
+    );
+  }
+
+  return { success: true };
+};
+
 export default {
   list,
   login,
@@ -206,5 +236,6 @@ export default {
   logout,
   status,
   detect,
+  setupGit,
   switch: switchProfile,
 };
